@@ -1,0 +1,423 @@
+"""Export complete World Cup sample CSVs into data/samples/."""
+
+from __future__ import annotations
+
+import re
+from pathlib import Path
+
+import pandas as pd
+
+from worldcup.data_ingestion.sources.world_cup_catalog import (
+    ALL_WORLD_CUP_MATCHES,
+    FRIENDLY_MATCHES,
+    WorldCupMatch,
+)
+from worldcup.data_ingestion.sources.world_cup_squads import (
+    GENERIC_FORMATION,
+    TEAM_ALIASES,
+    WORLD_CUP_SQUADS,
+    SquadPlayer,
+)
+from worldcup.utils.paths import project_root
+
+SCORING_POSITIONS = {"ST", "LW", "RW", "CAM"}
+
+PROJECTED_ONLY_MATCHES = {"wc2022_eng_fra_qf"}
+
+
+def _slug(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "_", value.strip().lower()).strip("_") or "unknown"
+
+
+def _stage_slug(stage: str) -> str:
+    mapping = {
+        "Group stage": "gs",
+        "Round of 16": "r16",
+        "Quarter-finals": "qf",
+        "Semi-finals": "sf",
+        "Third place": "tp",
+        "Final": "final",
+        "Friendly": "friendly",
+    }
+    return mapping.get(stage, _slug(stage))
+
+
+def _team_slug(team_name: str) -> str:
+    team_id = TEAM_ALIASES.get(team_name, f"team_{_slug(team_name)}")
+    return team_id.removeprefix("team_")
+
+
+def match_id_for(record: WorldCupMatch) -> str:
+    if record.stage_name == "Friendly":
+        return f"intl_{_slug(record.home_team)}_{_slug(record.away_team)}_{record.match_date[:4]}"
+    return (
+        f"wc{record.year}_{_team_slug(record.home_team)}_{_team_slug(record.away_team)}"
+        f"_{_stage_slug(record.stage_name)}"
+    )
+
+
+def _match_row(record: WorldCupMatch) -> dict:
+    is_wc = record.stage_name != "Friendly"
+    is_ko = record.stage_name in {
+        "Round of 16",
+        "Quarter-finals",
+        "Semi-finals",
+        "Third place",
+        "Final",
+    }
+    return {
+        "match_id": match_id_for(record),
+        "competition_name": "FIFA World Cup" if is_wc else "Friendly",
+        "season_name": str(record.year),
+        "stage_name": record.stage_name,
+        "match_date": record.match_date,
+        "kickoff_ts": record.kickoff_ts,
+        "home_team_name": record.home_team,
+        "away_team_name": record.away_team,
+        "home_score_ft": record.home_score_ft,
+        "away_score_ft": record.away_score_ft,
+        "home_score_ht": record.home_score_ht,
+        "away_score_ht": record.away_score_ht,
+        "aet_score_home": record.aet_score_home,
+        "aet_score_away": record.aet_score_away,
+        "pen_score_home": record.pen_score_home,
+        "pen_score_away": record.pen_score_away,
+        "status": "finished",
+        "is_world_cup": is_wc,
+        "is_knockout": is_ko,
+        "venue": record.venue,
+        "city": record.city,
+        "country": record.country,
+    }
+
+
+def _generic_squad(team_name: str) -> list[SquadPlayer]:
+    slug = _slug(team_name)
+    return [
+        SquadPlayer(f"{slug}_{pos.lower()}", f"{team_name} {pos}", pos, 72, 1_000_000)
+        for pos in GENERIC_FORMATION
+    ]
+
+
+def squad_for(team_name: str) -> list[SquadPlayer]:
+    return WORLD_CUP_SQUADS.get(team_name) or _generic_squad(team_name)
+
+
+def export_players() -> pd.DataFrame:
+    rows: dict[str, dict] = {}
+    for team_name, players in WORLD_CUP_SQUADS.items():
+        team_id = TEAM_ALIASES.get(team_name, f"team_{_slug(team_name)}")
+        for player in players:
+            player_id = f"pla_{player.slug}"
+            rows[player_id] = {
+                "player_id": player_id,
+                "full_name": player.full_name,
+                "national_team_id": team_id,
+                "primary_position": player.position,
+                "market_value_eur": player.market_value_eur,
+                "player_rating": player.rating,
+            }
+    return pd.DataFrame(list(rows.values())).sort_values("player_id")
+
+
+def export_team_aliases() -> pd.DataFrame:
+    return pd.DataFrame(
+        [{"alias_name": name, "canonical_team_id": team_id, "notes": ""} for name, team_id in sorted(TEAM_ALIASES.items())]
+    )
+
+
+def export_elo_fifa(matches: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    teams = sorted(set(matches["home_team_name"]) | set(matches["away_team_name"]))
+    elo_rows: list[dict] = []
+    fifa_rows: list[dict] = []
+    ratings_2018 = {name: 1500 + (idx * 17) % 600 for idx, name in enumerate(teams)}
+    ratings_2022 = {name: 1480 + (idx * 19) % 620 for idx, name in enumerate(teams)}
+    for name in teams:
+        elo_rows.append(
+            {
+                "team_name": name,
+                "rating": round(ratings_2018[name], 1),
+                "rating_date": "2018-06-01",
+                "rating_system": "elo",
+                "rank": None,
+            }
+        )
+        elo_rows.append(
+            {
+                "team_name": name,
+                "rating": round(ratings_2022[name], 1),
+                "rating_date": "2022-11-01",
+                "rating_system": "elo",
+                "rank": None,
+            }
+        )
+        fifa_rows.append(
+            {
+                "team_name": name,
+                "ranking_date": "2018-06-07",
+                "rank": 5 + (hash(name) % 60),
+                "points": round(1100 + ratings_2018[name] / 3, 2),
+            }
+        )
+        fifa_rows.append(
+            {
+                "team_name": name,
+                "ranking_date": "2022-10-06",
+                "rank": 3 + (hash(name) % 55),
+                "points": round(1150 + ratings_2022[name] / 3, 2),
+            }
+        )
+    return pd.DataFrame(elo_rows), pd.DataFrame(fifa_rows)
+
+
+def export_lineups(matches: pd.DataFrame, players: pd.DataFrame) -> pd.DataFrame:
+    player_lookup = players.set_index("player_id")
+    rows: list[dict] = []
+    for _, match in matches.iterrows():
+        if not match["is_world_cup"]:
+            continue
+        if match["match_id"] in PROJECTED_ONLY_MATCHES:
+            continue
+        for side in ("home", "away"):
+            team_name = match[f"{side}_team_name"]
+            team_id = TEAM_ALIASES.get(team_name, f"team_{_slug(team_name)}")
+            squad = squad_for(team_name)[:11]
+            for idx, squad_player in enumerate(squad):
+                player_id = f"pla_{squad_player.slug}"
+                if player_id not in player_lookup.index:
+                    continue
+                rows.append(
+                    {
+                        "lineup_id": f"lu_{match['match_id']}_{side}_{idx}",
+                        "match_id": match["match_id"],
+                        "team_id": team_id,
+                        "player_id": player_id,
+                        "is_starting": True,
+                        "bench_order": "",
+                        "position_code": squad_player.position,
+                        "formation_slot": f"4-3-3-{squad_player.position}",
+                        "lineup_status": "historical",
+                        "projection_prob": 1.0,
+                        "snapshot_ts": "",
+                    }
+                )
+
+    projected_match = "wc2022_eng_fra_qf"
+    snapshot = "2022-12-10T12:00:00Z"
+    for side, team_name in (("home", "England"), ("away", "France")):
+        team_id = TEAM_ALIASES[team_name]
+        for idx, squad_player in enumerate(squad_for(team_name)[:11]):
+            player_id = f"pla_{squad_player.slug}"
+            if player_id not in player_lookup.index:
+                continue
+            rows.append(
+                {
+                    "lineup_id": f"lu_proj_{projected_match}_{side}_{idx}",
+                    "match_id": projected_match,
+                    "team_id": team_id,
+                    "player_id": player_id,
+                    "is_starting": True,
+                    "bench_order": "",
+                    "position_code": squad_player.position,
+                    "formation_slot": f"4-3-3-{squad_player.position}",
+                    "lineup_status": "projected",
+                    "projection_prob": round(0.95 - idx * 0.02, 2),
+                    "snapshot_ts": snapshot,
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def _pick_scorers(team_name: str, goals: int, players: pd.DataFrame) -> list[str]:
+    team_id = TEAM_ALIASES.get(team_name, f"team_{_slug(team_name)}")
+    team_players = players.loc[players["national_team_id"] == team_id].copy()
+    if team_players.empty or goals <= 0:
+        return []
+    scorers = team_players.loc[
+        team_players["primary_position"].isin(SCORING_POSITIONS)
+    ].sort_values("player_rating", ascending=False)
+    if scorers.empty:
+        scorers = team_players.sort_values("player_rating", ascending=False)
+    ids = scorers["player_id"].tolist()
+    if not ids:
+        return []
+    chosen: list[str] = []
+    for i in range(goals):
+        chosen.append(ids[min(i, len(ids) - 1)])
+    return chosen
+
+
+def export_player_stats(matches: pd.DataFrame, players: pd.DataFrame) -> pd.DataFrame:
+    rows: list[dict] = []
+    stat_idx = 0
+    for _, match in matches.iterrows():
+        if pd.isna(match["home_score_ft"]) or pd.isna(match["away_score_ft"]):
+            continue
+        for side, goals in (
+            ("home", int(match["home_score_ft"])),
+            ("away", int(match["away_score_ft"])),
+        ):
+            team_name = match[f"{side}_team_name"]
+            team_id = TEAM_ALIASES.get(team_name, f"team_{_slug(team_name)}")
+            for player_id in _pick_scorers(team_name, goals, players):
+                stat_idx += 1
+                rows.append(
+                    {
+                        "stat_id": f"ps_{stat_idx:05d}",
+                        "match_id": match["match_id"],
+                        "player_id": player_id,
+                        "team_id": team_id,
+                        "match_date": match["match_date"],
+                        "minutes_played": 90,
+                        "goals": 1,
+                        "assists": 0,
+                    }
+                )
+    return pd.DataFrame(rows)
+
+
+def export_odds(matches: pd.DataFrame) -> pd.DataFrame:
+    rows: list[dict] = []
+    for _, match in matches.iterrows():
+        if not match["is_world_cup"]:
+            continue
+        if match["stage_name"] not in {"Quarter-finals", "Semi-finals", "Final", "Round of 16"}:
+            continue
+        kickoff = pd.Timestamp(match["kickoff_ts"])
+        snapshot = (kickoff - pd.Timedelta(hours=3)).isoformat()
+        rows.append(
+            {
+                "match_id": match["match_id"],
+                "snapshot_ts": snapshot,
+                "home_odds": 2.40,
+                "draw_odds": 3.20,
+                "away_odds": 3.00,
+                "over25_odds": 2.05,
+                "under25_odds": 1.78,
+                "btts_yes_odds": 1.90,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def export_injuries() -> pd.DataFrame:
+    return pd.DataFrame(
+        [
+            {
+                "injury_id": "inj_fra_kante_wc22",
+                "player_id": "pla_kante",
+                "team_id": "team_fra",
+                "injury_type": "muscle",
+                "status": "out",
+                "start_date": "2022-11-01",
+                "expected_return_date": "2023-03-01",
+                "confidence": 0.95,
+                "notes": "Did not travel to Qatar",
+            },
+            {
+                "injury_id": "inj_fra_benzema_wc22",
+                "player_id": "pla_benzema",
+                "team_id": "team_fra",
+                "injury_type": "muscle",
+                "status": "out",
+                "start_date": "2022-11-19",
+                "expected_return_date": "",
+                "confidence": 0.98,
+                "notes": "Left camp before WC",
+            },
+            {
+                "injury_id": "inj_arg_dybala_wc22",
+                "player_id": "pla_dybala",
+                "team_id": "team_arg",
+                "injury_type": "muscle",
+                "status": "doubtful",
+                "start_date": "2022-11-10",
+                "expected_return_date": "2022-12-01",
+                "confidence": 0.6,
+                "notes": "Limited minutes risk",
+            },
+            {
+                "injury_id": "inj_bra_neymar_wc22",
+                "player_id": "pla_neymar",
+                "team_id": "team_bra",
+                "injury_type": "knee",
+                "status": "out",
+                "start_date": "2022-11-20",
+                "expected_return_date": "",
+                "confidence": 0.97,
+                "notes": "Missed knockout stage",
+            },
+            {
+                "injury_id": "inj_eng_kane_wc22",
+                "player_id": "pla_kane",
+                "team_id": "team_eng",
+                "injury_type": "ankle",
+                "status": "fit",
+                "start_date": "2022-11-01",
+                "expected_return_date": "",
+                "confidence": 1.0,
+                "notes": "Cleared for WC",
+            },
+            {
+                "injury_id": "inj_ger_reus_wc18",
+                "player_id": "pla_reus",
+                "team_id": "team_ger",
+                "injury_type": "ankle",
+                "status": "out",
+                "start_date": "2018-05-01",
+                "expected_return_date": "2018-08-01",
+                "confidence": 0.99,
+                "notes": "Missed 2018 World Cup",
+            },
+        ]
+    )
+
+
+def export_all(samples_dir: Path | None = None) -> dict[str, int]:
+    root = samples_dir or project_root() / "data" / "samples"
+    mappings_dir = project_root() / "data" / "external_mappings"
+    root.mkdir(parents=True, exist_ok=True)
+
+    all_records = ALL_WORLD_CUP_MATCHES + FRIENDLY_MATCHES
+    matches = pd.DataFrame([_match_row(record) for record in all_records])
+    matches = matches.drop_duplicates(subset=["match_id"], keep="last").sort_values("kickoff_ts")
+
+    players = export_players()
+    elo, fifa = export_elo_fifa(matches)
+    lineups = export_lineups(matches, players)
+    stats = export_player_stats(matches, players)
+    odds = export_odds(matches)
+    injuries = export_injuries()
+    aliases = export_team_aliases()
+
+    matches.to_csv(root / "matches.csv", index=False)
+    players.to_csv(root / "players.csv", index=False)
+    elo.to_csv(root / "elo.csv", index=False)
+    fifa.to_csv(root / "fifa_rankings.csv", index=False)
+    lineups.to_csv(root / "lineups.csv", index=False)
+    stats.to_csv(root / "player_match_stats.csv", index=False)
+    odds.to_csv(root / "odds.csv", index=False)
+    injuries.to_csv(root / "injuries.csv", index=False)
+    aliases.to_csv(mappings_dir / "team_aliases.csv", index=False)
+
+    return {
+        "matches": len(matches),
+        "world_cup_matches": int(matches["is_world_cup"].sum()),
+        "players": len(players),
+        "lineups": len(lineups),
+        "player_match_stats": len(stats),
+        "odds": len(odds),
+        "injuries": len(injuries),
+        "teams": len(aliases),
+    }
+
+
+def main() -> None:
+    counts = export_all()
+    print("Exported sample data:")
+    for key, value in counts.items():
+        print(f"  {key}: {value}")
+
+
+if __name__ == "__main__":
+    main()
