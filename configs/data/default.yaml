@@ -22,3 +22,4 @@ source_systems:
   lineups: sample_lineups_csv
   player_match_stats: sample_player_stats_csv
   injuries: sample_injuries_csv
+  odds: sample_odds_csv

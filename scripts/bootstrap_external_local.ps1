@@ -18,7 +18,13 @@ function Write-Step {
 }
 
 if (-not $SkipPrepare) {
-    Write-Step "Preparing external canonical CSVs (examples + samples) ..."
+    Write-Step "Exporting WC seeds (if needed) ..."
+    python -m scripts.export_external_seeds
+
+    Write-Step "Downloading public datasets into data/external/downloads/ ..."
+    python -m scripts.bootstrap_external_downloads
+
+    Write-Step "Preparing external canonical CSVs ..."
     python -m scripts.prepare_data --config-name=config data=external
 }
 

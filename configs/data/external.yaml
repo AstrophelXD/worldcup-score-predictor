@@ -3,27 +3,45 @@ defaults:
 
 external_dir: ${project.root}/data/external
 staging_dir: ${project.root}/data/staging
-include_samples: true
-
-# Place downloaded CSVs under data/external/downloads/ and update paths below.
 downloads_dir: ${data.external_dir}/downloads
+include_samples: false
 
+# Run once:
+#   python -m scripts.export_external_seeds
+#   python -m scripts.bootstrap_external_downloads
 external_inputs:
   matches:
-    - path: ${data.external_dir}/examples/kaggle_results.csv
-      format: kaggle_international
+    - path: ${data.downloads_dir}/international_matches_canonical.csv
+      format: canonical
+    - path: ${data.downloads_dir}/wc_matches.csv
+      format: canonical
   elo:
-    - path: ${data.external_dir}/examples/elo_history.csv
-      format: elo_history
+    - path: ${data.downloads_dir}/elo_from_results.csv
+      format: canonical
+    - path: ${data.downloads_dir}/elo_snapshot.csv
+      format: canonical
   fifa_rankings:
-    - path: ${data.external_dir}/examples/fifa_rankings_history.csv
-      format: fifa_rankings
-  players: []
-  lineups: []
-  player_match_stats: []
-  injuries: []
+    - path: ${data.downloads_dir}/fifa_rankings_canonical.csv
+      format: canonical
+  players:
+    - path: ${data.downloads_dir}/players.csv
+      format: canonical
+  lineups:
+    - path: ${data.downloads_dir}/lineups.csv
+      format: canonical
+  player_match_stats:
+    - path: ${data.downloads_dir}/player_match_stats.csv
+      format: canonical
+  injuries:
+    - path: ${data.downloads_dir}/injuries.csv
+      format: canonical
+  odds:
+    - path: ${data.downloads_dir}/odds.csv
+      format: canonical
+    # Optional third-party historical odds (football-data.co.uk):
+    # - path: ${data.downloads_dir}/football_data_odds.csv
+    #   format: football_data_odds
 
-# After prepare_data, ingest reads from staging canonical CSVs.
 sources:
   matches: ${data.staging_dir}/canonical/matches.csv
   elo: ${data.staging_dir}/canonical/elo.csv
@@ -32,7 +50,7 @@ sources:
   lineups: ${data.staging_dir}/canonical/lineups.csv
   player_match_stats: ${data.staging_dir}/canonical/player_match_stats.csv
   injuries: ${data.staging_dir}/canonical/injuries.csv
-  odds: ${data.samples_dir}/odds.csv
+  odds: ${data.staging_dir}/canonical/odds.csv
 
 source_systems:
   matches: external_prepared_csv
@@ -42,3 +60,4 @@ source_systems:
   lineups: external_prepared_csv
   player_match_stats: external_prepared_csv
   injuries: external_prepared_csv
+  odds: external_prepared_csv

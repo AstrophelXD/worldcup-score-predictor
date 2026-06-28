@@ -1,0 +1,129 @@
+match_id,competition_name,season_name,stage_name,match_date,kickoff_ts,home_team_name,away_team_name,home_score_ft,away_score_ft,home_score_ht,away_score_ht,aet_score_home,aet_score_away,pen_score_home,pen_score_away,status,is_world_cup,is_knockout,venue,city,country
+wc2018_rus_ksa_gs,FIFA World Cup,2018,Group stage,2018-06-14,2018-06-14T15:00:00Z,Russia,Saudi Arabia,5,0,2.0,0.0,,,,,finished,True,False,Luzhniki Stadium,Moscow,Russia
+wc2018_egy_uru_gs,FIFA World Cup,2018,Group stage,2018-06-15,2018-06-15T15:00:00Z,Egypt,Uruguay,0,1,,,,,,,finished,True,False,Ekaterinburg Arena,Yekaterinburg,Russia
+wc2018_por_esp_gs,FIFA World Cup,2018,Group stage,2018-06-15,2018-06-15T15:00:00Z,Portugal,Spain,3,3,2.0,1.0,,,,,finished,True,False,Fisht Olympic Stadium,Sochi,Russia
+wc2018_mar_irn_gs,FIFA World Cup,2018,Group stage,2018-06-15,2018-06-15T15:00:00Z,Morocco,Iran,0,1,,,,,,,finished,True,False,Krestovsky Stadium,Saint Petersburg,Russia
+wc2018_cro_nga_gs,FIFA World Cup,2018,Group stage,2018-06-16,2018-06-16T15:00:00Z,Croatia,Nigeria,2,0,,,,,,,finished,True,False,Kaliningrad Stadium,Kaliningrad,Russia
+wc2018_arg_isl_gs,FIFA World Cup,2018,Group stage,2018-06-16,2018-06-16T15:00:00Z,Argentina,Iceland,1,1,1.0,1.0,,,,,finished,True,False,Spartak Stadium,Moscow,Russia
+wc2018_per_den_gs,FIFA World Cup,2018,Group stage,2018-06-16,2018-06-16T15:00:00Z,Peru,Denmark,0,1,,,,,,,finished,True,False,Mordovia Arena,Saransk,Russia
+wc2018_fra_aus_gs,FIFA World Cup,2018,Group stage,2018-06-16,2018-06-16T15:00:00Z,France,Australia,2,1,0.0,0.0,,,,,finished,True,False,Kazan Arena,Kazan,Russia
+wc2018_ger_mex_gs,FIFA World Cup,2018,Group stage,2018-06-17,2018-06-17T15:00:00Z,Germany,Mexico,0,1,,,,,,,finished,True,False,Luzhniki Stadium,Moscow,Russia
+wc2018_bra_sui_gs,FIFA World Cup,2018,Group stage,2018-06-17,2018-06-17T15:00:00Z,Brazil,Switzerland,1,1,1.0,0.0,,,,,finished,True,False,Rostov Arena,Rostov-on-Don,Russia
+wc2018_crc_srb_gs,FIFA World Cup,2018,Group stage,2018-06-17,2018-06-17T15:00:00Z,Costa Rica,Serbia,0,1,,,,,,,finished,True,False,Samara Arena,Samara,Russia
+wc2018_tun_eng_gs,FIFA World Cup,2018,Group stage,2018-06-18,2018-06-18T15:00:00Z,Tunisia,England,1,2,,,,,,,finished,True,False,Volgograd Arena,Volgograd,Russia
+wc2018_bel_pan_gs,FIFA World Cup,2018,Group stage,2018-06-18,2018-06-18T15:00:00Z,Belgium,Panama,3,0,,,,,,,finished,True,False,Fisht Olympic Stadium,Sochi,Russia
+wc2018_swe_kor_gs,FIFA World Cup,2018,Group stage,2018-06-18,2018-06-18T15:00:00Z,Sweden,South Korea,1,0,,,,,,,finished,True,False,Nizhny Novgorod Stadium,Nizhny Novgorod,Russia
+wc2018_pol_sen_gs,FIFA World Cup,2018,Group stage,2018-06-19,2018-06-19T15:00:00Z,Poland,Senegal,1,2,,,,,,,finished,True,False,Spartak Stadium,Moscow,Russia
+wc2018_col_jpn_gs,FIFA World Cup,2018,Group stage,2018-06-19,2018-06-19T15:00:00Z,Colombia,Japan,1,2,,,,,,,finished,True,False,Mordovia Arena,Saransk,Russia
+wc2018_rus_egy_gs,FIFA World Cup,2018,Group stage,2018-06-19,2018-06-19T15:00:00Z,Russia,Egypt,3,1,0.0,0.0,,,,,finished,True,False,Krestovsky Stadium,Saint Petersburg,Russia
+wc2018_irn_esp_gs,FIFA World Cup,2018,Group stage,2018-06-20,2018-06-20T15:00:00Z,Iran,Spain,0,1,,,,,,,finished,True,False,Kazan Arena,Kazan,Russia
+wc2018_uru_ksa_gs,FIFA World Cup,2018,Group stage,2018-06-20,2018-06-20T15:00:00Z,Uruguay,Saudi Arabia,1,0,,,,,,,finished,True,False,Rostov Arena,Rostov-on-Don,Russia
+wc2018_por_mar_gs,FIFA World Cup,2018,Group stage,2018-06-20,2018-06-20T15:00:00Z,Portugal,Morocco,1,0,,,,,,,finished,True,False,Luzhniki Stadium,Moscow,Russia
+wc2018_den_aus_gs,FIFA World Cup,2018,Group stage,2018-06-21,2018-06-21T15:00:00Z,Denmark,Australia,1,1,,,,,,,finished,True,False,Samara Arena,Samara,Russia
+wc2018_fra_per_gs,FIFA World Cup,2018,Group stage,2018-06-21,2018-06-21T15:00:00Z,France,Peru,1,0,,,,,,,finished,True,False,Ekaterinburg Arena,Yekaterinburg,Russia
+wc2018_arg_cro_gs,FIFA World Cup,2018,Group stage,2018-06-21,2018-06-21T15:00:00Z,Argentina,Croatia,0,3,,,,,,,finished,True,False,Nizhny Novgorod Stadium,Nizhny Novgorod,Russia
+wc2018_nga_isl_gs,FIFA World Cup,2018,Group stage,2018-06-22,2018-06-22T15:00:00Z,Nigeria,Iceland,2,0,,,,,,,finished,True,False,Volgograd Arena,Volgograd,Russia
+wc2018_bra_crc_gs,FIFA World Cup,2018,Group stage,2018-06-22,2018-06-22T15:00:00Z,Brazil,Costa Rica,2,0,,,,,,,finished,True,False,Krestovsky Stadium,Saint Petersburg,Russia
+wc2018_srb_sui_gs,FIFA World Cup,2018,Group stage,2018-06-22,2018-06-22T15:00:00Z,Serbia,Switzerland,1,2,,,,,,,finished,True,False,Kaliningrad Stadium,Kaliningrad,Russia
+wc2018_kor_mex_gs,FIFA World Cup,2018,Group stage,2018-06-23,2018-06-23T15:00:00Z,South Korea,Mexico,1,2,,,,,,,finished,True,False,Rostov Arena,Rostov-on-Don,Russia
+wc2018_ger_swe_gs,FIFA World Cup,2018,Group stage,2018-06-23,2018-06-23T15:00:00Z,Germany,Sweden,2,1,,,,,,,finished,True,False,Fisht Olympic Stadium,Sochi,Russia
+wc2018_bel_tun_gs,FIFA World Cup,2018,Group stage,2018-06-23,2018-06-23T15:00:00Z,Belgium,Tunisia,5,2,,,,,,,finished,True,False,Otkrytie Arena,Moscow,Russia
+wc2018_pol_col_gs,FIFA World Cup,2018,Group stage,2018-06-24,2018-06-24T15:00:00Z,Poland,Colombia,0,3,,,,,,,finished,True,False,Kazan Arena,Kazan,Russia
+wc2018_jpn_sen_gs,FIFA World Cup,2018,Group stage,2018-06-24,2018-06-24T15:00:00Z,Japan,Senegal,2,2,,,,,,,finished,True,False,Ekaterinburg Arena,Yekaterinburg,Russia
+wc2018_eng_pan_gs,FIFA World Cup,2018,Group stage,2018-06-24,2018-06-24T15:00:00Z,England,Panama,6,1,5.0,0.0,,,,,finished,True,False,Nizhny Novgorod Stadium,Nizhny Novgorod,Russia
+wc2018_uru_rus_gs,FIFA World Cup,2018,Group stage,2018-06-25,2018-06-25T15:00:00Z,Uruguay,Russia,3,0,2.0,0.0,,,,,finished,True,False,Samara Arena,Samara,Russia
+wc2018_ksa_egy_gs,FIFA World Cup,2018,Group stage,2018-06-25,2018-06-25T15:00:00Z,Saudi Arabia,Egypt,2,1,,,,,,,finished,True,False,Volgograd Arena,Volgograd,Russia
+wc2018_irn_por_gs,FIFA World Cup,2018,Group stage,2018-06-25,2018-06-25T15:00:00Z,Iran,Portugal,1,1,,,,,,,finished,True,False,Saransk Arena,Saransk,Russia
+wc2018_esp_mar_gs,FIFA World Cup,2018,Group stage,2018-06-25,2018-06-25T15:00:00Z,Spain,Morocco,2,2,,,,,,,finished,True,False,Kaliningrad Stadium,Kaliningrad,Russia
+wc2018_isl_cro_gs,FIFA World Cup,2018,Group stage,2018-06-26,2018-06-26T15:00:00Z,Iceland,Croatia,1,2,,,,,,,finished,True,False,Rostov Arena,Rostov-on-Don,Russia
+wc2018_den_fra_gs,FIFA World Cup,2018,Group stage,2018-06-26,2018-06-26T15:00:00Z,Denmark,France,0,0,,,,,,,finished,True,False,Luzhniki Stadium,Moscow,Russia
+wc2018_nga_arg_gs,FIFA World Cup,2018,Group stage,2018-06-26,2018-06-26T15:00:00Z,Nigeria,Argentina,1,2,,,,,,,finished,True,False,Krestovsky Stadium,Saint Petersburg,Russia
+wc2018_aus_per_gs,FIFA World Cup,2018,Group stage,2018-06-26,2018-06-26T15:00:00Z,Australia,Peru,0,2,,,,,,,finished,True,False,Fisht Olympic Stadium,Sochi,Russia
+wc2018_srb_bra_gs,FIFA World Cup,2018,Group stage,2018-06-27,2018-06-27T15:00:00Z,Serbia,Brazil,0,2,,,,,,,finished,True,False,Spartak Stadium,Moscow,Russia
+wc2018_sui_crc_gs,FIFA World Cup,2018,Group stage,2018-06-27,2018-06-27T15:00:00Z,Switzerland,Costa Rica,2,2,,,,,,,finished,True,False,Nizhny Novgorod Stadium,Nizhny Novgorod,Russia
+wc2018_mex_swe_gs,FIFA World Cup,2018,Group stage,2018-06-27,2018-06-27T15:00:00Z,Mexico,Sweden,0,3,,,,,,,finished,True,False,Ekaterinburg Arena,Yekaterinburg,Russia
+wc2018_kor_ger_gs,FIFA World Cup,2018,Group stage,2018-06-27,2018-06-27T15:00:00Z,South Korea,Germany,2,0,,,,,,,finished,True,False,Kazan Arena,Kazan,Russia
+wc2018_eng_bel_gs,FIFA World Cup,2018,Group stage,2018-06-28,2018-06-28T15:00:00Z,England,Belgium,0,1,,,,,,,finished,True,False,Kaliningrad Stadium,Kaliningrad,Russia
+wc2018_jpn_pol_gs,FIFA World Cup,2018,Group stage,2018-06-28,2018-06-28T15:00:00Z,Japan,Poland,0,1,,,,,,,finished,True,False,Volgograd Arena,Volgograd,Russia
+wc2018_sen_col_gs,FIFA World Cup,2018,Group stage,2018-06-28,2018-06-28T15:00:00Z,Senegal,Colombia,0,1,,,,,,,finished,True,False,Samara Arena,Samara,Russia
+wc2018_pan_tun_gs,FIFA World Cup,2018,Group stage,2018-06-28,2018-06-28T15:00:00Z,Panama,Tunisia,1,2,,,,,,,finished,True,False,Saransk Arena,Saransk,Russia
+wc2018_fra_arg_r16,FIFA World Cup,2018,Round of 16,2018-06-30,2018-06-30T15:00:00Z,France,Argentina,4,3,1.0,1.0,,,,,finished,True,True,Kazan Arena,Kazan,Russia
+wc2018_uru_por_r16,FIFA World Cup,2018,Round of 16,2018-06-30,2018-06-30T15:00:00Z,Uruguay,Portugal,2,1,,,,,,,finished,True,True,Fisht Olympic Stadium,Sochi,Russia
+wc2018_esp_rus_r16,FIFA World Cup,2018,Round of 16,2018-07-01,2018-07-01T15:00:00Z,Spain,Russia,1,1,1.0,0.0,,,3.0,4.0,finished,True,True,Luzhniki Stadium,Moscow,Russia
+wc2018_cro_den_r16,FIFA World Cup,2018,Round of 16,2018-07-01,2018-07-01T15:00:00Z,Croatia,Denmark,1,1,0.0,0.0,,,3.0,2.0,finished,True,True,Nizhny Novgorod Stadium,Nizhny Novgorod,Russia
+wc2018_bel_jpn_r16,FIFA World Cup,2018,Round of 16,2018-07-02,2018-07-02T15:00:00Z,Belgium,Japan,3,2,0.0,2.0,,,,,finished,True,True,Rostov Arena,Rostov-on-Don,Russia
+wc2018_bra_mex_r16,FIFA World Cup,2018,Round of 16,2018-07-02,2018-07-02T15:00:00Z,Brazil,Mexico,2,0,,,,,,,finished,True,True,Samara Arena,Samara,Russia
+wc2018_swe_sui_r16,FIFA World Cup,2018,Round of 16,2018-07-03,2018-07-03T15:00:00Z,Sweden,Switzerland,1,0,,,,,,,finished,True,True,Krestovsky Stadium,Saint Petersburg,Russia
+wc2018_col_eng_r16,FIFA World Cup,2018,Round of 16,2018-07-03,2018-07-03T15:00:00Z,Colombia,England,1,1,1.0,1.0,,,3.0,4.0,finished,True,True,Spartak Stadium,Moscow,Russia
+wc2018_uru_fra_qf,FIFA World Cup,2018,Quarter-finals,2018-07-06,2018-07-06T15:00:00Z,Uruguay,France,0,2,0.0,1.0,,,,,finished,True,True,Nizhny Novgorod Stadium,Nizhny Novgorod,Russia
+wc2018_bra_bel_qf,FIFA World Cup,2018,Quarter-finals,2018-07-06,2018-07-06T15:00:00Z,Brazil,Belgium,1,2,,,,,,,finished,True,True,Kazan Arena,Kazan,Russia
+wc2018_swe_eng_qf,FIFA World Cup,2018,Quarter-finals,2018-07-07,2018-07-07T15:00:00Z,Sweden,England,0,2,,,,,,,finished,True,True,Samara Arena,Samara,Russia
+wc2018_rus_cro_qf,FIFA World Cup,2018,Quarter-finals,2018-07-07,2018-07-07T15:00:00Z,Russia,Croatia,2,2,1.0,1.0,2.0,2.0,3.0,4.0,finished,True,True,Fisht Olympic Stadium,Sochi,Russia
+wc2018_fra_bel_sf,FIFA World Cup,2018,Semi-finals,2018-07-10,2018-07-10T15:00:00Z,France,Belgium,1,0,,,,,,,finished,True,True,Krestovsky Stadium,Saint Petersburg,Russia
+wc2018_cro_eng_sf,FIFA World Cup,2018,Semi-finals,2018-07-11,2018-07-11T15:00:00Z,Croatia,England,2,1,1.0,1.0,2.0,1.0,,,finished,True,True,Luzhniki Stadium,Moscow,Russia
+wc2018_bel_eng_tp,FIFA World Cup,2018,Third place,2018-07-14,2018-07-14T15:00:00Z,Belgium,England,2,0,,,,,,,finished,True,True,Krestovsky Stadium,Saint Petersburg,Russia
+wc2018_fra_cro_final,FIFA World Cup,2018,Final,2018-07-15,2018-07-15T15:00:00Z,France,Croatia,4,2,2.0,1.0,,,,,finished,True,True,Luzhniki Stadium,Moscow,Russia
+wc2022_qat_ecu_gs,FIFA World Cup,2022,Group stage,2022-11-20,2022-11-20T15:00:00Z,Qatar,Ecuador,0,2,,,,,,,finished,True,False,Al Bayt Stadium,Al Khor,Qatar
+wc2022_sen_ned_gs,FIFA World Cup,2022,Group stage,2022-11-21,2022-11-21T15:00:00Z,Senegal,Netherlands,0,2,,,,,,,finished,True,False,Al Thumama Stadium,Doha,Qatar
+wc2022_eng_irn_gs,FIFA World Cup,2022,Group stage,2022-11-21,2022-11-21T15:00:00Z,England,Iran,6,2,3.0,0.0,,,,,finished,True,False,Khalifa International Stadium,Al Rayyan,Qatar
+wc2022_usa_wal_gs,FIFA World Cup,2022,Group stage,2022-11-21,2022-11-21T15:00:00Z,USA,Wales,1,1,,,,,,,finished,True,False,Ahmad bin Ali Stadium,Al Rayyan,Qatar
+wc2022_fra_aus_gs,FIFA World Cup,2022,Group stage,2022-11-22,2022-11-22T15:00:00Z,France,Australia,4,1,2.0,1.0,,,,,finished,True,False,Al Janoub Stadium,Al Wakrah,Qatar
+wc2022_den_tun_gs,FIFA World Cup,2022,Group stage,2022-11-22,2022-11-22T15:00:00Z,Denmark,Tunisia,0,0,,,,,,,finished,True,False,Education City Stadium,Al Rayyan,Qatar
+wc2022_mex_pol_gs,FIFA World Cup,2022,Group stage,2022-11-22,2022-11-22T15:00:00Z,Mexico,Poland,0,0,,,,,,,finished,True,False,Stadium 974,Doha,Qatar
+wc2022_arg_ksa_gs,FIFA World Cup,2022,Group stage,2022-11-22,2022-11-22T15:00:00Z,Argentina,Saudi Arabia,1,2,1.0,0.0,,,,,finished,True,False,Lusail Stadium,Lusail,Qatar
+wc2022_mar_cro_gs,FIFA World Cup,2022,Group stage,2022-11-23,2022-11-23T15:00:00Z,Morocco,Croatia,0,0,,,,,,,finished,True,False,Al Bayt Stadium,Al Khor,Qatar
+wc2022_esp_crc_gs,FIFA World Cup,2022,Group stage,2022-11-23,2022-11-23T15:00:00Z,Spain,Costa Rica,7,0,,,,,,,finished,True,False,Al Thumama Stadium,Doha,Qatar
+wc2022_ger_jpn_gs,FIFA World Cup,2022,Group stage,2022-11-23,2022-11-23T15:00:00Z,Germany,Japan,1,2,,,,,,,finished,True,False,Khalifa International Stadium,Al Rayyan,Qatar
+wc2022_bel_can_gs,FIFA World Cup,2022,Group stage,2022-11-23,2022-11-23T15:00:00Z,Belgium,Canada,1,0,,,,,,,finished,True,False,Ahmad bin Ali Stadium,Al Rayyan,Qatar
+wc2022_bra_srb_gs,FIFA World Cup,2022,Group stage,2022-11-24,2022-11-24T15:00:00Z,Brazil,Serbia,2,0,,,,,,,finished,True,False,Lusail Stadium,Lusail,Qatar
+wc2022_sui_cmr_gs,FIFA World Cup,2022,Group stage,2022-11-24,2022-11-24T15:00:00Z,Switzerland,Cameroon,1,0,,,,,,,finished,True,False,Al Janoub Stadium,Al Wakrah,Qatar
+wc2022_por_gha_gs,FIFA World Cup,2022,Group stage,2022-11-24,2022-11-24T15:00:00Z,Portugal,Ghana,3,2,,,,,,,finished,True,False,Stadium 974,Doha,Qatar
+wc2022_uru_kor_gs,FIFA World Cup,2022,Group stage,2022-11-24,2022-11-24T15:00:00Z,Uruguay,South Korea,0,0,,,,,,,finished,True,False,Education City Stadium,Al Rayyan,Qatar
+wc2022_qat_sen_gs,FIFA World Cup,2022,Group stage,2022-11-25,2022-11-25T15:00:00Z,Qatar,Senegal,1,3,,,,,,,finished,True,False,Al Thumama Stadium,Doha,Qatar
+wc2022_wal_irn_gs,FIFA World Cup,2022,Group stage,2022-11-25,2022-11-25T15:00:00Z,Wales,Iran,0,2,,,,,,,finished,True,False,Ahmad bin Ali Stadium,Al Rayyan,Qatar
+wc2022_eng_usa_gs,FIFA World Cup,2022,Group stage,2022-11-25,2022-11-25T15:00:00Z,England,USA,0,0,,,,,,,finished,True,False,Al Bayt Stadium,Al Khor,Qatar
+wc2022_ned_ecu_gs,FIFA World Cup,2022,Group stage,2022-11-25,2022-11-25T15:00:00Z,Netherlands,Ecuador,1,1,,,,,,,finished,True,False,Khalifa International Stadium,Al Rayyan,Qatar
+wc2022_pol_ksa_gs,FIFA World Cup,2022,Group stage,2022-11-26,2022-11-26T15:00:00Z,Poland,Saudi Arabia,2,0,,,,,,,finished,True,False,Education City Stadium,Al Rayyan,Qatar
+wc2022_tun_aus_gs,FIFA World Cup,2022,Group stage,2022-11-26,2022-11-26T15:00:00Z,Tunisia,Australia,0,1,,,,,,,finished,True,False,Al Janoub Stadium,Al Wakrah,Qatar
+wc2022_fra_den_gs,FIFA World Cup,2022,Group stage,2022-11-26,2022-11-26T15:00:00Z,France,Denmark,2,1,,,,,,,finished,True,False,Stadium 974,Doha,Qatar
+wc2022_arg_mex_gs,FIFA World Cup,2022,Group stage,2022-11-26,2022-11-26T15:00:00Z,Argentina,Mexico,2,0,,,,,,,finished,True,False,Lusail Stadium,Lusail,Qatar
+wc2022_bel_mar_gs,FIFA World Cup,2022,Group stage,2022-11-27,2022-11-27T15:00:00Z,Belgium,Morocco,0,2,,,,,,,finished,True,False,Al Thumama Stadium,Doha,Qatar
+wc2022_cro_can_gs,FIFA World Cup,2022,Group stage,2022-11-27,2022-11-27T15:00:00Z,Croatia,Canada,4,1,,,,,,,finished,True,False,Khalifa International Stadium,Al Rayyan,Qatar
+wc2022_jpn_crc_gs,FIFA World Cup,2022,Group stage,2022-11-27,2022-11-27T15:00:00Z,Japan,Costa Rica,0,1,,,,,,,finished,True,False,Ahmad bin Ali Stadium,Al Rayyan,Qatar
+wc2022_esp_ger_gs,FIFA World Cup,2022,Group stage,2022-11-27,2022-11-27T15:00:00Z,Spain,Germany,1,1,,,,,,,finished,True,False,Al Bayt Stadium,Al Khor,Qatar
+wc2022_por_uru_gs,FIFA World Cup,2022,Group stage,2022-11-28,2022-11-28T15:00:00Z,Portugal,Uruguay,2,0,,,,,,,finished,True,False,Lusail Stadium,Lusail,Qatar
+wc2022_bra_sui_gs,FIFA World Cup,2022,Group stage,2022-11-28,2022-11-28T15:00:00Z,Brazil,Switzerland,1,0,,,,,,,finished,True,False,Stadium 974,Doha,Qatar
+wc2022_kor_gha_gs,FIFA World Cup,2022,Group stage,2022-11-28,2022-11-28T15:00:00Z,South Korea,Ghana,2,3,,,,,,,finished,True,False,Education City Stadium,Al Rayyan,Qatar
+wc2022_cmr_srb_gs,FIFA World Cup,2022,Group stage,2022-11-28,2022-11-28T15:00:00Z,Cameroon,Serbia,3,3,,,,,,,finished,True,False,Stadium 974,Doha,Qatar
+wc2022_irn_usa_gs,FIFA World Cup,2022,Group stage,2022-11-29,2022-11-29T15:00:00Z,Iran,USA,0,1,,,,,,,finished,True,False,Al Thumama Stadium,Doha,Qatar
+wc2022_eng_wal_gs,FIFA World Cup,2022,Group stage,2022-11-29,2022-11-29T15:00:00Z,England,Wales,3,0,,,,,,,finished,True,False,Ahmad bin Ali Stadium,Al Rayyan,Qatar
+wc2022_ned_qat_gs,FIFA World Cup,2022,Group stage,2022-11-29,2022-11-29T15:00:00Z,Netherlands,Qatar,2,0,,,,,,,finished,True,False,Al Bayt Stadium,Al Khor,Qatar
+wc2022_ecu_sen_gs,FIFA World Cup,2022,Group stage,2022-11-29,2022-11-29T15:00:00Z,Ecuador,Senegal,1,2,,,,,,,finished,True,False,Khalifa International Stadium,Al Rayyan,Qatar
+wc2022_tun_fra_gs,FIFA World Cup,2022,Group stage,2022-11-30,2022-11-30T15:00:00Z,Tunisia,France,1,0,,,,,,,finished,True,False,Education City Stadium,Al Rayyan,Qatar
+wc2022_aus_den_gs,FIFA World Cup,2022,Group stage,2022-11-30,2022-11-30T15:00:00Z,Australia,Denmark,1,0,,,,,,,finished,True,False,Al Janoub Stadium,Al Wakrah,Qatar
+wc2022_ksa_mex_gs,FIFA World Cup,2022,Group stage,2022-11-30,2022-11-30T15:00:00Z,Saudi Arabia,Mexico,1,2,,,,,,,finished,True,False,Lusail Stadium,Lusail,Qatar
+wc2022_pol_arg_gs,FIFA World Cup,2022,Group stage,2022-11-30,2022-11-30T15:00:00Z,Poland,Argentina,0,2,,,,,,,finished,True,False,Stadium 974,Doha,Qatar
+wc2022_cro_bel_gs,FIFA World Cup,2022,Group stage,2022-12-01,2022-12-01T15:00:00Z,Croatia,Belgium,0,0,,,,,,,finished,True,False,Ahmad bin Ali Stadium,Al Rayyan,Qatar
+wc2022_can_mar_gs,FIFA World Cup,2022,Group stage,2022-12-01,2022-12-01T15:00:00Z,Canada,Morocco,1,2,,,,,,,finished,True,False,Al Thumama Stadium,Doha,Qatar
+wc2022_crc_ger_gs,FIFA World Cup,2022,Group stage,2022-12-01,2022-12-01T15:00:00Z,Costa Rica,Germany,2,4,,,,,,,finished,True,False,Al Bayt Stadium,Al Khor,Qatar
+wc2022_jpn_esp_gs,FIFA World Cup,2022,Group stage,2022-12-01,2022-12-01T15:00:00Z,Japan,Spain,2,1,,,,,,,finished,True,False,Khalifa International Stadium,Al Rayyan,Qatar
+wc2022_srb_sui_gs,FIFA World Cup,2022,Group stage,2022-12-02,2022-12-02T15:00:00Z,Serbia,Switzerland,2,3,0.0,2.0,,,,,finished,True,False,Stadium 974,Doha,Qatar
+wc2022_cmr_bra_gs,FIFA World Cup,2022,Group stage,2022-12-02,2022-12-02T15:00:00Z,Cameroon,Brazil,1,0,,,,,,,finished,True,False,Lusail Stadium,Lusail,Qatar
+wc2022_gha_uru_gs,FIFA World Cup,2022,Group stage,2022-12-02,2022-12-02T15:00:00Z,Ghana,Uruguay,0,2,,,,,,,finished,True,False,Al Janoub Stadium,Al Wakrah,Qatar
+wc2022_kor_por_gs,FIFA World Cup,2022,Group stage,2022-12-02,2022-12-02T15:00:00Z,South Korea,Portugal,2,1,,,,,,,finished,True,False,Education City Stadium,Al Rayyan,Qatar
+wc2022_arg_aus_r16,FIFA World Cup,2022,Round of 16,2022-12-03,2022-12-03T15:00:00Z,Argentina,Australia,2,1,1.0,0.0,,,,,finished,True,True,Ahmad bin Ali Stadium,Al Rayyan,Qatar
+wc2022_ned_usa_r16,FIFA World Cup,2022,Round of 16,2022-12-03,2022-12-03T15:00:00Z,Netherlands,USA,3,1,,,,,,,finished,True,True,Ahmad bin Ali Stadium,Al Rayyan,Qatar
+wc2022_fra_pol_r16,FIFA World Cup,2022,Round of 16,2022-12-04,2022-12-04T15:00:00Z,France,Poland,3,1,,,,,,,finished,True,True,Al Thumama Stadium,Doha,Qatar
+wc2022_eng_sen_r16,FIFA World Cup,2022,Round of 16,2022-12-04,2022-12-04T15:00:00Z,England,Senegal,3,0,,,,,,,finished,True,True,Al Bayt Stadium,Al Khor,Qatar
+wc2022_jpn_cro_r16,FIFA World Cup,2022,Round of 16,2022-12-05,2022-12-05T15:00:00Z,Japan,Croatia,1,1,1.0,0.0,,,1.0,3.0,finished,True,True,Al Janoub Stadium,Al Wakrah,Qatar
+wc2022_bra_kor_r16,FIFA World Cup,2022,Round of 16,2022-12-05,2022-12-05T15:00:00Z,Brazil,South Korea,4,1,,,,,,,finished,True,True,Stadium 974,Doha,Qatar
+wc2022_mar_esp_r16,FIFA World Cup,2022,Round of 16,2022-12-06,2022-12-06T15:00:00Z,Morocco,Spain,0,0,,,,,3.0,0.0,finished,True,True,Education City Stadium,Al Rayyan,Qatar
+wc2022_por_sui_r16,FIFA World Cup,2022,Round of 16,2022-12-06,2022-12-06T15:00:00Z,Portugal,Switzerland,6,1,,,,,,,finished,True,True,Lusail Stadium,Lusail,Qatar
+wc2022_cro_bra_qf,FIFA World Cup,2022,Quarter-finals,2022-12-09,2022-12-09T15:00:00Z,Croatia,Brazil,1,1,,,,,4.0,2.0,finished,True,True,Education City Stadium,Al Rayyan,Qatar
+wc2022_ned_arg_qf,FIFA World Cup,2022,Quarter-finals,2022-12-09,2022-12-09T15:00:00Z,Netherlands,Argentina,2,2,1.0,1.0,,,3.0,4.0,finished,True,True,Lusail Stadium,Lusail,Qatar
+wc2022_mar_por_qf,FIFA World Cup,2022,Quarter-finals,2022-12-10,2022-12-10T15:00:00Z,Morocco,Portugal,1,0,,,,,,,finished,True,True,Al Thumama Stadium,Doha,Qatar
+wc2022_eng_fra_qf,FIFA World Cup,2022,Quarter-finals,2022-12-10,2022-12-10T15:00:00Z,England,France,1,2,0.0,1.0,,,,,finished,True,True,Al Bayt Stadium,Al Khor,Qatar
+wc2022_arg_cro_sf,FIFA World Cup,2022,Semi-finals,2022-12-13,2022-12-13T15:00:00Z,Argentina,Croatia,3,0,,,,,,,finished,True,True,Lusail Stadium,Lusail,Qatar
+wc2022_fra_mar_sf,FIFA World Cup,2022,Semi-finals,2022-12-14,2022-12-14T15:00:00Z,France,Morocco,2,0,,,,,,,finished,True,True,Al Bayt Stadium,Al Khor,Qatar
+wc2022_cro_mar_tp,FIFA World Cup,2022,Third place,2022-12-17,2022-12-17T15:00:00Z,Croatia,Morocco,2,1,,,,,,,finished,True,True,Khalifa International Stadium,Al Rayyan,Qatar
+wc2022_arg_fra_final,FIFA World Cup,2022,Final,2022-12-18,2022-12-18T15:00:00Z,Argentina,France,3,3,2.0,0.0,,,4.0,2.0,finished,True,True,Lusail Stadium,Lusail,Qatar

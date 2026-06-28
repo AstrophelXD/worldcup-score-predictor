@@ -92,13 +92,37 @@ python -m scripts.validate_data
 ### 外部真实数据
 
 ```bash
+python -m scripts.export_external_seeds
+python -m scripts.bootstrap_external_downloads
 python -m scripts.prepare_data --config-name=config data=external
 python -m scripts.ingest --config-name=config data=external
 python -m scripts.validate_data
-python -m scripts.build_features
+python -m scripts.build_features --config-name=config data=external
 ```
 
-将下载 CSV 放入 `data/external/downloads/`，并更新 `configs/data/external.yaml` 中 `external_inputs` 路径。
+将额外 CSV 放入 `data/external/downloads/`，并更新 `configs/data/external.yaml` 中 `external_inputs` 路径。
+
+### odds.csv
+
+| 列名 | 必填 | 说明 |
+|------|------|------|
+| match_id | 是 | 对应 matches |
+| snapshot_ts | 是 | 赔率快照时间（PIT，须早于 kickoff） |
+| home_odds / draw_odds / away_odds | 是 | 十进制赔率 |
+| over25_odds / under25_odds | 否 | Over/Under 2.5 |
+| btts_yes_odds | 否 | 双方进球 |
+
+第三方格式 `football_data_odds` 支持 football-data.co.uk 导出（B365H/D/A 等列）。
+
+## 统一特征 mart（P1）
+
+`build_match_feature_mart` 在传统 Elo/FIFA/form 之外，可选合并：
+
+**球员摘要**（需 curated players + lineups）：`home_starter_count`、`home_avg_player_rating`、`home_squad_availability`、`home_injured_out_count` 等。
+
+**赔率摘要**（需 curated odds）：`odds_home_implied`、`odds_draw_implied`、`odds_over25_implied`、`odds_available` 等。
+
+ScoreGen 仍使用完整 7 维球员张量；mart 提供 Dashboard / API 统一视图。详见 [`gap-analysis-and-roadmap.md`](./gap-analysis-and-roadmap.md)。
 
 输出：
 

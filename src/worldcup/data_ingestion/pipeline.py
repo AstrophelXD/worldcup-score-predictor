@@ -8,6 +8,7 @@ import pandas as pd
 from worldcup.data_ingestion.base import read_parquet, write_parquet
 from worldcup.data_ingestion.csv_loader import load_csv_to_raw
 from worldcup.data_ingestion.curated.matches import build_matches_curated, build_teams_curated
+from worldcup.data_ingestion.curated.odds import build_odds_curated
 from worldcup.data_ingestion.curated.players import (
     build_injuries_curated,
     build_lineups_curated,
@@ -31,6 +32,7 @@ class IngestResult:
     lineup_count: int = 0
     player_stat_count: int = 0
     injury_count: int = 0
+    odds_count: int = 0
 
 
 def run_ingest(
@@ -45,6 +47,7 @@ def run_ingest(
     lineups_csv: Path | None = None,
     player_stats_csv: Path | None = None,
     injuries_csv: Path | None = None,
+    odds_csv: Path | None = None,
     source_systems: dict[str, str],
 ) -> IngestResult:
     ensure_dir(raw_dir)
@@ -149,6 +152,19 @@ def run_ingest(
         curated_paths["injuries"] = curated_dir / "injuries.parquet"
         write_parquet(injuries_curated, str(curated_paths["injuries"]))
 
+    odds_curated = pd.DataFrame()
+    if odds_csv and odds_csv.exists():
+        raw_paths["odds"] = load_csv_to_raw(
+            odds_csv,
+            raw_dir,
+            source_systems.get("odds", "odds_csv"),
+            "odds",
+        )
+        odds_raw = read_parquet(str(raw_paths["odds"]))
+        odds_curated = build_odds_curated(odds_raw)
+        curated_paths["odds"] = curated_dir / "odds.parquet"
+        write_parquet(odds_curated, str(curated_paths["odds"]))
+
     return IngestResult(
         raw_paths=raw_paths,
         curated_paths=curated_paths,
@@ -160,4 +176,5 @@ def run_ingest(
         lineup_count=len(lineups_curated),
         player_stat_count=len(player_stats_curated),
         injury_count=len(injuries_curated),
+        odds_count=len(odds_curated),
     )

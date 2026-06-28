@@ -31,7 +31,10 @@ def test_match_detail_and_features(client):
     features = client.get(f"/features/{match_id}")
     assert detail.status_code == 200
     assert features.status_code == 200
-    assert features.json()["team_strength"]
+    body = features.json()
+    assert body["team_strength"]
+    assert "player_summary" in body
+    assert "market_odds" in body
 
 
 def test_backtest_runs_endpoint(client):

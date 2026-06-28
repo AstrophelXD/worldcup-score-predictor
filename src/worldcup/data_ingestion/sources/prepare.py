@@ -8,7 +8,9 @@ import pandas as pd
 
 from worldcup.data_ingestion.sources.transformers import (
     transform_elo_history,
+    transform_eloratings_world_tsv,
     transform_fifa_rankings,
+    transform_football_data_odds,
     transform_kaggle_international,
 )
 from worldcup.utils.paths import ensure_dir
@@ -17,14 +19,18 @@ from worldcup.utils.paths import ensure_dir
 class SourceFormat(StrEnum):
     KAGGLE_INTERNATIONAL = "kaggle_international"
     ELO_HISTORY = "elo_history"
+    ELO_RATINGS_WORLD_TSV = "eloratings_world_tsv"
     FIFA_RANKINGS = "fifa_rankings"
+    FOOTBALL_DATA_ODDS = "football_data_odds"
     CANONICAL = "canonical"
 
 
 TRANSFORMERS = {
     SourceFormat.KAGGLE_INTERNATIONAL: transform_kaggle_international,
     SourceFormat.ELO_HISTORY: transform_elo_history,
+    SourceFormat.ELO_RATINGS_WORLD_TSV: transform_eloratings_world_tsv,
     SourceFormat.FIFA_RANKINGS: transform_fifa_rankings,
+    SourceFormat.FOOTBALL_DATA_ODDS: transform_football_data_odds,
 }
 
 
@@ -37,11 +43,12 @@ class PreparedPaths:
     lineups: Path | None = None
     player_match_stats: Path | None = None
     injuries: Path | None = None
+    odds: Path | None = None
 
 
 def _read_source(path: Path, fmt: SourceFormat) -> pd.DataFrame:
-    if fmt == SourceFormat.CANONICAL:
-        return pd.read_csv(path)
+    if fmt == SourceFormat.ELO_RATINGS_WORLD_TSV:
+        return pd.read_csv(path, sep="\t", header=None)
     return pd.read_csv(path)
 
 
@@ -66,9 +73,15 @@ def _align_concat(frames: list[pd.DataFrame]) -> pd.DataFrame:
 def _dedupe_matches(df: pd.DataFrame) -> pd.DataFrame:
     if df.empty:
         return df
-    sort_cols = [col for col in ["kickoff_ts", "match_id"] if col in df.columns]
-    ordered = df.sort_values(sort_cols) if sort_cols else df
-    return ordered.drop_duplicates(subset=["match_id"], keep="last").reset_index(drop=True)
+    sort_cols = [col for col in ["is_world_cup", "kickoff_ts", "match_id"] if col in df.columns]
+    ordered = df.sort_values(sort_cols, ascending=[False, True, True]) if sort_cols else df
+    subset = ["match_id"]
+    if {"match_date", "home_team_name", "away_team_name"}.issubset(ordered.columns):
+        ordered = ordered.drop_duplicates(
+            subset=["match_date", "home_team_name", "away_team_name"],
+            keep="first",
+        )
+    return ordered.drop_duplicates(subset=subset, keep="first").reset_index(drop=True)
 
 
 def _write_canonical(frames: list[pd.DataFrame], path: Path, subset: list[str] | None) -> Path:
@@ -89,6 +102,7 @@ def prepare_external_sources(
     lineup_sources: list[dict] | None = None,
     player_stat_sources: list[dict] | None = None,
     injury_sources: list[dict] | None = None,
+    odds_sources: list[dict] | None = None,
     include_samples: bool,
     samples_dir: Path,
 ) -> PreparedPaths:
@@ -100,6 +114,7 @@ def prepare_external_sources(
     lineup_sources = lineup_sources or []
     player_stat_sources = player_stat_sources or []
     injury_sources = injury_sources or []
+    odds_sources = odds_sources or []
 
     match_frames: list[pd.DataFrame] = []
     if include_samples:
@@ -198,6 +213,7 @@ def prepare_external_sources(
     injuries_path = _prepare_player_table(
         "injuries.csv", injury_sources, "injuries.csv", ["injury_id"]
     )
+    odds_path = _prepare_player_table("odds.csv", odds_sources, "odds.csv", ["match_id", "snapshot_ts"])
 
     return PreparedPaths(
         matches=matches_path,
@@ -207,4 +223,5 @@ def prepare_external_sources(
         lineups=lineups_path,
         player_match_stats=stats_path,
         injuries=injuries_path,
+        odds=odds_path,
     )

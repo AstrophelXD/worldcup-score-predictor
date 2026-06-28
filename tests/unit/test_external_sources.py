@@ -1,10 +1,13 @@
 import pandas as pd
 import pytest
 
+from worldcup.data_ingestion.sources.elo_from_matches import compute_elo_from_matches
 from worldcup.data_ingestion.sources.prepare import prepare_external_sources
 from worldcup.data_ingestion.sources.transformers import (
     transform_elo_history,
+    transform_eloratings_world_tsv,
     transform_fifa_rankings,
+    transform_football_data_odds,
     transform_kaggle_international,
 )
 from worldcup.utils.paths import project_root
@@ -35,6 +38,40 @@ def test_transform_fifa_rankings(examples_dir):
     out = transform_fifa_rankings(df)
     assert len(out) == len(df)
     assert "points" in out.columns
+    assert out["rank"].notna().all()
+
+
+def test_compute_elo_from_matches(examples_dir):
+    df = pd.read_csv(examples_dir / "kaggle_results.csv")
+    matches = transform_kaggle_international(df)
+    elo = compute_elo_from_matches(matches)
+    assert len(elo) >= len(matches) * 2
+    assert elo.iloc[0]["rating_system"] == "elo_match_derived"
+
+
+def test_transform_eloratings_world_tsv():
+    raw = pd.DataFrame([[1, 1, "Brazil", 2000.0, 0, 0, 0, 0]])
+    out = transform_eloratings_world_tsv(raw)
+    assert out.iloc[0]["team_name"] == "Brazil"
+    assert out.iloc[0]["rating"] == 2000.0
+
+
+def test_transform_football_data_odds():
+    df = pd.DataFrame(
+        [
+            {
+                "Date": "01/01/2020",
+                "HomeTeam": "Brazil",
+                "AwayTeam": "Argentina",
+                "B365H": 2.1,
+                "B365D": 3.2,
+                "B365A": 3.5,
+            }
+        ]
+    )
+    out = transform_football_data_odds(df)
+    assert len(out) == 1
+    assert out.iloc[0]["home_odds"] == 2.1
 
 
 def test_prepare_external_sources_merges_samples():

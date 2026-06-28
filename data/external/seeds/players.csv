@@ -1,0 +1,455 @@
+player_id,full_name,national_team_id,primary_position,market_value_eur,player_rating
+pla_aboubakar,Vincent Aboubakar,team_cmr,ST,5000000,78
+pla_agnard,Nayef Aguerd,team_mar,CB,25000000,81
+pla_akanji,Manuel Akanji,team_sui,CB,35000000,83
+pla_akinfeev,Igor Akinfeev,team_rus,GK,2000000,78
+pla_al_dawsari,Salem Al-Dawsari,team_ksa,LW,5000000,77
+pla_al_owais,Mohammed Al-Owais,team_ksa,GK,1000000,72
+pla_al_shehri,Saleh Al-Shehri,team_ksa,ST,2000000,74
+pla_alba,Jordi Alba,team_esp,LB,10000000,83
+pla_alderweireld,Toby Alderweireld,team_bel,CB,5000000,82
+pla_alex_sandro,Alex Sandro,team_bra,LB,15000000,81
+pla_alisson,Alisson Becker,team_bra,GK,35000000,89
+pla_almoez,Almoez Ali,team_qat,ST,2000000,74
+pla_alvarez,Julian Alvarez,team_arg,ST,90000000,84
+pla_alvarez_e,Edson Alvarez,team_mex,CDM,25000000,80
+pla_amallah,Selim Amallah,team_mar,CM,8000000,78
+pla_amrabat,Sofyan Amrabat,team_mar,CDM,30000000,83
+pla_arrascaeta,Giorgian de Arrascaeta,team_uru,CAM,12000000,79
+pla_asensio,Marco Asensio,team_esp,RW,25000000,82
+pla_at_zigi,Lawrence Ati-Zigi,team_gha,GK,2000000,74
+pla_australia_squad_0,Australia Squad Player 1,team_aus,GK,500000,70
+pla_australia_squad_1,Australia Squad Player 2,team_aus,RB,500000,70
+pla_australia_squad_2,Australia Squad Player 3,team_aus,CB,500000,70
+pla_australia_squad_3,Australia Squad Player 4,team_aus,CB,500000,70
+pla_australia_squad_4,Australia Squad Player 5,team_aus,LB,500000,70
+pla_australia_squad_5,Australia Squad Player 6,team_aus,CDM,500000,70
+pla_australia_squad_6,Australia Squad Player 7,team_aus,CM,500000,70
+pla_australia_squad_7,Australia Squad Player 8,team_aus,CM,500000,70
+pla_ayew_andre,Andre Ayew,team_gha,CM,3000000,76
+pla_azmoun,Sardar Azmoun,team_irn,ST,10000000,78
+pla_bale,Gareth Bale,team_wal,RW,5000000,80
+pla_barsham,Saad Al Sheeb,team_qat,GK,1000000,72
+pla_beiranvand,Alireza Beiranvand,team_irn,GK,1000000,76
+pla_bellingham,Jude Bellingham,team_eng,CM,150000000,88
+pla_bentancur,Rodrigo Bentancur,team_uru,CM,30000000,83
+pla_benzema,Karim Benzema,team_fra,ST,25000000,90
+pla_berg,Marcus Berg,team_swe,ST,2000000,76
+pla_bergwijn,Steven Bergwijn,team_ned,RW,25000000,80
+pla_bernardo,Bernardo Silva,team_por,CM,70000000,87
+pla_blind,Daley Blind,team_ned,LB,8000000,81
+pla_borjan,Milan Borjan,team_can,GK,2000000,74
+pla_boufal,Sofiane Boufal,team_mar,LW,12000000,79
+pla_bounou,Yassine Bounou,team_mar,GK,12000000,82
+pla_brozovic,Marcelo Brozovic,team_cro,CDM,12000000,84
+pla_bruno,Bruno Fernandes,team_por,CAM,70000000,87
+pla_busquets,Sergio Busquets,team_esp,CDM,5000000,84
+pla_caceres,Martin Caceres,team_uru,RB,2000000,76
+pla_caicedo_m,Moisés Caicedo,team_ecu,CM,50000000,82
+pla_cameroon_squad_0,Cameroon Squad Player 1,team_cmr,GK,500000,70
+pla_cameroon_squad_1,Cameroon Squad Player 2,team_cmr,RB,500000,70
+pla_cameroon_squad_2,Cameroon Squad Player 3,team_cmr,CB,500000,70
+pla_cameroon_squad_3,Cameroon Squad Player 4,team_cmr,CB,500000,70
+pla_cameroon_squad_4,Cameroon Squad Player 5,team_cmr,LB,500000,70
+pla_cameroon_squad_5,Cameroon Squad Player 6,team_cmr,CDM,500000,70
+pla_cameroon_squad_6,Cameroon Squad Player 7,team_cmr,CM,500000,70
+pla_cameroon_squad_7,Cameroon Squad Player 8,team_cmr,CM,500000,70
+pla_cameroon_squad_8,Cameroon Squad Player 9,team_cmr,RW,500000,70
+pla_campbell,Joel Campbell,team_crc,ST,3000000,76
+pla_canada_squad_0,Canada Squad Player 1,team_can,GK,500000,70
+pla_canada_squad_1,Canada Squad Player 2,team_can,RB,500000,70
+pla_canada_squad_2,Canada Squad Player 3,team_can,CB,500000,70
+pla_canada_squad_3,Canada Squad Player 4,team_can,CB,500000,70
+pla_canada_squad_4,Canada Squad Player 5,team_can,LB,500000,70
+pla_canada_squad_5,Canada Squad Player 6,team_can,CDM,500000,70
+pla_canada_squad_6,Canada Squad Player 7,team_can,CM,500000,70
+pla_canada_squad_7,Canada Squad Player 8,team_can,CM,500000,70
+pla_cancelo,Joao Cancelo,team_por,RB,50000000,86
+pla_carrasco,Yannick Carrasco,team_bel,LB,25000000,82
+pla_carvajal,Dani Carvajal,team_esp,RB,30000000,85
+pla_casemiro,Casemiro,team_bra,CDM,30000000,86
+pla_cavani,Edinson Cavani,team_uru,ST,3000000,80
+pla_colombia_squad_0,Colombia Squad Player 1,team_col,GK,500000,70
+pla_colombia_squad_1,Colombia Squad Player 2,team_col,RB,500000,70
+pla_colombia_squad_2,Colombia Squad Player 3,team_col,CB,500000,70
+pla_colombia_squad_3,Colombia Squad Player 4,team_col,CB,500000,70
+pla_colombia_squad_4,Colombia Squad Player 5,team_col,LB,500000,70
+pla_colombia_squad_5,Colombia Squad Player 6,team_col,CDM,500000,70
+pla_colombia_squad_6,Colombia Squad Player 7,team_col,CM,500000,70
+pla_colombia_squad_7,Colombia Squad Player 8,team_col,CM,500000,70
+pla_coman,Kingsley Coman,team_fra,LW,50000000,83
+pla_costa_d,Diogo Costa,team_por,GK,40000000,83
+pla_costa_rica_squad_0,Costa Rica Squad Player 1,team_crc,GK,500000,70
+pla_costa_rica_squad_1,Costa Rica Squad Player 2,team_crc,RB,500000,70
+pla_costa_rica_squad_2,Costa Rica Squad Player 3,team_crc,CB,500000,70
+pla_costa_rica_squad_3,Costa Rica Squad Player 4,team_crc,CB,500000,70
+pla_costa_rica_squad_4,Costa Rica Squad Player 5,team_crc,LB,500000,70
+pla_costa_rica_squad_5,Costa Rica Squad Player 6,team_crc,CDM,500000,70
+pla_costa_rica_squad_6,Costa Rica Squad Player 7,team_crc,CM,500000,70
+pla_costa_rica_squad_7,Costa Rica Squad Player 8,team_crc,CM,500000,70
+pla_costa_rica_squad_8,Costa Rica Squad Player 9,team_crc,RW,500000,70
+pla_courtois,Thibaut Courtois,team_bel,GK,45000000,89
+pla_danilo,Danilo,team_bra,RB,10000000,82
+pla_david,Jonathan David,team_can,ST,50000000,82
+pla_davies,Alphonso Davies,team_can,LB,70000000,84
+pla_de_bruyne,Kevin De Bruyne,team_bel,CAM,60000000,91
+pla_de_jong,Frenkie de Jong,team_ned,CM,70000000,87
+pla_de_la_cruz,Nicolas de la Cruz,team_uru,CAM,15000000,80
+pla_de_ligt,Matthijs de Ligt,team_ned,CB,60000000,85
+pla_delaney,Thomas Delaney,team_den,CM,8000000,78
+pla_dembele,Ousmane Dembele,team_fra,RW,50000000,84
+pla_denmark_squad_0,Denmark Squad Player 1,team_den,GK,500000,70
+pla_denmark_squad_1,Denmark Squad Player 2,team_den,RB,500000,70
+pla_denmark_squad_2,Denmark Squad Player 3,team_den,CB,500000,70
+pla_denmark_squad_3,Denmark Squad Player 4,team_den,CB,500000,70
+pla_denmark_squad_4,Denmark Squad Player 5,team_den,LB,500000,70
+pla_denmark_squad_5,Denmark Squad Player 6,team_den,CDM,500000,70
+pla_denmark_squad_6,Denmark Squad Player 7,team_den,CM,500000,70
+pla_denmark_squad_7,Denmark Squad Player 8,team_den,CM,500000,70
+pla_depaul,Rodrigo De Paul,team_arg,CM,25000000,83
+pla_depay,Memphis Depay,team_ned,ST,25000000,84
+pla_dest,Sergino Dest,team_usa,RB,18000000,79
+pla_di_maria,Angel Di Maria,team_arg,LW,5000000,84
+pla_dias,Ruben Dias,team_por,CB,80000000,87
+pla_dominguez,Hernan Galindez,team_ecu,GK,1000000,74
+pla_duke,Mitchell Duke,team_aus,ST,1000000,72
+pla_dumfries,Denzel Dumfries,team_ned,RB,30000000,84
+pla_dybala,Paulo Dybala,team_arg,CAM,12000000,83
+pla_dzagoev,Alan Dzagoev,team_rus,CM,3000000,76
+pla_dzuba,Artem Dzyuba,team_rus,ST,4000000,78
+pla_ecuador_squad_0,Ecuador Squad Player 1,team_ecu,GK,500000,70
+pla_ecuador_squad_1,Ecuador Squad Player 2,team_ecu,RB,500000,70
+pla_ecuador_squad_2,Ecuador Squad Player 3,team_ecu,CB,500000,70
+pla_ecuador_squad_3,Ecuador Squad Player 4,team_ecu,CB,500000,70
+pla_ecuador_squad_4,Ecuador Squad Player 5,team_ecu,LB,500000,70
+pla_ecuador_squad_5,Ecuador Squad Player 6,team_ecu,CDM,500000,70
+pla_ecuador_squad_6,Ecuador Squad Player 7,team_ecu,CM,500000,70
+pla_ecuador_squad_7,Ecuador Squad Player 8,team_ecu,CM,500000,70
+pla_egypt_squad_0,Egypt Squad Player 1,team_egy,GK,500000,70
+pla_egypt_squad_1,Egypt Squad Player 2,team_egy,RB,500000,70
+pla_egypt_squad_2,Egypt Squad Player 3,team_egy,CB,500000,70
+pla_egypt_squad_3,Egypt Squad Player 4,team_egy,CB,500000,70
+pla_egypt_squad_4,Egypt Squad Player 5,team_egy,LB,500000,70
+pla_egypt_squad_5,Egypt Squad Player 6,team_egy,CDM,500000,70
+pla_egypt_squad_6,Egypt Squad Player 7,team_egy,CM,500000,70
+pla_egypt_squad_7,Egypt Squad Player 8,team_egy,CM,500000,70
+pla_egypt_squad_8,Egypt Squad Player 9,team_egy,RW,500000,70
+pla_elshenawy,Mohamed El Shenawy,team_egy,GK,2000000,76
+pla_embolo,Breel Embolo,team_sui,ST,25000000,81
+pla_en_nesyri,Youssef En-Nesyri,team_mar,ST,20000000,80
+pla_endo,Wataru Endo,team_jpn,CDM,12000000,80
+pla_eriksen,Christian Eriksen,team_den,CAM,15000000,83
+pla_escobar,Blas Perez,team_pan,ST,500000,72
+pla_f_ Torres,Ferran Torres,team_esp,LW,45000000,83
+pla_falcao,Radamel Falcao,team_col,ST,4000000,78
+pla_felix,Joao Felix,team_por,ST,50000000,84
+pla_fernandez,Enzo Fernandez,team_arg,CM,80000000,86
+pla_foden,Phil Foden,team_eng,LW,100000000,87
+pla_forsberg,Emil Forsberg,team_swe,CAM,12000000,80
+pla_freuler,Remo Freuler,team_sui,CDM,12000000,80
+pla_gakpo,Cody Gakpo,team_ned,LW,50000000,84
+pla_gallese,Pedro Gallese,team_per,GK,1000000,76
+pla_gavi,Pablo Gavi,team_esp,CM,90000000,86
+pla_ghana_squad_0,Ghana Squad Player 1,team_gha,GK,500000,70
+pla_ghana_squad_1,Ghana Squad Player 2,team_gha,RB,500000,70
+pla_ghana_squad_2,Ghana Squad Player 3,team_gha,CB,500000,70
+pla_ghana_squad_3,Ghana Squad Player 4,team_gha,CB,500000,70
+pla_ghana_squad_4,Ghana Squad Player 5,team_gha,LB,500000,70
+pla_ghana_squad_5,Ghana Squad Player 6,team_gha,CDM,500000,70
+pla_ghana_squad_6,Ghana Squad Player 7,team_gha,CM,500000,70
+pla_ghana_squad_7,Ghana Squad Player 8,team_gha,CM,500000,70
+pla_gimenez,Jose Gimenez,team_uru,CB,25000000,82
+pla_giroud,Olivier Giroud,team_fra,ST,6000000,82
+pla_gnabry,Serge Gnabry,team_ger,RW,45000000,84
+pla_godin,Diego Godin,team_uru,CB,2000000,80
+pla_gonda,Eiji Kawashima,team_jpn,GK,1000000,76
+pla_griezmann,Antoine Griezmann,team_fra,CAM,25000000,87
+pla_guerreiro,Raphael Guerreiro,team_por,LB,20000000,82
+pla_guerrero,Paolo Guerrero,team_per,ST,1000000,75
+pla_gundogan,Ilkay Gundogan,team_ger,CM,25000000,86
+pla_gvardiol,Josko Gvardiol,team_cro,CB,75000000,85
+pla_hakimi,Achraf Hakimi,team_mar,RB,60000000,86
+pla_halldorsson,Hannes Halldorsson,team_isl,GK,1000000,74
+pla_havertz,Kai Havertz,team_ger,ST,55000000,84
+pla_hazard,Eden Hazard,team_bel,LW,15000000,82
+pla_hennessey,Wayne Hennessey,team_wal,GK,1000000,74
+pla_hernandez_theo,Theo Hernandez,team_fra,LB,55000000,85
+pla_hwang,Hwang Hee-chan,team_kor,ST,18000000,79
+pla_iceland_squad_0,Iceland Squad Player 1,team_isl,GK,500000,70
+pla_iceland_squad_1,Iceland Squad Player 2,team_isl,RB,500000,70
+pla_iceland_squad_2,Iceland Squad Player 3,team_isl,CB,500000,70
+pla_iceland_squad_3,Iceland Squad Player 4,team_isl,CB,500000,70
+pla_iceland_squad_4,Iceland Squad Player 5,team_isl,LB,500000,70
+pla_iceland_squad_5,Iceland Squad Player 6,team_isl,CDM,500000,70
+pla_iceland_squad_6,Iceland Squad Player 7,team_isl,CM,500000,70
+pla_iceland_squad_7,Iceland Squad Player 8,team_isl,CM,500000,70
+pla_iceland_squad_8,Iceland Squad Player 9,team_isl,RW,500000,70
+pla_iran_squad_0,Iran Squad Player 1,team_irn,GK,500000,70
+pla_iran_squad_1,Iran Squad Player 2,team_irn,RB,500000,70
+pla_iran_squad_2,Iran Squad Player 3,team_irn,CB,500000,70
+pla_iran_squad_3,Iran Squad Player 4,team_irn,CB,500000,70
+pla_iran_squad_4,Iran Squad Player 5,team_irn,LB,500000,70
+pla_iran_squad_5,Iran Squad Player 6,team_irn,CDM,500000,70
+pla_iran_squad_6,Iran Squad Player 7,team_irn,CM,500000,70
+pla_iran_squad_7,Iran Squad Player 8,team_irn,CM,500000,70
+pla_irvine,Jackson Irvine,team_aus,CM,3000000,74
+pla_itoh,Junya Ito,team_jpn,RW,8000000,78
+pla_iwobi,Alex Iwobi,team_nga,CM,18000000,78
+pla_james,James Rodriguez,team_col,CAM,10000000,81
+pla_jimenez,Raul Jimenez,team_mex,ST,15000000,80
+pla_juranovic,Josip Juranovic,team_cro,RB,10000000,80
+pla_kamada,Daichi Kamada,team_jpn,CAM,20000000,81
+pla_kaminski,Kamil Glik,team_pol,CB,2000000,77
+pla_kane,Harry Kane,team_eng,ST,100000000,89
+pla_kante,N'Golo Kante,team_fra,CDM,15000000,86
+pla_khazri,Wahbi Khazri,team_tun,ST,2000000,75
+pla_kim_seung,Kim Seung-gyu,team_kor,GK,2000000,76
+pla_kimmich,Joshua Kimmich,team_ger,CDM,70000000,88
+pla_klaassen,Davy Klaassen,team_ned,CM,12000000,79
+pla_klostermann,Lukas Klostermann,team_ger,RB,20000000,81
+pla_kolo_muani,Randal Kolo Muani,team_fra,ST,65000000,82
+pla_kostic,Filip Kostic,team_srb,LW,20000000,82
+pla_koulibaly,Kalidou Koulibaly,team_sen,CB,25000000,85
+pla_kounde,Jules Kounde,team_fra,RB,60000000,85
+pla_kovacic,Mateo Kovacic,team_cro,CM,40000000,84
+pla_kramaric,Andrej Kramaric,team_cro,ST,6000000,81
+pla_kudus,Mohammed Kudus,team_gha,RW,25000000,80
+pla_laporte,Aymeric Laporte,team_esp,CB,45000000,85
+pla_lautaro,Lautaro Martinez,team_arg,ST,110000000,86
+pla_leao,Rafael Leao,team_por,LW,90000000,86
+pla_lewandowski,Robert Lewandowski,team_pol,ST,45000000,90
+pla_livakovic,Dominik Livakovic,team_cro,GK,8000000,84
+pla_lloris,Hugo Lloris,team_fra,GK,5000000,85
+pla_lovren,Dejan Lovren,team_cro,CB,3000000,79
+pla_lozano,Hirving Lozano,team_mex,LW,20000000,81
+pla_lukaku,Romelu Lukaku,team_bel,ST,40000000,85
+pla_mac_allister,Alexis Mac Allister,team_arg,CM,65000000,85
+pla_maguire,Harry Maguire,team_eng,CB,15000000,82
+pla_mane,Sadio Mane,team_sen,LW,40000000,86
+pla_marquinhos,Marquinhos,team_bra,CB,75000000,88
+pla_martinelli,Gabriel Martinelli,team_bra,LW,90000000,84
+pla_martinez_emi,Emiliano Martinez,team_arg,GK,28000000,88
+pla_mazraoui,Noussair Mazraoui,team_mar,LB,30000000,82
+pla_mbappe,Kylian Mbappe,team_fra,ST,180000000,91
+pla_mckennie,Weston McKennie,team_usa,CM,25000000,81
+pla_mendy_e,Edouard Mendy,team_sen,GK,15000000,84
+pla_messi,Lionel Messi,team_arg,RW,35000000,93
+pla_meunier,Thomas Meunier,team_bel,RB,8000000,80
+pla_mexico_squad_0,Mexico Squad Player 1,team_mex,GK,500000,70
+pla_mexico_squad_1,Mexico Squad Player 2,team_mex,RB,500000,70
+pla_mexico_squad_2,Mexico Squad Player 3,team_mex,CB,500000,70
+pla_mexico_squad_3,Mexico Squad Player 4,team_mex,CB,500000,70
+pla_mexico_squad_4,Mexico Squad Player 5,team_mex,LB,500000,70
+pla_mexico_squad_5,Mexico Squad Player 6,team_mex,CDM,500000,70
+pla_mexico_squad_6,Mexico Squad Player 7,team_mex,CM,500000,70
+pla_milinkovic_savic_g,Predrag Rajkovic,team_srb,GK,8000000,80
+pla_minamino,Takumi Minamino,team_jpn,LW,12000000,79
+pla_mitrovic,Aleksandar Mitrovic,team_srb,ST,18000000,81
+pla_modric,Luka Modric,team_cro,CM,10000000,88
+pla_molina,Nahuel Molina,team_arg,RB,18000000,81
+pla_moore,Kieffer Moore,team_wal,ST,3000000,74
+pla_morata,Alvaro Morata,team_esp,ST,25000000,83
+pla_mount,Mason Mount,team_eng,CAM,55000000,84
+pla_msakni,Youssef Msakni,team_tun,LW,3000000,76
+pla_muller,Thomas Muller,team_ger,CAM,20000000,85
+pla_musa,Ahmed Musa,team_nga,LW,3000000,76
+pla_musiala,Jamal Musiala,team_ger,CAM,100000000,87
+pla_nagatomo,Yuto Nagatomo,team_jpn,LB,1000000,74
+pla_navas,Keylor Navas,team_crc,GK,5000000,81
+pla_neuer,Manuel Neuer,team_ger,GK,8000000,86
+pla_neymar,Neymar,team_bra,CAM,30000000,85
+pla_nigeria_squad_0,Nigeria Squad Player 1,team_nga,GK,500000,70
+pla_nigeria_squad_1,Nigeria Squad Player 2,team_nga,RB,500000,70
+pla_nigeria_squad_2,Nigeria Squad Player 3,team_nga,CB,500000,70
+pla_nigeria_squad_3,Nigeria Squad Player 4,team_nga,CB,500000,70
+pla_nigeria_squad_4,Nigeria Squad Player 5,team_nga,LB,500000,70
+pla_nigeria_squad_5,Nigeria Squad Player 6,team_nga,CDM,500000,70
+pla_nigeria_squad_6,Nigeria Squad Player 7,team_nga,CM,500000,70
+pla_nigeria_squad_7,Nigeria Squad Player 8,team_nga,CM,500000,70
+pla_nigeria_squad_8,Nigeria Squad Player 9,team_nga,RW,500000,70
+pla_noppert,Andries Noppert,team_ned,GK,3000000,78
+pla_ochoa,Guillermo Ochoa,team_mex,GK,2000000,78
+pla_olivera,Matias Olivera,team_uru,LB,8000000,78
+pla_olmo,Dani Olmo,team_esp,CAM,50000000,84
+pla_olsen,Robin Olsen,team_swe,GK,5000000,78
+pla_onana_a,Andre Onana,team_cmr,GK,25000000,83
+pla_osako,Yuya Osako,team_jpn,ST,3000000,76
+pla_ospina,David Ospina,team_col,GK,3000000,79
+pla_otamendi,Nicolas Otamendi,team_arg,CB,4000000,82
+pla_palhinha,Joao Palhinha,team_por,CDM,45000000,84
+pla_panama_squad_0,Panama Squad Player 1,team_pan,GK,500000,70
+pla_panama_squad_1,Panama Squad Player 2,team_pan,RB,500000,70
+pla_panama_squad_2,Panama Squad Player 3,team_pan,CB,500000,70
+pla_panama_squad_3,Panama Squad Player 4,team_pan,CB,500000,70
+pla_panama_squad_4,Panama Squad Player 5,team_pan,LB,500000,70
+pla_panama_squad_5,Panama Squad Player 6,team_pan,CDM,500000,70
+pla_panama_squad_6,Panama Squad Player 7,team_pan,CM,500000,70
+pla_panama_squad_7,Panama Squad Player 8,team_pan,CM,500000,70
+pla_panama_squad_8,Panama Squad Player 9,team_pan,RW,500000,70
+pla_panama_squad_9,Panama Squad Player 10,team_pan,LW,500000,70
+pla_paqueta,Lucas Paqueta,team_bra,CM,45000000,84
+pla_pasalic,Mario Pasalic,team_cro,CAM,15000000,81
+pla_pau_torres,Pau Torres,team_esp,CB,45000000,83
+pla_pavard,Benjamin Pavard,team_fra,RB,35000000,82
+pla_pedri,Pedri,team_esp,CM,100000000,88
+pla_pepe,Pepe,team_por,CB,2000000,81
+pla_perisic,Ivan Perisic,team_cro,LW,5000000,83
+pla_peru_squad_0,Peru Squad Player 1,team_per,GK,500000,70
+pla_peru_squad_1,Peru Squad Player 2,team_per,RB,500000,70
+pla_peru_squad_2,Peru Squad Player 3,team_per,CB,500000,70
+pla_peru_squad_3,Peru Squad Player 4,team_per,CB,500000,70
+pla_peru_squad_4,Peru Squad Player 5,team_per,LB,500000,70
+pla_peru_squad_5,Peru Squad Player 6,team_per,CDM,500000,70
+pla_peru_squad_6,Peru Squad Player 7,team_per,CM,500000,70
+pla_peru_squad_7,Peru Squad Player 8,team_per,CM,500000,70
+pla_peru_squad_8,Peru Squad Player 9,team_per,RW,500000,70
+pla_pickford,Jordan Pickford,team_eng,GK,18000000,84
+pla_pogba,Paul Pogba,team_fra,CM,15000000,84
+pla_poland_squad_0,Poland Squad Player 1,team_pol,GK,500000,70
+pla_poland_squad_1,Poland Squad Player 2,team_pol,RB,500000,70
+pla_poland_squad_2,Poland Squad Player 3,team_pol,CB,500000,70
+pla_poland_squad_3,Poland Squad Player 4,team_pol,CB,500000,70
+pla_poland_squad_4,Poland Squad Player 5,team_pol,LB,500000,70
+pla_poland_squad_5,Poland Squad Player 6,team_pol,CDM,500000,70
+pla_poland_squad_6,Poland Squad Player 7,team_pol,CM,500000,70
+pla_pulisc,Christian Pulisic,team_usa,LW,45000000,83
+pla_qatar_squad_0,Qatar Squad Player 1,team_qat,GK,500000,70
+pla_qatar_squad_1,Qatar Squad Player 2,team_qat,RB,500000,70
+pla_qatar_squad_2,Qatar Squad Player 3,team_qat,CB,500000,70
+pla_qatar_squad_3,Qatar Squad Player 4,team_qat,CB,500000,70
+pla_qatar_squad_4,Qatar Squad Player 5,team_qat,LB,500000,70
+pla_qatar_squad_5,Qatar Squad Player 6,team_qat,CDM,500000,70
+pla_qatar_squad_6,Qatar Squad Player 7,team_qat,CM,500000,70
+pla_qatar_squad_7,Qatar Squad Player 8,team_qat,CM,500000,70
+pla_qatar_squad_8,Qatar Squad Player 9,team_qat,RW,500000,70
+pla_rabiot,Adrien Rabiot,team_fra,CM,40000000,83
+pla_raphinha,Raphinha,team_bra,RW,55000000,85
+pla_raum,David Raum,team_ger,LB,25000000,80
+pla_rebic,Ante Rebic,team_cro,RW,5000000,80
+pla_reus,Marco Reus,team_ger,CAM,20000000,84
+pla_reyna,Gio Reyna,team_usa,CAM,35000000,82
+pla_rice,Declan Rice,team_eng,CDM,90000000,86
+pla_richarlison,Richarlison,team_bra,ST,35000000,83
+pla_rochet,Sergio Rochet,team_uru,GK,5000000,80
+pla_rodriguez,Ricardo Rodriguez,team_sui,LB,6000000,79
+pla_romero,Cristian Romero,team_arg,CB,65000000,84
+pla_ronaldo,Cristiano Ronaldo,team_por,ST,15000000,86
+pla_russia_squad_0,Russia Squad Player 1,team_rus,GK,500000,70
+pla_russia_squad_1,Russia Squad Player 2,team_rus,RB,500000,70
+pla_russia_squad_2,Russia Squad Player 3,team_rus,CB,500000,70
+pla_russia_squad_3,Russia Squad Player 4,team_rus,CB,500000,70
+pla_russia_squad_4,Russia Squad Player 5,team_rus,LB,500000,70
+pla_russia_squad_5,Russia Squad Player 6,team_rus,CDM,500000,70
+pla_russia_squad_6,Russia Squad Player 7,team_rus,CM,500000,70
+pla_russia_squad_7,Russia Squad Player 8,team_rus,CM,500000,70
+pla_ryan,Mat Ryan,team_aus,GK,4000000,78
+pla_saiss,Romain Saiss,team_mar,CB,5000000,80
+pla_saka,Bukayo Saka,team_eng,RW,90000000,86
+pla_sakai,Hiroki Sakai,team_jpn,RB,2000000,75
+pla_salah,Mohamed Salah,team_egy,RW,65000000,89
+pla_sancho,Jadon Sancho,team_ger,LW,45000000,83
+pla_sargent,Josh Sargent,team_usa,ST,12000000,77
+pla_sarr_i,Idrissa Gueye,team_sen,CDM,5000000,80
+pla_saudi_arabia_squad_0,Saudi Arabia Squad Player 1,team_ksa,GK,500000,70
+pla_saudi_arabia_squad_1,Saudi Arabia Squad Player 2,team_ksa,RB,500000,70
+pla_saudi_arabia_squad_2,Saudi Arabia Squad Player 3,team_ksa,CB,500000,70
+pla_saudi_arabia_squad_3,Saudi Arabia Squad Player 4,team_ksa,CB,500000,70
+pla_saudi_arabia_squad_4,Saudi Arabia Squad Player 5,team_ksa,LB,500000,70
+pla_saudi_arabia_squad_5,Saudi Arabia Squad Player 6,team_ksa,CDM,500000,70
+pla_saudi_arabia_squad_6,Saudi Arabia Squad Player 7,team_ksa,CM,500000,70
+pla_saudi_arabia_squad_7,Saudi Arabia Squad Player 8,team_ksa,CM,500000,70
+pla_savic_s,Sergej Milinkovic-Savic,team_srb,CM,50000000,84
+pla_schar,Fabian Schar,team_sui,CB,8000000,80
+pla_schlotterbeck,Nico Schlotterbeck,team_ger,CB,35000000,82
+pla_schmeichel,Kasper Schmeichel,team_den,GK,8000000,82
+pla_seferovic,Haris Seferovic,team_sui,ST,4000000,77
+pla_senegal_squad_0,Senegal Squad Player 1,team_sen,GK,500000,70
+pla_senegal_squad_1,Senegal Squad Player 2,team_sen,RB,500000,70
+pla_senegal_squad_2,Senegal Squad Player 3,team_sen,CB,500000,70
+pla_senegal_squad_3,Senegal Squad Player 4,team_sen,CB,500000,70
+pla_senegal_squad_4,Senegal Squad Player 5,team_sen,LB,500000,70
+pla_senegal_squad_5,Senegal Squad Player 6,team_sen,CDM,500000,70
+pla_senegal_squad_6,Senegal Squad Player 7,team_sen,CM,500000,70
+pla_serbia_squad_0,Serbia Squad Player 1,team_srb,GK,500000,70
+pla_serbia_squad_1,Serbia Squad Player 2,team_srb,RB,500000,70
+pla_serbia_squad_2,Serbia Squad Player 3,team_srb,CB,500000,70
+pla_serbia_squad_3,Serbia Squad Player 4,team_srb,CB,500000,70
+pla_shaqiri,Xherdan Shaqiri,team_sui,RW,5000000,79
+pla_shaw,Luke Shaw,team_eng,LB,35000000,83
+pla_sigurdsson_g,Gylfi Sigurdsson,team_isl,CAM,5000000,77
+pla_silva_thiago,Thiago Silva,team_bra,CB,5000000,84
+pla_simon,Unai Simon,team_esp,GK,25000000,84
+pla_simons,Xavi Simons,team_ned,CAM,40000000,82
+pla_sommer,Yann Sommer,team_sui,GK,5000000,84
+pla_son,Heung-min Son,team_kor,LW,50000000,87
+pla_sosa,Borna Sosa,team_cro,LB,12000000,79
+pla_south_korea_squad_0,South Korea Squad Player 1,team_kor,GK,500000,70
+pla_south_korea_squad_1,South Korea Squad Player 2,team_kor,RB,500000,70
+pla_south_korea_squad_2,South Korea Squad Player 3,team_kor,CB,500000,70
+pla_south_korea_squad_3,South Korea Squad Player 4,team_kor,CB,500000,70
+pla_south_korea_squad_4,South Korea Squad Player 5,team_kor,LB,500000,70
+pla_south_korea_squad_5,South Korea Squad Player 6,team_kor,CDM,500000,70
+pla_south_korea_squad_6,South Korea Squad Player 7,team_kor,CM,500000,70
+pla_south_korea_squad_7,South Korea Squad Player 8,team_kor,CM,500000,70
+pla_sterling,Raheem Sterling,team_eng,LW,45000000,84
+pla_stones,John Stones,team_eng,CB,28000000,85
+pla_suarez,Luis Suarez,team_uru,ST,4000000,82
+pla_sule,Niklas Sule,team_ger,CB,30000000,83
+pla_sweden_squad_0,Sweden Squad Player 1,team_swe,GK,500000,70
+pla_sweden_squad_1,Sweden Squad Player 2,team_swe,RB,500000,70
+pla_sweden_squad_2,Sweden Squad Player 3,team_swe,CB,500000,70
+pla_sweden_squad_3,Sweden Squad Player 4,team_swe,CB,500000,70
+pla_sweden_squad_4,Sweden Squad Player 5,team_swe,LB,500000,70
+pla_sweden_squad_5,Sweden Squad Player 6,team_swe,CDM,500000,70
+pla_sweden_squad_6,Sweden Squad Player 7,team_swe,CM,500000,70
+pla_sweden_squad_7,Sweden Squad Player 8,team_swe,CM,500000,70
+pla_szczesny,Wojciech Szczesny,team_pol,GK,15000000,84
+pla_tadic,Dusan Tadic,team_srb,CAM,8000000,82
+pla_tagliafico,Marcos Acuna,team_arg,LB,8000000,79
+pla_tanaka,Ao Tanaka,team_jpn,CM,5000000,77
+pla_taremi,Mehdi Taremi,team_irn,ST,12000000,80
+pla_tchouameni,Aurelien Tchouameni,team_fra,CDM,100000000,86
+pla_tielemans,Youri Tielemans,team_bel,CM,35000000,82
+pla_tissoudali,Ilias Chair,team_mar,CAM,5000000,77
+pla_tomic,Strahinja Erakovic,team_srb,CB,10000000,78
+pla_tomiyasu,Takehiro Tomiyasu,team_jpn,CB,35000000,82
+pla_trossard,Leandro Trossard,team_bel,RW,30000000,81
+pla_tunisia_squad_0,Tunisia Squad Player 1,team_tun,GK,500000,70
+pla_tunisia_squad_1,Tunisia Squad Player 2,team_tun,RB,500000,70
+pla_tunisia_squad_2,Tunisia Squad Player 3,team_tun,CB,500000,70
+pla_tunisia_squad_3,Tunisia Squad Player 4,team_tun,CB,500000,70
+pla_tunisia_squad_4,Tunisia Squad Player 5,team_tun,LB,500000,70
+pla_tunisia_squad_5,Tunisia Squad Player 6,team_tun,CDM,500000,70
+pla_tunisia_squad_6,Tunisia Squad Player 7,team_tun,CM,500000,70
+pla_tunisia_squad_7,Tunisia Squad Player 8,team_tun,CM,500000,70
+pla_tunisia_squad_8,Tunisia Squad Player 9,team_tun,RW,500000,70
+pla_turner,Matt Turner,team_usa,GK,8000000,80
+pla_upamecano,Dayot Upamecano,team_fra,CB,60000000,84
+pla_usa_squad_0,USA Squad Player 1,team_usa,GK,500000,70
+pla_usa_squad_1,USA Squad Player 2,team_usa,RB,500000,70
+pla_usa_squad_2,USA Squad Player 3,team_usa,CB,500000,70
+pla_usa_squad_3,USA Squad Player 4,team_usa,CB,500000,70
+pla_valencia_e,Enner Valencia,team_ecu,ST,5000000,77
+pla_valverde,Federico Valverde,team_uru,CM,100000000,86
+pla_van_dijk,Virgil van Dijk,team_ned,CB,45000000,89
+pla_varane,Raphael Varane,team_fra,CB,25000000,84
+pla_vargas,Ruben Vargas,team_sui,LW,10000000,78
+pla_veljkovic,Nikola Milenkovic,team_srb,CB,15000000,80
+pla_vertonghen,Jan Vertonghen,team_bel,CB,3000000,80
+pla_vinicius,Vinicius Junior,team_bra,LW,150000000,89
+pla_wales_squad_0,Wales Squad Player 1,team_wal,GK,500000,70
+pla_wales_squad_1,Wales Squad Player 2,team_wal,RB,500000,70
+pla_wales_squad_2,Wales Squad Player 3,team_wal,CB,500000,70
+pla_wales_squad_3,Wales Squad Player 4,team_wal,CB,500000,70
+pla_wales_squad_4,Wales Squad Player 5,team_wal,LB,500000,70
+pla_wales_squad_5,Wales Squad Player 6,team_wal,CDM,500000,70
+pla_wales_squad_6,Wales Squad Player 7,team_wal,CM,500000,70
+pla_wales_squad_7,Wales Squad Player 8,team_wal,CM,500000,70
+pla_walker,Kyle Walker,team_eng,RB,12000000,84
+pla_weah,Tim Weah,team_usa,RW,18000000,79
+pla_widmer,Silvan Widmer,team_sui,RB,5000000,78
+pla_witsel,Axel Witsel,team_bel,CDM,10000000,83
+pla_xhaka,Granit Xhaka,team_sui,CM,12000000,83
+pla_yoshida,Maya Yoshida,team_jpn,CB,2000000,77
+pla_zielinski,Piotr Zielinski,team_pol,CM,35000000,83
+pla_ziyech,Hakim Ziyech,team_mar,RW,20000000,83

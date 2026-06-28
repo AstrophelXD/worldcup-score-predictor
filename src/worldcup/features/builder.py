@@ -7,6 +7,8 @@ import pandas as pd
 
 from worldcup.data_ingestion.base import read_parquet, write_parquet
 from worldcup.features.form import rest_days, rolling_form, team_match_history
+from worldcup.features.odds_features import ODDS_SUMMARY_COLUMNS, build_odds_summary_row, load_odds_curated
+from worldcup.features.player_match_features import PLAYER_SUMMARY_COLUMNS, build_player_summary_row
 from worldcup.features.point_in_time import as_of_timestamp
 from worldcup.features.strength import latest_rating_before
 from worldcup.utils.paths import ensure_dir
@@ -18,6 +20,13 @@ class FeatureBuildResult:
     row_count: int
 
 
+def _load_optional_parquet(curated_dir: Path, name: str) -> pd.DataFrame:
+    path = curated_dir / name
+    if not path.exists():
+        return pd.DataFrame()
+    return read_parquet(str(path))
+
+
 def build_match_feature_mart(
     *,
     curated_dir: Path,
@@ -27,8 +36,16 @@ def build_match_feature_mart(
     matches = read_parquet(str(curated_dir / "matches.parquet"))
     elo = read_parquet(str(curated_dir / "elo_ratings.parquet"))
     fifa = read_parquet(str(curated_dir / "fifa_rankings.parquet"))
+    players = _load_optional_parquet(curated_dir, "players.parquet")
+    lineups = _load_optional_parquet(curated_dir, "lineups.parquet")
+    stats = _load_optional_parquet(curated_dir, "player_match_stats.parquet")
+    injuries = _load_optional_parquet(curated_dir, "injuries.parquet")
+    odds = load_odds_curated(curated_dir)
 
     matches = matches.sort_values("kickoff_ts").reset_index(drop=True)
+    lineup_match_ids: set[str] = set()
+    if not lineups.empty:
+        lineup_match_ids = set(lineups["match_id"].astype(str).unique())
     rows: list[dict] = []
 
     for match in matches.to_dict(orient="records"):
@@ -80,6 +97,31 @@ def build_match_feature_mart(
             row[f"home_{key}"] = value
         for key, value in away_form.items():
             row[f"away_{key}"] = value
+
+        if str(match["match_id"]) in lineup_match_ids and not players.empty:
+            row.update(
+                build_player_summary_row(
+                    match_id=str(match["match_id"]),
+                    home_team_id=str(home_id),
+                    away_team_id=str(away_id),
+                    as_of_time=pd.Timestamp(as_of),
+                    players=players,
+                    lineups=lineups,
+                    stats=stats,
+                    injuries=injuries,
+                )
+            )
+        else:
+            for column in PLAYER_SUMMARY_COLUMNS:
+                row[column] = 0.0
+
+        row.update(
+            build_odds_summary_row(
+                odds,
+                str(match["match_id"]),
+                pd.Timestamp(as_of),
+            )
+        )
 
         rows.append(row)
 

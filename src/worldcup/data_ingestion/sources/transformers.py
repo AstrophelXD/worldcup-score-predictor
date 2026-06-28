@@ -139,12 +139,12 @@ def transform_elo_history(df: pd.DataFrame) -> pd.DataFrame:
 
 def transform_fifa_rankings(df: pd.DataFrame) -> pd.DataFrame:
     date_col = _pick_column(df, ["ranking_date", "rank_date", "date"])
-    team_col = _pick_column(df, ["team_name", "country", "country_full", "nation"])
+    team_col = _pick_column(df, ["team_name", "team", "country", "country_full", "nation"])
     rank_col = _pick_column(df, ["rank", "ranking"])
     points_col = _pick_column(df, ["points", "total_points", "avg_points"])
 
-    if not all([date_col, team_col, rank_col, points_col]):
-        raise ValueError("fifa_rankings missing required columns: date/team/rank/points")
+    if not all([date_col, team_col, points_col]):
+        raise ValueError("fifa_rankings missing required columns: date/team/points")
 
     rows: list[dict] = []
     for record in df.to_dict(orient="records"):
@@ -152,8 +152,84 @@ def transform_fifa_rankings(df: pd.DataFrame) -> pd.DataFrame:
             {
                 "team_name": str(record[team_col]).strip(),
                 "ranking_date": pd.to_datetime(record[date_col]).date().isoformat(),
-                "rank": int(record[rank_col]),
+                "rank": (
+                    int(record[rank_col])
+                    if rank_col and pd.notna(record.get(rank_col))
+                    else None
+                ),
                 "points": float(record[points_col]),
+            }
+        )
+    out = pd.DataFrame(rows)
+    out = out.loc[out["points"].notna()].copy()
+    computed_rank = (
+        out.groupby("ranking_date")["points"]
+        .rank(method="min", ascending=False)
+    )
+    if rank_col:
+        out["rank"] = pd.to_numeric(out["rank"], errors="coerce").fillna(computed_rank)
+    else:
+        out["rank"] = computed_rank
+    out["rank"] = out["rank"].round().astype(int)
+    return out
+
+
+def transform_eloratings_world_tsv(df: pd.DataFrame) -> pd.DataFrame:
+    """Parse headerless World.tsv from eloratings.net (rank, rank, code, elo, ...)."""
+    if df.shape[1] < 4:
+        raise ValueError("eloratings_world_tsv expects at least 4 columns")
+
+    rating_date = pd.Timestamp.utcnow().date().isoformat()
+    rows: list[dict] = []
+    for record in df.itertuples(index=False):
+        values = list(record)
+        team_name = str(values[2]).strip()
+        rating = float(values[3])
+        rows.append(
+            {
+                "team_name": team_name,
+                "rating": round(rating, 1),
+                "rating_date": rating_date,
+                "rating_system": "elo_eloratings_net",
+                "rank": int(values[0]) if pd.notna(values[0]) else None,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def transform_football_data_odds(df: pd.DataFrame) -> pd.DataFrame:
+    """Transform football-data.co.uk match odds export to canonical odds schema."""
+    date_col = _pick_column(df, ["date", "match_date"])
+    home_col = _pick_column(df, ["hometeam", "home_team", "home_team_name", "home"])
+    away_col = _pick_column(df, ["awayteam", "away_team", "away_team_name", "away"])
+    home_odds_col = _pick_column(df, ["b365h", "bwh", "home_odds", "avg_home"])
+    draw_odds_col = _pick_column(df, ["b365d", "bwd", "draw_odds", "avg_draw"])
+    away_odds_col = _pick_column(df, ["b365a", "bwa", "away_odds", "avg_away"])
+    over_col = _pick_column(df, ["avg>2.5", "b365>2.5", "over25_odds"])
+    under_col = _pick_column(df, ["avg<2.5", "b365<2.5", "under25_odds"])
+
+    if not all([date_col, home_col, away_col, home_odds_col, draw_odds_col, away_odds_col]):
+        raise ValueError(
+            "football_data_odds missing required columns: date/home/away/home_odds/draw/away"
+        )
+
+    rows: list[dict] = []
+    for idx, record in enumerate(df.to_dict(orient="records")):
+        match_date = pd.to_datetime(record[date_col]).date()
+        home = str(record[home_col]).strip()
+        away = str(record[away_col]).strip()
+        kickoff = pd.Timestamp(match_date, tz="UTC")
+        match_id = f"fd_{match_date.isoformat()}_{_slug(home)}_{_slug(away)}_{idx}"
+        rows.append(
+            {
+                "match_id": match_id,
+                "snapshot_ts": (kickoff - pd.Timedelta(hours=3)).isoformat(),
+                "home_odds": float(record[home_odds_col]),
+                "draw_odds": float(record[draw_odds_col]),
+                "away_odds": float(record[away_odds_col]),
+                "over25_odds": float(record[over_col]) if over_col and pd.notna(record.get(over_col)) else 2.05,
+                "under25_odds": float(record[under_col]) if under_col and pd.notna(record.get(under_col)) else 1.78,
+                "btts_yes_odds": 1.90,
             }
         )
     return pd.DataFrame(rows)

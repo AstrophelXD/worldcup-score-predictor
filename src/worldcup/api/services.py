@@ -136,6 +136,27 @@ def get_features(match_id: str) -> dict[str, Any]:
             "home_rest_days": _json_value(row.get("home_rest_days")),
             "away_rest_days": _json_value(row.get("away_rest_days")),
         },
+        "player_summary": {
+            "home_starter_count": _json_value(row.get("home_starter_count")),
+            "away_starter_count": _json_value(row.get("away_starter_count")),
+            "home_avg_player_rating": _json_value(row.get("home_avg_player_rating")),
+            "away_avg_player_rating": _json_value(row.get("away_avg_player_rating")),
+            "home_squad_availability": _json_value(row.get("home_squad_availability")),
+            "away_squad_availability": _json_value(row.get("away_squad_availability")),
+            "home_injured_out_count": _json_value(row.get("home_injured_out_count")),
+            "away_injured_out_count": _json_value(row.get("away_injured_out_count")),
+            "home_lineup_projected_share": _json_value(row.get("home_lineup_projected_share")),
+            "away_lineup_projected_share": _json_value(row.get("away_lineup_projected_share")),
+        },
+        "market_odds": {
+            "home_implied": _json_value(row.get("odds_home_implied")),
+            "draw_implied": _json_value(row.get("odds_draw_implied")),
+            "away_implied": _json_value(row.get("odds_away_implied")),
+            "over25_implied": _json_value(row.get("odds_over25_implied")),
+            "under25_implied": _json_value(row.get("odds_under25_implied")),
+            "btts_implied": _json_value(row.get("odds_btts_implied")),
+            "available": bool(_json_value(row.get("odds_available")) or 0),
+        },
     }
 
 

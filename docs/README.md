@@ -10,6 +10,7 @@
 - [MVP 初步编码计划](./coding-plan.md)
 - [数据源 CSV 格式说明](./data-sources.md)
 - [**2026 世界杯：数据准备与赛中调参手册**](./world-cup-2026-playbook.md)
+- [**当前短板评估与 P0–P3 路线图**](./gap-analysis-and-roadmap.md)
 
 ## 阅读顺序建议
 

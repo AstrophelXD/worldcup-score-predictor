@@ -29,6 +29,7 @@ def main(cfg: DictConfig) -> None:
         lineup_sources=list(external_inputs.get("lineups", [])),
         player_stat_sources=list(external_inputs.get("player_match_stats", [])),
         injury_sources=list(external_inputs.get("injuries", [])),
+        odds_sources=list(external_inputs.get("odds", [])),
         include_samples=bool(data_cfg.get("include_samples", False)),
         samples_dir=Path(str(data_cfg["samples_dir"])),
     )
@@ -41,6 +42,7 @@ def main(cfg: DictConfig) -> None:
     logger.info("  lineups=%s", result.lineups)
     logger.info("  player_match_stats=%s", result.player_match_stats)
     logger.info("  injuries=%s", result.injuries)
+    logger.info("  odds=%s", result.odds)
     logger.info("Next: python -m scripts.ingest --config-name=config data=external")
 
 
