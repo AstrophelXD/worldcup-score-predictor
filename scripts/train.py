@@ -72,9 +72,16 @@ def main(cfg: DictConfig) -> None:
             batch_size=int(models_cfg["batch_size"]),
             aux_loss_weight=float(models_cfg["aux_loss_weight"]),
             seed=int(training_cfg["seed"]),
-            mixed_precision=str(training_cfg.get("mixed_precision")),
+            mixed_precision=str(
+                models_cfg.get("mixed_precision") or training_cfg.get("mixed_precision")
+            ),
             odds_path=odds_path,
             curated_dir=Path(str(data_cfg["curated_dir"])),
+            grad_accum_steps=int(models_cfg.get("grad_accum_steps", 1)),
+            gradient_checkpointing=bool(models_cfg.get("gradient_checkpointing", False)),
+            torch_compile=bool(models_cfg.get("torch_compile", False)),
+            num_workers=int(models_cfg.get("num_workers", 0)),
+            pin_memory=bool(models_cfg.get("pin_memory", False)),
         )
         result = train_scoregen_football_transformer(
             features=features,

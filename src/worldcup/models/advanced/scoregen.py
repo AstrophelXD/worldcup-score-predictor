@@ -66,6 +66,11 @@ class ScoreGenFootballTransformer(nn.Module):
             hidden_dim=d_model,
         )
 
+    def enable_gradient_checkpointing(self) -> None:
+        self.home_seq_encoder.gradient_checkpointing = True
+        self.away_seq_encoder.gradient_checkpointing = True
+        self.match_transformer.gradient_checkpointing = True
+
     def _match_context(
         self,
         tabular: torch.Tensor,

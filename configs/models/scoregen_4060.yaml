@@ -1,0 +1,30 @@
+defaults:
+  - scoregen
+
+# RTX 4060 (8GB) — ~5M–15M params, effective batch 32 (8 × 4)
+name: scoregen_football
+version: v2_4060
+
+d_model: 96
+n_heads: 4
+n_layers: 3
+n_components: 2
+
+seq_len: 8
+player_slots: 11
+
+dropout: 0.15
+batch_size: 8
+grad_accum_steps: 4
+
+learning_rate: 0.0003
+weight_decay: 0.01
+epochs: 200
+patience: 25
+
+gradient_checkpointing: true
+torch_compile: false
+num_workers: 2
+pin_memory: true
+
+odds_path: ${project.root}/data/samples/odds.csv

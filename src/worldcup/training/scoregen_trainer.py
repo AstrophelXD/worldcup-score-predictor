@@ -45,6 +45,53 @@ class ScoregenTrainConfig:
     mixed_precision: str | None
     odds_path: Path | None
     curated_dir: Path | None = None
+    grad_accum_steps: int = 1
+    gradient_checkpointing: bool = False
+    torch_compile: bool = False
+    num_workers: int = 0
+    pin_memory: bool = False
+
+
+def _resolve_amp(
+    mixed_precision: str | None,
+    device: torch.device,
+) -> tuple[bool, torch.dtype | None, torch.cuda.amp.GradScaler | None]:
+    if device.type != "cuda" or not mixed_precision:
+        return False, None, None
+    mode = mixed_precision.lower()
+    if mode in {"fp16", "float16"}:
+        return True, torch.float16, torch.cuda.amp.GradScaler()
+    if mode in {"bf16", "bfloat16"} and torch.cuda.is_bf16_supported():
+        return True, torch.bfloat16, None
+    return False, None, None
+
+
+def _compute_batch_loss(
+    model: ScoreGenFootballTransformer,
+    batch: dict[str, torch.Tensor],
+    *,
+    grid_max_goal: int,
+    aux_loss_weight: float,
+    amp_dtype: torch.dtype | None,
+) -> torch.Tensor:
+    if amp_dtype is not None:
+        with torch.autocast(device_type="cuda", dtype=amp_dtype):
+            _, log_probs = _model_forward(model, batch)
+            return combined_scoregen_loss(
+                log_probs,
+                batch["home_goals"],
+                batch["away_goals"],
+                grid_max_goal=grid_max_goal,
+                aux_weight=aux_loss_weight,
+            )
+    _, log_probs = _model_forward(model, batch)
+    return combined_scoregen_loss(
+        log_probs,
+        batch["home_goals"],
+        batch["away_goals"],
+        grid_max_goal=grid_max_goal,
+        aux_weight=aux_loss_weight,
+    )
 
 
 def _model_forward(model: ScoreGenFootballTransformer, batch: dict[str, torch.Tensor]):
@@ -149,21 +196,34 @@ def _evaluate(
     grid_max_goal: int,
     aux_loss_weight: float,
     device: torch.device,
+    mixed_precision: str | None = None,
 ) -> float:
     model.eval()
     total = 0.0
     count = 0
+    _, amp_dtype, _ = _resolve_amp(mixed_precision, device)
     with torch.no_grad():
         for batch in loader:
             batch = {key: value.to(device) for key, value in batch.items()}
-            _, log_probs = _model_forward(model, batch)
-            loss = combined_scoregen_loss(
-                log_probs,
-                batch["home_goals"],
-                batch["away_goals"],
-                grid_max_goal=grid_max_goal,
-                aux_weight=aux_loss_weight,
-            )
+            if amp_dtype is not None:
+                with torch.autocast(device_type="cuda", dtype=amp_dtype):
+                    _, log_probs = _model_forward(model, batch)
+                    loss = combined_scoregen_loss(
+                        log_probs,
+                        batch["home_goals"],
+                        batch["away_goals"],
+                        grid_max_goal=grid_max_goal,
+                        aux_weight=aux_loss_weight,
+                    )
+            else:
+                _, log_probs = _model_forward(model, batch)
+                loss = combined_scoregen_loss(
+                    log_probs,
+                    batch["home_goals"],
+                    batch["away_goals"],
+                    grid_max_goal=grid_max_goal,
+                    aux_weight=aux_loss_weight,
+                )
             total += float(loss.item()) * len(batch["home_goals"])
             count += len(batch["home_goals"])
     return total / max(count, 1)
@@ -212,9 +272,18 @@ def train_scoregen_football_transformer(
         batch_size=min(train_cfg.batch_size, max(1, len(train_ds))),
         shuffle=True,
         collate_fn=_collate,
+        num_workers=train_cfg.num_workers,
+        pin_memory=train_cfg.pin_memory and torch.cuda.is_available(),
     )
     val_loader = (
-        DataLoader(val_ds, batch_size=train_cfg.batch_size, shuffle=False, collate_fn=_collate)
+        DataLoader(
+            val_ds,
+            batch_size=train_cfg.batch_size,
+            shuffle=False,
+            collate_fn=_collate,
+            num_workers=train_cfg.num_workers,
+            pin_memory=train_cfg.pin_memory and torch.cuda.is_available(),
+        )
         if len(val_ds) > 0
         else train_loader
     )
@@ -237,11 +306,13 @@ def train_scoregen_football_transformer(
     )
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
-    use_amp = (
-        device.type == "cuda"
-        and train_cfg.mixed_precision in {"bf16", "bfloat16"}
-        and torch.cuda.is_bf16_supported()
-    )
+    if train_cfg.gradient_checkpointing:
+        model.enable_gradient_checkpointing()
+    if train_cfg.torch_compile and hasattr(torch, "compile"):
+        model = torch.compile(model)
+
+    use_amp, amp_dtype, scaler = _resolve_amp(train_cfg.mixed_precision, device)
+    grad_accum = max(1, train_cfg.grad_accum_steps)
 
     optimizer = torch.optim.AdamW(
         model.parameters(),
@@ -255,31 +326,28 @@ def train_scoregen_football_transformer(
 
     for _epoch in range(train_cfg.epochs):
         model.train()
-        for batch in train_loader:
+        optimizer.zero_grad(set_to_none=True)
+        for step, batch in enumerate(train_loader):
             batch = {key: value.to(device) for key, value in batch.items()}
-            optimizer.zero_grad(set_to_none=True)
-            if use_amp:
-                with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-                    _, log_probs = _model_forward(model, batch)
-                    loss = combined_scoregen_loss(
-                        log_probs,
-                        batch["home_goals"],
-                        batch["away_goals"],
-                        grid_max_goal=grid_max_goal,
-                        aux_weight=train_cfg.aux_loss_weight,
-                    )
-                loss.backward()
+            loss = _compute_batch_loss(
+                model,
+                batch,
+                grid_max_goal=grid_max_goal,
+                aux_loss_weight=train_cfg.aux_loss_weight,
+                amp_dtype=amp_dtype if use_amp else None,
+            )
+            loss = loss / grad_accum
+            if scaler is not None:
+                scaler.scale(loss).backward()
             else:
-                _, log_probs = _model_forward(model, batch)
-                loss = combined_scoregen_loss(
-                    log_probs,
-                    batch["home_goals"],
-                    batch["away_goals"],
-                    grid_max_goal=grid_max_goal,
-                    aux_weight=train_cfg.aux_loss_weight,
-                )
                 loss.backward()
-            optimizer.step()
+            if (step + 1) % grad_accum == 0 or (step + 1) == len(train_loader):
+                if scaler is not None:
+                    scaler.step(optimizer)
+                    scaler.update()
+                else:
+                    optimizer.step()
+                optimizer.zero_grad(set_to_none=True)
 
         val_loss = _evaluate(
             model,
@@ -287,6 +355,7 @@ def train_scoregen_football_transformer(
             grid_max_goal=grid_max_goal,
             aux_loss_weight=train_cfg.aux_loss_weight,
             device=device,
+            mixed_precision=train_cfg.mixed_precision,
         )
         if val_loss < best_val:
             best_val = val_loss
@@ -309,6 +378,7 @@ def train_scoregen_football_transformer(
         grid_max_goal=grid_max_goal,
         aux_loss_weight=train_cfg.aux_loss_weight,
         device=device,
+        mixed_precision=train_cfg.mixed_precision,
     )
     checkpoint = ScoregenCheckpoint(
         model_type="scoregen",

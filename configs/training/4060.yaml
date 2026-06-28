@@ -1,0 +1,5 @@
+defaults:
+  - default
+
+# RTX 4060 8GB — prefer fp16 over bf16 on consumer Ampere/Ada cards
+mixed_precision: fp16

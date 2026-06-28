@@ -99,9 +99,28 @@ pytest
 
 ### P2 — 大模型 + Dashboard 工作台
 
-- `configs/models/scoregen_4090.yaml`
+- `configs/models/scoregen_4090.yaml`（待增）— 4090 / 24GB 专用
+- **`configs/models/scoregen_4060.yaml`** — 8GB 4060 主力（d_model=96, seq_len=8, batch 8×4）
+- **`configs/models/scoregen_4060_safe.yaml`** — OOM 回退（d_model=64, batch 4×8）
+- **`configs/training/4060.yaml`** — `mixed_precision: fp16`
 - Dashboard 多页：球队对比、伤停、对位、解释
-- Midlevel 使用扩展 mart 列
+
+#### GPU 配置对照
+
+| Profile | 显存目标 | d_model | n_layers | seq_len | player_slots | batch × accum |
+|---------|----------|---------|----------|---------|--------------|---------------|
+| `scoregen_local` | 8GB 验证 | 64 | 2 | 5 | 11 | 8 × 1 |
+| `scoregen_4060` | 8GB 训练 | 96 | 3 | 8 | 11 | 8 × 4 |
+| `scoregen_4060_safe` | 8GB 保底 | 64 | 2 | 5 | 11 | 4 × 8 |
+| 4090 大配置 | 24GB | 256 | 6 | 20 | 26 | 64 × 1 |
+
+```bash
+# RTX 4060 推荐
+python -m scripts.train --config-name=config models=scoregen_4060 training=4060
+
+# OOM 时
+python -m scripts.train --config-name=config models=scoregen_4060_safe training=4060
+```
 
 ### P3 — 事件级数据
 
