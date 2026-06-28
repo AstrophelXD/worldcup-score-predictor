@@ -61,7 +61,7 @@ class ScoregenPredictor:
             n_components=checkpoint.n_components,
             dropout=checkpoint.dropout,
         )
-        model.load_state_dict(state_dict)
+        model.load_state_dict(state_dict, strict=False)
         model.eval()
 
         if matches_path is None:

@@ -55,6 +55,7 @@ def test_feature_mart_includes_player_and_odds_columns():
         player_stats_csv=root / "data" / "samples" / "player_match_stats.csv",
         injuries_csv=root / "data" / "samples" / "injuries.csv",
         odds_csv=root / "data" / "samples" / "odds.csv",
+        team_match_stats_csv=root / "data" / "samples" / "team_match_stats.csv",
         source_systems={"matches": "t", "elo": "t", "fifa_rankings": "t", "odds": "t"},
     )
 

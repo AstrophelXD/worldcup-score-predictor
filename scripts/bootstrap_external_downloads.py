@@ -66,6 +66,7 @@ def bootstrap_external_downloads(
         "players.csv",
         "lineups.csv",
         "player_match_stats.csv",
+        "team_match_stats.csv",
         "injuries.csv",
         "odds.csv",
     ]

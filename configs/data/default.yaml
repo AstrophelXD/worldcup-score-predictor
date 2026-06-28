@@ -13,6 +13,7 @@ sources:
   player_match_stats: ${data.samples_dir}/player_match_stats.csv
   injuries: ${data.samples_dir}/injuries.csv
   odds: ${data.samples_dir}/odds.csv
+  team_match_stats: ${data.samples_dir}/team_match_stats.csv
 
 source_systems:
   matches: sample_matches_csv
@@ -23,3 +24,4 @@ source_systems:
   player_match_stats: sample_player_stats_csv
   injuries: sample_injuries_csv
   odds: sample_odds_csv
+  team_match_stats: sample_team_match_stats_csv

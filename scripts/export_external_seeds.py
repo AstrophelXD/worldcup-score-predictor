@@ -13,6 +13,7 @@ from scripts.export_sample_data import (
     export_odds,
     export_player_stats,
     export_players,
+    export_team_match_stats,
     export_team_aliases,
 )
 from worldcup.data_ingestion.sources.world_cup_catalog import ALL_WORLD_CUP_MATCHES
@@ -29,6 +30,7 @@ def export_external_seeds(seeds_dir: Path | None = None) -> dict[str, int]:
     players = export_players(matches)
     lineups = export_lineups(matches, players)
     stats = export_player_stats(matches, players)
+    team_stats = export_team_match_stats(matches)
     odds = export_odds(matches)
     injuries = export_injuries()
     aliases = export_team_aliases()
@@ -37,6 +39,7 @@ def export_external_seeds(seeds_dir: Path | None = None) -> dict[str, int]:
     players.to_csv(root / "players.csv", index=False)
     lineups.to_csv(root / "lineups.csv", index=False)
     stats.to_csv(root / "player_match_stats.csv", index=False)
+    team_stats.to_csv(root / "team_match_stats.csv", index=False)
     odds.to_csv(root / "odds.csv", index=False)
     injuries.to_csv(root / "injuries.csv", index=False)
     aliases.to_csv(project_root() / "data" / "external_mappings" / "team_aliases.csv", index=False)
@@ -46,6 +49,7 @@ def export_external_seeds(seeds_dir: Path | None = None) -> dict[str, int]:
         "players": len(players),
         "lineups": len(lineups),
         "player_match_stats": len(stats),
+        "team_match_stats": len(team_stats),
         "odds": len(odds),
         "injuries": len(injuries),
     }

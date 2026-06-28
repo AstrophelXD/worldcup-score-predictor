@@ -97,15 +97,31 @@ def combined_scoregen_loss(
     *,
     grid_max_goal: int,
     aux_weight: float,
+    event_preds: torch.Tensor | None = None,
+    event_targets: torch.Tensor | None = None,
+    event_mask: torch.Tensor | None = None,
+    event_aux_weight: float = 0.0,
 ) -> torch.Tensor:
     total = score_nll_from_log_probs(log_probs, home_goals, away_goals, grid_max_goal)
-    if aux_weight <= 0:
-        return total
-    probs = log_probs.exp()
-    total = total + aux_weight * marginal_goal_nll_from_probs(
-        probs, home_goals, "home", grid_max_goal
-    )
-    total = total + aux_weight * marginal_goal_nll_from_probs(
-        probs, away_goals, "away", grid_max_goal
-    )
+    if aux_weight > 0:
+        probs = log_probs.exp()
+        total = total + aux_weight * marginal_goal_nll_from_probs(
+            probs, home_goals, "home", grid_max_goal
+        )
+        total = total + aux_weight * marginal_goal_nll_from_probs(
+            probs, away_goals, "away", grid_max_goal
+        )
+    if (
+        event_aux_weight > 0
+        and event_preds is not None
+        and event_targets is not None
+        and event_mask is not None
+        and event_mask.any()
+    ):
+        masked_preds = event_preds[event_mask]
+        masked_targets = event_targets[event_mask]
+        total = total + event_aux_weight * torch.nn.functional.mse_loss(
+            torch.log1p(masked_preds),
+            torch.log1p(masked_targets),
+        )
     return total

@@ -15,4 +15,5 @@ epochs: 200
 patience: 25
 batch_size: 16
 aux_loss_weight: 0.1
+event_aux_weight: 0.05
 odds_path: ${project.root}/data/samples/odds.csv

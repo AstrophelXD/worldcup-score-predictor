@@ -233,3 +233,50 @@ def transform_football_data_odds(df: pd.DataFrame) -> pd.DataFrame:
             }
         )
     return pd.DataFrame(rows)
+
+
+def transform_statsbomb_team_match(df: pd.DataFrame) -> pd.DataFrame:
+    """Transform StatsBomb-style team match summary CSV to canonical team_match_stats."""
+    match_id_col = _pick_column(df, ["match_id"])
+    team_col = _pick_column(df, ["team_name", "team", "team_id"])
+    date_col = _pick_column(df, ["match_date", "date"])
+    xg_col = _pick_column(df, ["xg", "xG", "team_xg"])
+    shots_col = _pick_column(df, ["shots", "total_shots"])
+    sot_col = _pick_column(df, ["shots_on_target", "on_target"])
+    poss_col = _pick_column(df, ["possession", "poss"])
+    yellow_col = _pick_column(df, ["yellow_cards", "yellows"])
+    red_col = _pick_column(df, ["red_cards", "reds"])
+
+    if not all([match_id_col, team_col]):
+        raise ValueError("statsbomb_team_match missing required columns: match_id/team")
+
+    rows: list[dict] = []
+    for idx, record in enumerate(df.to_dict(orient="records")):
+        match_id = str(record[match_id_col]).strip()
+        team_id = str(record[team_col]).strip()
+        match_date = (
+            pd.to_datetime(record[date_col]).date().isoformat()
+            if date_col and pd.notna(record.get(date_col))
+            else pd.Timestamp.utcnow().date().isoformat()
+        )
+        yellow = int(record[yellow_col]) if yellow_col and pd.notna(record.get(yellow_col)) else 0
+        red = int(record[red_col]) if red_col and pd.notna(record.get(red_col)) else 0
+        rows.append(
+            {
+                "team_match_stat_id": f"sb_{match_id}_{_slug(team_id)}_{idx}",
+                "match_id": match_id,
+                "team_id": team_id,
+                "match_date": match_date,
+                "possession": float(record[poss_col]) if poss_col and pd.notna(record.get(poss_col)) else None,
+                "shots": int(record[shots_col]) if shots_col and pd.notna(record.get(shots_col)) else 0,
+                "shots_on_target": int(record[sot_col]) if sot_col and pd.notna(record.get(sot_col)) else 0,
+                "xg": float(record[xg_col]) if xg_col and pd.notna(record.get(xg_col)) else None,
+                "passes_completed": None,
+                "corners": None,
+                "fouls": None,
+                "yellow_cards": yellow,
+                "red_cards": red,
+                "cards": yellow + red,
+            }
+        )
+    return pd.DataFrame(rows)

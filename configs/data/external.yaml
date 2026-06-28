@@ -38,9 +38,12 @@ external_inputs:
   odds:
     - path: ${data.downloads_dir}/odds.csv
       format: canonical
-    # Optional third-party historical odds (football-data.co.uk):
-    # - path: ${data.downloads_dir}/football_data_odds.csv
-    #   format: football_data_odds
+  team_match_stats:
+    - path: ${data.downloads_dir}/team_match_stats.csv
+      format: canonical
+    # Optional StatsBomb / Opta team summary export:
+    # - path: ${data.downloads_dir}/statsbomb_team_match.csv
+    #   format: statsbomb_team_match
 
 sources:
   matches: ${data.staging_dir}/canonical/matches.csv
@@ -51,6 +54,7 @@ sources:
   player_match_stats: ${data.staging_dir}/canonical/player_match_stats.csv
   injuries: ${data.staging_dir}/canonical/injuries.csv
   odds: ${data.staging_dir}/canonical/odds.csv
+  team_match_stats: ${data.staging_dir}/canonical/team_match_stats.csv
 
 source_systems:
   matches: external_prepared_csv
@@ -61,3 +65,4 @@ source_systems:
   player_match_stats: external_prepared_csv
   injuries: external_prepared_csv
   odds: external_prepared_csv
+  team_match_stats: external_prepared_csv

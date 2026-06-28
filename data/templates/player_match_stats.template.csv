@@ -1,1 +1,2 @@
-stat_id,match_id,player_id,team_id,match_date,minutes_played,goals,assists
+stat_id,match_id,player_id,team_id,match_date,minutes_played,goals,assists,shots,xg,yellow_cards,red_cards
+ps_example,wc2022_arg_fra_final,pla_messi,team_arg,2022-12-18,90,1,0,3,0.82,0,0

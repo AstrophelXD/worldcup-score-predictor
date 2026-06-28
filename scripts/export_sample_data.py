@@ -239,6 +239,7 @@ def export_player_stats(matches: pd.DataFrame, players: pd.DataFrame) -> pd.Data
             team_id = TEAM_ALIASES.get(team_name, f"team_{_slug(team_name)}")
             for player_id in _pick_scorers(team_name, goals, players):
                 stat_idx += 1
+                seed = hash(f"{match['match_id']}_{player_id}") % 1000
                 rows.append(
                     {
                         "stat_id": f"ps_{stat_idx:05d}",
@@ -249,8 +250,68 @@ def export_player_stats(matches: pd.DataFrame, players: pd.DataFrame) -> pd.Data
                         "minutes_played": 90,
                         "goals": 1,
                         "assists": 0,
+                        "shots": 2 + (seed % 3),
+                        "xg": round(0.35 + (seed % 50) / 100.0, 2),
+                        "yellow_cards": 1 if seed % 17 == 0 else 0,
+                        "red_cards": 0,
                     }
                 )
+    return pd.DataFrame(rows)
+
+
+def _synthetic_team_side_events(
+    match_id: str,
+    side: str,
+    goals: int,
+    goals_against: int,
+) -> dict[str, float | int]:
+    seed = abs(hash(f"{match_id}_{side}")) % 10_000
+    xg = max(0.25, goals * 0.72 + (seed % 90) / 100.0)
+    shots = max(3, goals * 3 + (seed % 6) + 2)
+    sot = max(1, min(shots, goals * 2 + (seed % 3) + 1))
+    yellow = min(5, (seed % 4) + (1 if goals_against >= 3 else 0))
+    red = 1 if seed % 113 == 0 else 0
+    possession = 44.0 + (seed % 120) / 10.0
+    if side == "away":
+        possession = 100.0 - possession
+    return {
+        "possession": round(possession, 1),
+        "shots": int(shots),
+        "shots_on_target": int(sot),
+        "xg": round(xg, 2),
+        "passes_completed": 280 + (seed % 180),
+        "corners": 2 + (seed % 7),
+        "fouls": 8 + (seed % 10),
+        "yellow_cards": int(yellow),
+        "red_cards": int(red),
+        "cards": int(yellow + red),
+    }
+
+
+def export_team_match_stats(matches: pd.DataFrame) -> pd.DataFrame:
+    rows: list[dict] = []
+    idx = 0
+    for _, match in matches.iterrows():
+        if pd.isna(match["home_score_ft"]) or pd.isna(match["away_score_ft"]):
+            continue
+        if not match.get("is_world_cup"):
+            continue
+        for side in ("home", "away"):
+            team_name = match[f"{side}_team_name"]
+            team_id = TEAM_ALIASES.get(team_name, f"team_{_slug(team_name)}")
+            goals = int(match[f"{side}_score_ft"])
+            against = int(match[f"{'away' if side == 'home' else 'home'}_score_ft"])
+            events = _synthetic_team_side_events(match["match_id"], side, goals, against)
+            idx += 1
+            rows.append(
+                {
+                    "team_match_stat_id": f"tms_{idx:05d}",
+                    "match_id": match["match_id"],
+                    "team_id": team_id,
+                    "match_date": match["match_date"],
+                    **events,
+                }
+            )
     return pd.DataFrame(rows)
 
 
@@ -412,6 +473,7 @@ def export_all(samples_dir: Path | None = None) -> dict[str, int]:
     elo, fifa = export_elo_fifa(matches)
     lineups = export_lineups(matches, players)
     stats = export_player_stats(matches, players)
+    team_stats = export_team_match_stats(matches)
     odds = export_odds(matches)
     injuries = export_injuries()
     aliases = export_team_aliases()
@@ -422,6 +484,7 @@ def export_all(samples_dir: Path | None = None) -> dict[str, int]:
     fifa.to_csv(root / "fifa_rankings.csv", index=False)
     lineups.to_csv(root / "lineups.csv", index=False)
     stats.to_csv(root / "player_match_stats.csv", index=False)
+    team_stats.to_csv(root / "team_match_stats.csv", index=False)
     odds.to_csv(root / "odds.csv", index=False)
     injuries.to_csv(root / "injuries.csv", index=False)
     aliases.to_csv(mappings_dir / "team_aliases.csv", index=False)
@@ -434,6 +497,7 @@ def export_all(samples_dir: Path | None = None) -> dict[str, int]:
         "players": len(players),
         "lineups": len(lineups),
         "player_match_stats": len(stats),
+        "team_match_stats": len(team_stats),
         "odds": len(odds),
         "injuries": len(injuries),
         "teams": len(aliases),

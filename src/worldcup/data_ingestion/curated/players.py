@@ -18,6 +18,12 @@ def _resolve_team_id(resolver: TeamResolver, raw: str) -> str:
     return resolver.resolve(value)
 
 
+def _nullable_int(value: object, default: int = 0) -> int:
+    if value is None or pd.isna(value):
+        return default
+    return int(value)
+
+
 def build_players_curated(raw_df: pd.DataFrame, resolver: TeamResolver) -> pd.DataFrame:
     rows: list[dict] = []
     for record in raw_df.to_dict(orient="records"):
@@ -115,6 +121,10 @@ def build_player_match_stats_curated(raw_df: pd.DataFrame, resolver: TeamResolve
                 "minutes_played": int(record.get("minutes_played", 0)),
                 "goals": int(record.get("goals", 0)),
                 "assists": int(record.get("assists", 0)),
+                "shots": _nullable_int(record.get("shots")),
+                "xg": _nullable_float(record.get("xg")),
+                "yellow_cards": _nullable_int(record.get("yellow_cards")),
+                "red_cards": _nullable_int(record.get("red_cards")),
                 "source_system": record["source_system"],
                 "source_record_id": record.get("source_record_id"),
                 "ingested_at": record["ingested_at"],

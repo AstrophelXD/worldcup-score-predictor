@@ -23,6 +23,7 @@ epochs: 200
 patience: 25
 
 gradient_checkpointing: true
+event_aux_weight: 0.05
 torch_compile: false
 num_workers: 2
 pin_memory: true

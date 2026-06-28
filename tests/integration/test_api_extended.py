@@ -35,6 +35,7 @@ def test_match_detail_and_features(client):
     assert body["team_strength"]
     assert "player_summary" in body
     assert "market_odds" in body
+    assert "match_events" in body
 
 
 def test_backtest_runs_endpoint(client):

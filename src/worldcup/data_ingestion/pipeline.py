@@ -16,6 +16,7 @@ from worldcup.data_ingestion.curated.players import (
     build_players_curated,
 )
 from worldcup.data_ingestion.curated.ratings import build_elo_curated, build_fifa_rankings_curated
+from worldcup.data_ingestion.curated.team_stats import build_team_match_stats_curated
 from worldcup.data_ingestion.team_resolver import TeamResolver
 from worldcup.utils.paths import ensure_dir
 
@@ -33,6 +34,7 @@ class IngestResult:
     player_stat_count: int = 0
     injury_count: int = 0
     odds_count: int = 0
+    team_match_stat_count: int = 0
 
 
 def run_ingest(
@@ -48,6 +50,7 @@ def run_ingest(
     player_stats_csv: Path | None = None,
     injuries_csv: Path | None = None,
     odds_csv: Path | None = None,
+    team_match_stats_csv: Path | None = None,
     source_systems: dict[str, str],
 ) -> IngestResult:
     ensure_dir(raw_dir)
@@ -165,6 +168,19 @@ def run_ingest(
         curated_paths["odds"] = curated_dir / "odds.parquet"
         write_parquet(odds_curated, str(curated_paths["odds"]))
 
+    team_stats_curated = pd.DataFrame()
+    if team_match_stats_csv and team_match_stats_csv.exists():
+        raw_paths["team_match_stats"] = load_csv_to_raw(
+            team_match_stats_csv,
+            raw_dir,
+            source_systems.get("team_match_stats", "team_match_stats_csv"),
+            "team_match_stats",
+        )
+        team_stats_raw = read_parquet(str(raw_paths["team_match_stats"]))
+        team_stats_curated = build_team_match_stats_curated(team_stats_raw, resolver)
+        curated_paths["team_match_stats"] = curated_dir / "team_match_stats.parquet"
+        write_parquet(team_stats_curated, str(curated_paths["team_match_stats"]))
+
     return IngestResult(
         raw_paths=raw_paths,
         curated_paths=curated_paths,
@@ -177,4 +193,5 @@ def run_ingest(
         player_stat_count=len(player_stats_curated),
         injury_count=len(injuries_curated),
         odds_count=len(odds_curated),
+        team_match_stat_count=len(team_stats_curated),
     )

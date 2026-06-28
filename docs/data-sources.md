@@ -124,6 +124,25 @@ python -m scripts.build_features --config-name=config data=external
 
 ScoreGen 仍使用完整 7 维球员张量；mart 提供 Dashboard / API 统一视图。详见 [`gap-analysis-and-roadmap.md`](./gap-analysis-and-roadmap.md)。
 
+**事件摘要**（P3，需 curated team_match_stats）：`home_xg_for_last5`、`home_shots_for_last5`、`home_cards_last5`、`event_data_available` 等。
+
+### team_match_stats.csv
+
+| 列名 | 必填 | 说明 |
+|------|------|------|
+| team_match_stat_id | 是 | 主键 |
+| match_id | 是 | 对应 matches |
+| team_id | 是 | 球队 canonical id |
+| match_date | 是 | 比赛日期 |
+| xg | 否 | 预期进球 |
+| shots / shots_on_target | 否 | 射门 / 射正 |
+| yellow_cards / red_cards / cards | 否 | 卡牌 |
+| possession | 否 | 控球率 |
+
+外部格式 `statsbomb_team_match` 支持 StatsBomb 风格 team summary CSV。模板：`data/templates/team_match_stats.template.csv`
+
+扩展 **player_match_stats** 可选列：`shots`, `xg`, `yellow_cards`, `red_cards`。
+
 输出：
 
 - `data/staging/canonical/*.csv` — 标准化中间 CSV

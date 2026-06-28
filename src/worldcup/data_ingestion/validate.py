@@ -99,6 +99,7 @@ def validate_curated(curated_dir: Path) -> ValidationReport:
         "player_match_stats": curated_dir / "player_match_stats.parquet",
         "injuries": curated_dir / "injuries.parquet",
         "odds": curated_dir / "odds.parquet",
+        "team_match_stats": curated_dir / "team_match_stats.parquet",
     }
     for name, path in optional.items():
         if not path.exists():

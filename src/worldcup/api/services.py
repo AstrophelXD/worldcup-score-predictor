@@ -157,6 +157,17 @@ def get_features(match_id: str) -> dict[str, Any]:
             "btts_implied": _json_value(row.get("odds_btts_implied")),
             "available": bool(_json_value(row.get("odds_available")) or 0),
         },
+        "match_events": {
+            "home_xg_for_last5": _json_value(row.get("home_xg_for_last5")),
+            "away_xg_for_last5": _json_value(row.get("away_xg_for_last5")),
+            "home_xg_against_last5": _json_value(row.get("home_xg_against_last5")),
+            "away_xg_against_last5": _json_value(row.get("away_xg_against_last5")),
+            "home_shots_for_last5": _json_value(row.get("home_shots_for_last5")),
+            "away_shots_for_last5": _json_value(row.get("away_shots_for_last5")),
+            "home_cards_last5": _json_value(row.get("home_cards_last5")),
+            "away_cards_last5": _json_value(row.get("away_cards_last5")),
+            "available": bool(_json_value(row.get("event_data_available")) or 0),
+        },
     }
 
 

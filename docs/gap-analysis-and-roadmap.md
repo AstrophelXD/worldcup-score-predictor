@@ -122,10 +122,23 @@ python -m scripts.train --config-name=config models=scoregen_4060 training=4060
 python -m scripts.train --config-name=config models=scoregen_4060_safe training=4060
 ```
 
-### P3 — 事件级数据
+### P3 — 事件级数据（已完成）
 
-- xG、射门、卡牌等新表
-- 新预测 head 或 aux loss
+- **`team_match_stats`** canonical 表 + ingest + prepare + StatsBomb adapter
+- **扩展 `player_match_stats`**：`shots` / `xg` / `yellow_cards` / `red_cards`
+- **`event_features.py`**：mart 滚动 xG / 射门 / 卡牌摘要
+- **ScoreGen `MatchEventAuxHead`**：`event_aux_weight` 辅助回归 xG + shots
+- **API `/features`**：`match_events` 块
+
+```bash
+# 重新导出样例/种子（含 team_match_stats）
+python -m scripts.export_sample_data
+python -m scripts.export_external_seeds
+
+python -m scripts.ingest
+python -m scripts.build_features
+python -m scripts.train models=scoregen_4060 training=4060
+```
 
 ---
 

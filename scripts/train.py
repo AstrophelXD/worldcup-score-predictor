@@ -81,6 +81,7 @@ def main(cfg: DictConfig) -> None:
             gradient_checkpointing=bool(models_cfg.get("gradient_checkpointing", False)),
             torch_compile=bool(models_cfg.get("torch_compile", False)),
             num_workers=int(models_cfg.get("num_workers", 0)),
+            event_aux_weight=float(models_cfg.get("event_aux_weight", 0.0)),
             pin_memory=bool(models_cfg.get("pin_memory", False)),
         )
         result = train_scoregen_football_transformer(

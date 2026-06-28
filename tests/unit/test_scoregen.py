@@ -67,6 +67,7 @@ def pipeline_paths():
         "players_csv": root / "data" / "samples" / "players.csv",
         "lineups_csv": root / "data" / "samples" / "lineups.csv",
         "player_stats_csv": root / "data" / "samples" / "player_match_stats.csv",
+        "team_match_stats_csv": root / "data" / "samples" / "team_match_stats.csv",
         "odds_csv": root / "data" / "samples" / "odds.csv",
     }
     yield paths
@@ -84,7 +85,9 @@ def test_scoregen_train_and_predict_smoke(pipeline_paths):
         players_csv=pipeline_paths["players_csv"],
         lineups_csv=pipeline_paths["lineups_csv"],
         player_stats_csv=pipeline_paths["player_stats_csv"],
+        team_match_stats_csv=pipeline_paths["team_match_stats_csv"],
         injuries_csv=project_root() / "data" / "samples" / "injuries.csv",
+        odds_csv=pipeline_paths["odds_csv"],
         source_systems={
             "matches": "t",
             "elo": "t",
@@ -92,7 +95,9 @@ def test_scoregen_train_and_predict_smoke(pipeline_paths):
             "players": "t",
             "lineups": "t",
             "player_match_stats": "t",
+            "team_match_stats": "t",
             "injuries": "t",
+            "odds": "t",
         },
     )
     build_match_feature_mart(
@@ -145,6 +150,7 @@ def test_scoregen_train_and_predict_smoke(pipeline_paths):
             mixed_precision=None,
             odds_path=pipeline_paths["odds_csv"],
             curated_dir=pipeline_paths["curated_dir"],
+            event_aux_weight=0.05,
         ),
     )
     assert result.checkpoint_path.exists()

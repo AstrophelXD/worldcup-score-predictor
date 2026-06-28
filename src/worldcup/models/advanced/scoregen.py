@@ -4,6 +4,7 @@ import torch
 from torch import nn
 
 from worldcup.models.advanced.bivariate_score_head import BivariateMixtureScoreHead
+from worldcup.models.advanced.event_aux_head import MatchEventAuxHead
 from worldcup.models.advanced.match_context_transformer import (
     MatchContextTransformer,
     TeamSequenceEncoder,
@@ -65,6 +66,7 @@ class ScoreGenFootballTransformer(nn.Module):
             n_components=n_components,
             hidden_dim=d_model,
         )
+        self.event_aux_head = MatchEventAuxHead(d_model, hidden_dim=d_model)
 
     def enable_gradient_checkpointing(self) -> None:
         self.home_seq_encoder.gradient_checkpointing = True
@@ -129,6 +131,45 @@ class ScoreGenFootballTransformer(nn.Module):
             dim=1,
         )
         return self.match_transformer(tokens, token_mask)
+
+    def forward_with_events(
+        self,
+        tabular: torch.Tensor,
+        home_seq: torch.Tensor,
+        home_seq_mask: torch.Tensor,
+        away_seq: torch.Tensor,
+        away_seq_mask: torch.Tensor,
+        home_players: torch.Tensor,
+        home_player_mask: torch.Tensor,
+        away_players: torch.Tensor,
+        away_player_mask: torch.Tensor,
+        odds: torch.Tensor,
+        odds_mask: torch.Tensor,
+        edge_home_idx: torch.Tensor,
+        edge_away_idx: torch.Tensor,
+        edge_feats: torch.Tensor,
+        edge_mask: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        context = self._match_context(
+            tabular,
+            home_seq,
+            home_seq_mask,
+            away_seq,
+            away_seq_mask,
+            home_players,
+            home_player_mask,
+            away_players,
+            away_player_mask,
+            odds,
+            odds_mask,
+            edge_home_idx,
+            edge_away_idx,
+            edge_feats,
+            edge_mask,
+        )
+        matrix, log_probs = self.score_head(context)
+        event_preds = self.event_aux_head(context)
+        return matrix, log_probs, event_preds
 
     def forward(
         self,

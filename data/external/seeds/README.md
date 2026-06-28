@@ -7,7 +7,8 @@
 | `wc_matches.csv` | 128 场 WC 2018/2022 赛果 | 赛果真实 |
 | `players.csv` | 41 队 roster | 名单来自公开 catalog |
 | `lineups.csv` | 历史首发 + 1 场 projected | 结构真实 |
-| `player_match_stats.csv` | 由赛果派生进球归属 | 场次真实，归属简化 |
+| `player_match_stats.csv` | 由赛果派生进球 + 射门/xG/卡牌 | 场次真实，归属简化 |
+| `team_match_stats.csv` | WC 128 场球队 xG/射门/卡牌 | 由赛果派生 |
 | `odds.csv` | WC 128 场赔率结构 | 样例化数值 |
 | `injuries.csv` | 公开伤停案例 | 部分真实 |
 

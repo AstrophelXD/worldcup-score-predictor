@@ -10,6 +10,7 @@ import pandas as pd
 import torch
 from torch.utils.data import DataLoader, Dataset
 
+from worldcup.features.event_features import event_targets_for_match
 from worldcup.features.scoregen import (
     PLAYER_FEATURE_DIM,
     PlayerContext,
@@ -50,6 +51,7 @@ class ScoregenTrainConfig:
     torch_compile: bool = False
     num_workers: int = 0
     pin_memory: bool = False
+    event_aux_weight: float = 0.0
 
 
 def _resolve_amp(
@@ -72,26 +74,59 @@ def _compute_batch_loss(
     *,
     grid_max_goal: int,
     aux_loss_weight: float,
+    event_aux_weight: float,
     amp_dtype: torch.dtype | None,
 ) -> torch.Tensor:
+    def _loss_from_outputs(log_probs: torch.Tensor, event_preds: torch.Tensor | None) -> torch.Tensor:
+        return combined_scoregen_loss(
+            log_probs,
+            batch["home_goals"],
+            batch["away_goals"],
+            grid_max_goal=grid_max_goal,
+            aux_weight=aux_loss_weight,
+            event_preds=event_preds,
+            event_targets=batch.get("event_targets"),
+            event_mask=batch.get("event_mask"),
+            event_aux_weight=event_aux_weight,
+        )
+
+    if event_aux_weight > 0:
+        forward = lambda: model.forward_with_events(
+            batch["tabular"],
+            batch["home_seq"],
+            batch["home_seq_mask"],
+            batch["away_seq"],
+            batch["away_seq_mask"],
+            batch["home_players"],
+            batch["home_player_mask"],
+            batch["away_players"],
+            batch["away_player_mask"],
+            batch["odds"],
+            batch["odds_mask"],
+            batch["edge_home_idx"],
+            batch["edge_away_idx"],
+            batch["edge_feats"],
+            batch["edge_mask"],
+        )
+    else:
+        forward = lambda: _model_forward(model, batch)
+
     if amp_dtype is not None:
         with torch.autocast(device_type="cuda", dtype=amp_dtype):
-            _, log_probs = _model_forward(model, batch)
-            return combined_scoregen_loss(
-                log_probs,
-                batch["home_goals"],
-                batch["away_goals"],
-                grid_max_goal=grid_max_goal,
-                aux_weight=aux_loss_weight,
-            )
-    _, log_probs = _model_forward(model, batch)
-    return combined_scoregen_loss(
-        log_probs,
-        batch["home_goals"],
-        batch["away_goals"],
-        grid_max_goal=grid_max_goal,
-        aux_weight=aux_loss_weight,
-    )
+            outputs = forward()
+            if event_aux_weight > 0:
+                _, log_probs, event_preds = outputs
+            else:
+                _, log_probs = outputs
+                event_preds = None
+            return _loss_from_outputs(log_probs, event_preds)
+    outputs = forward()
+    if event_aux_weight > 0:
+        _, log_probs, event_preds = outputs
+    else:
+        _, log_probs = outputs
+        event_preds = None
+    return _loss_from_outputs(log_probs, event_preds)
 
 
 def _model_forward(model: ScoreGenFootballTransformer, batch: dict[str, torch.Tensor]):
@@ -122,12 +157,14 @@ class ScoreGenMatchDataset(Dataset):
         spec: ScoreGenFeatureSpec,
         odds_df: pd.DataFrame,
         player_context: PlayerContext,
+        team_stats: pd.DataFrame,
     ) -> None:
         self.features = features.reset_index(drop=True)
         self.matches = matches
         self.spec = spec
         self.odds_df = odds_df
         self.player_context = player_context
+        self.team_stats = team_stats
 
     def __len__(self) -> int:
         return len(self.features)
@@ -142,6 +179,12 @@ class ScoreGenMatchDataset(Dataset):
             self.player_context,
         )
         home_goals, away_goals = extract_labels(pd.DataFrame([row]))
+        event_targets, event_available = event_targets_for_match(
+            self.team_stats,
+            str(row["match_id"]),
+            str(row["home_team_id"]),
+            str(row["away_team_id"]),
+        )
         return {
             "tabular": torch.from_numpy(item["tabular"]),
             "home_seq": torch.from_numpy(item["home_seq"]),
@@ -160,6 +203,8 @@ class ScoreGenMatchDataset(Dataset):
             "odds_mask": torch.tensor(item["odds_mask"], dtype=torch.bool),
             "home_goals": torch.tensor(int(home_goals[0]), dtype=torch.long),
             "away_goals": torch.tensor(int(away_goals[0]), dtype=torch.long),
+            "event_targets": torch.tensor(event_targets, dtype=torch.float32),
+            "event_mask": torch.tensor(event_available, dtype=torch.bool),
         }
 
 
@@ -169,6 +214,8 @@ def _collate(batch: list[dict]) -> dict[str, torch.Tensor]:
     for key in keys:
         values = [item[key] for item in batch]
         if key == "odds_mask":
+            output[key] = torch.stack(values)
+        elif key == "event_mask":
             output[key] = torch.stack(values)
         elif values[0].dtype == torch.bool:
             output[key] = torch.stack(values)
@@ -250,6 +297,16 @@ def train_scoregen_football_transformer(
 
     odds_df = load_odds_table(train_cfg.odds_path)
     player_context = load_player_context(train_cfg.curated_dir)
+    team_stats_path = (
+        train_cfg.curated_dir / "team_match_stats.parquet"
+        if train_cfg.curated_dir
+        else None
+    )
+    team_stats = (
+        pd.read_parquet(team_stats_path)
+        if team_stats_path and team_stats_path.exists()
+        else pd.DataFrame()
+    )
     spec = fit_scoregen_spec(
         train_df,
         matches,
@@ -259,13 +316,14 @@ def train_scoregen_football_transformer(
         player_context=player_context,
     )
 
-    train_ds = ScoreGenMatchDataset(train_df, matches, spec, odds_df, player_context)
+    train_ds = ScoreGenMatchDataset(train_df, matches, spec, odds_df, player_context, team_stats)
     val_ds = ScoreGenMatchDataset(
         val_df if not val_df.empty else train_df.iloc[0:0],
         matches,
         spec,
         odds_df,
         player_context,
+        team_stats,
     )
     train_loader = DataLoader(
         train_ds,
@@ -334,6 +392,7 @@ def train_scoregen_football_transformer(
                 batch,
                 grid_max_goal=grid_max_goal,
                 aux_loss_weight=train_cfg.aux_loss_weight,
+                event_aux_weight=train_cfg.event_aux_weight,
                 amp_dtype=amp_dtype if use_amp else None,
             )
             loss = loss / grad_accum

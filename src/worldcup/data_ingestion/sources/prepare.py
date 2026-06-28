@@ -12,6 +12,7 @@ from worldcup.data_ingestion.sources.transformers import (
     transform_fifa_rankings,
     transform_football_data_odds,
     transform_kaggle_international,
+    transform_statsbomb_team_match,
 )
 from worldcup.utils.paths import ensure_dir
 
@@ -22,6 +23,7 @@ class SourceFormat(StrEnum):
     ELO_RATINGS_WORLD_TSV = "eloratings_world_tsv"
     FIFA_RANKINGS = "fifa_rankings"
     FOOTBALL_DATA_ODDS = "football_data_odds"
+    STATSBOMB_TEAM_MATCH = "statsbomb_team_match"
     CANONICAL = "canonical"
 
 
@@ -31,6 +33,7 @@ TRANSFORMERS = {
     SourceFormat.ELO_RATINGS_WORLD_TSV: transform_eloratings_world_tsv,
     SourceFormat.FIFA_RANKINGS: transform_fifa_rankings,
     SourceFormat.FOOTBALL_DATA_ODDS: transform_football_data_odds,
+    SourceFormat.STATSBOMB_TEAM_MATCH: transform_statsbomb_team_match,
 }
 
 
@@ -44,6 +47,7 @@ class PreparedPaths:
     player_match_stats: Path | None = None
     injuries: Path | None = None
     odds: Path | None = None
+    team_match_stats: Path | None = None
 
 
 def _read_source(path: Path, fmt: SourceFormat) -> pd.DataFrame:
@@ -103,6 +107,7 @@ def prepare_external_sources(
     player_stat_sources: list[dict] | None = None,
     injury_sources: list[dict] | None = None,
     odds_sources: list[dict] | None = None,
+    team_match_stat_sources: list[dict] | None = None,
     include_samples: bool,
     samples_dir: Path,
 ) -> PreparedPaths:
@@ -115,6 +120,7 @@ def prepare_external_sources(
     player_stat_sources = player_stat_sources or []
     injury_sources = injury_sources or []
     odds_sources = odds_sources or []
+    team_match_stat_sources = team_match_stat_sources or []
 
     match_frames: list[pd.DataFrame] = []
     if include_samples:
@@ -214,6 +220,12 @@ def prepare_external_sources(
         "injuries.csv", injury_sources, "injuries.csv", ["injury_id"]
     )
     odds_path = _prepare_player_table("odds.csv", odds_sources, "odds.csv", ["match_id", "snapshot_ts"])
+    team_stats_path = _prepare_player_table(
+        "team_match_stats.csv",
+        team_match_stat_sources,
+        "team_match_stats.csv",
+        ["team_match_stat_id"],
+    )
 
     return PreparedPaths(
         matches=matches_path,
@@ -224,4 +236,5 @@ def prepare_external_sources(
         player_match_stats=stats_path,
         injuries=injuries_path,
         odds=odds_path,
+        team_match_stats=team_stats_path,
     )

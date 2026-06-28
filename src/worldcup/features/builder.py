@@ -7,7 +7,8 @@ import pandas as pd
 
 from worldcup.data_ingestion.base import read_parquet, write_parquet
 from worldcup.features.form import rest_days, rolling_form, team_match_history
-from worldcup.features.odds_features import ODDS_SUMMARY_COLUMNS, build_odds_summary_row, load_odds_curated
+from worldcup.features.event_features import EVENT_SUMMARY_COLUMNS, build_event_summary_row
+from worldcup.features.odds_features import build_odds_summary_row, load_odds_curated
 from worldcup.features.player_match_features import PLAYER_SUMMARY_COLUMNS, build_player_summary_row
 from worldcup.features.point_in_time import as_of_timestamp
 from worldcup.features.strength import latest_rating_before
@@ -41,6 +42,7 @@ def build_match_feature_mart(
     stats = _load_optional_parquet(curated_dir, "player_match_stats.parquet")
     injuries = _load_optional_parquet(curated_dir, "injuries.parquet")
     odds = load_odds_curated(curated_dir)
+    team_stats = _load_optional_parquet(curated_dir, "team_match_stats.parquet")
 
     matches = matches.sort_values("kickoff_ts").reset_index(drop=True)
     lineup_match_ids: set[str] = set()
@@ -120,6 +122,16 @@ def build_match_feature_mart(
                 odds,
                 str(match["match_id"]),
                 pd.Timestamp(as_of),
+            )
+        )
+        row.update(
+            build_event_summary_row(
+                match_id=str(match["match_id"]),
+                home_team_id=str(home_id),
+                away_team_id=str(away_id),
+                as_of_time=pd.Timestamp(as_of),
+                team_stats=team_stats,
+                matches=matches,
             )
         )
 
