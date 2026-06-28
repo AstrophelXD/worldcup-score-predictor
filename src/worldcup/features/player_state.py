@@ -7,6 +7,8 @@ import pandas as pd
 
 from worldcup.features.point_in_time import filter_before
 
+PLAYER_FEATURE_DIM = 7
+
 POSITION_LINE = {
     "GK": 0.0,
     "CB": 0.25,
@@ -30,6 +32,8 @@ PRIMARY_MATCHUP_PAIRS = {
     ("RW", "LB"),
     ("LW", "RB"),
 }
+
+STATUS_RANK = {"official": 0, "historical": 1, "projected": 2}
 
 
 def position_line(position_code: str | None) -> float:
@@ -82,6 +86,67 @@ def rolling_player_form(
     )
 
 
+def player_availability(
+    injuries: pd.DataFrame,
+    player_id: str,
+    team_id: str,
+    as_of_time: pd.Timestamp,
+) -> float:
+    if injuries.empty:
+        return 1.0
+    rows = injuries.loc[
+        (injuries["player_id"] == player_id) & (injuries["team_id"] == team_id)
+    ].copy()
+    if rows.empty:
+        return 1.0
+
+    as_of_date = as_of_time.date()
+    active_rows: list[pd.Series] = []
+    for _, row in rows.iterrows():
+        start = pd.to_datetime(row["start_date"]).date()
+        if pd.isna(start) or start > as_of_date:
+            continue
+        expected = row.get("expected_return_date")
+        status = str(row.get("status", "out")).lower()
+        if (
+            expected is not None
+            and not pd.isna(expected)
+            and str(expected).strip()
+            and status in {"out", "suspended"}
+        ):
+            expected_date = pd.to_datetime(expected).date()
+            if expected_date <= as_of_date:
+                continue
+        active_rows.append(row)
+
+    if not active_rows:
+        return 1.0
+
+    latest = sorted(active_rows, key=lambda item: item["start_date"])[-1]
+    status = str(latest.get("status", "out")).lower()
+    if status in {"out", "suspended"}:
+        return 0.0
+    if status in {"doubtful", "questionable"}:
+        confidence = latest.get("confidence")
+        if confidence is not None and not pd.isna(confidence):
+            return float(max(0.25, min(float(confidence), 0.75)))
+        return 0.5
+    if status in {"fit", "available"}:
+        return 1.0
+    return 0.7
+
+
+def _lineup_row_eligible(row: pd.Series, as_of_time: pd.Timestamp) -> bool:
+    status = str(row.get("lineup_status", "historical")).lower()
+    if status != "projected":
+        return True
+    snapshot = row.get("snapshot_ts")
+    if snapshot is None or pd.isna(snapshot) or not str(snapshot).strip():
+        return True
+    snapshot_ts = pd.to_datetime(snapshot, utc=True)
+    return snapshot_ts <= as_of_time
+
+
 def lineup_entries_for_match(
     lineups: pd.DataFrame,
     match_id: str,
@@ -97,11 +162,23 @@ def lineup_entries_for_match(
     ].copy()
     if rows.empty:
         return rows
+
+    rows = rows.loc[rows.apply(lambda row: _lineup_row_eligible(row, as_of_time), axis=1)]
+    if rows.empty:
+        return rows
+
     if prefer_starting:
         rows = rows.loc[rows["is_starting"].astype(bool)]
-    status_rank = {"official": 0, "historical": 1, "projected": 2}
-    rows["status_rank"] = rows["lineup_status"].map(status_rank).fillna(9)
-    return rows.sort_values(["status_rank", "projection_prob"], ascending=[True, False])
+    if rows.empty:
+        return rows
+
+    rows["status_rank"] = rows["lineup_status"].str.lower().map(STATUS_RANK).fillna(9)
+    best_rank = rows["status_rank"].min()
+    rows = rows.loc[rows["status_rank"] == best_rank]
+    prob_col = "projection_prob"
+    if prob_col in rows.columns:
+        return rows.sort_values(prob_col, ascending=False)
+    return rows
 
 
 def build_player_vector(
@@ -110,9 +187,11 @@ def build_player_vector(
     form: PlayerFormWindow,
     is_starter: bool,
     position_code: str | None,
+    availability: float,
     rating_scale: float = 100.0,
 ) -> np.ndarray:
     rating = float(player_row.get("player_rating") or 70.0) / rating_scale
+    rating *= max(0.0, min(availability, 1.0))
     return np.array(
         [
             rating,
@@ -121,6 +200,7 @@ def build_player_vector(
             min(form.assists_last5, 5.0) / 5.0,
             1.0 if is_starter else 0.0,
             position_line(position_code),
+            max(0.0, min(availability, 1.0)),
         ],
         dtype=np.float32,
     )
@@ -135,8 +215,9 @@ def build_team_player_tensors(
     players: pd.DataFrame,
     lineups: pd.DataFrame,
     stats: pd.DataFrame,
+    injuries: pd.DataFrame,
 ) -> tuple[np.ndarray, np.ndarray, list[str | None]]:
-    tensor = np.zeros((player_slots, 6), dtype=np.float32)
+    tensor = np.zeros((player_slots, PLAYER_FEATURE_DIM), dtype=np.float32)
     mask = np.zeros(player_slots, dtype=bool)
     positions: list[str | None] = [None] * player_slots
 
@@ -145,9 +226,15 @@ def build_team_player_tensors(
         return tensor, mask, positions
 
     player_lookup = players.set_index("player_id") if not players.empty else pd.DataFrame()
-    for slot, (_, entry) in enumerate(entries.head(player_slots).iterrows()):
+    slot = 0
+    for _, entry in entries.iterrows():
+        if slot >= player_slots:
+            break
         player_id = str(entry["player_id"])
         if player_lookup.empty or player_id not in player_lookup.index:
+            continue
+        availability = player_availability(injuries, player_id, team_id, as_of_time)
+        if availability <= 0.0:
             continue
         player_row = player_lookup.loc[player_id]
         form = rolling_player_form(stats, player_id, as_of_time)
@@ -157,7 +244,9 @@ def build_team_player_tensors(
             form=form,
             is_starter=bool(entry.get("is_starting", True)),
             position_code=str(pos) if pos else None,
+            availability=availability,
         )
         mask[slot] = True
         positions[slot] = str(pos) if pos else None
+        slot += 1
     return tensor, mask, positions

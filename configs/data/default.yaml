@@ -11,6 +11,7 @@ sources:
   players: ${data.samples_dir}/players.csv
   lineups: ${data.samples_dir}/lineups.csv
   player_match_stats: ${data.samples_dir}/player_match_stats.csv
+  injuries: ${data.samples_dir}/injuries.csv
   odds: ${data.samples_dir}/odds.csv
 
 source_systems:
@@ -20,3 +21,4 @@ source_systems:
   players: sample_players_csv
   lineups: sample_lineups_csv
   player_match_stats: sample_player_stats_csv
+  injuries: sample_injuries_csv

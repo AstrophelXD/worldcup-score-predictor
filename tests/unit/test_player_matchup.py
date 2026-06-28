@@ -38,6 +38,7 @@ def test_build_matchup_graph_for_final():
     players = pd.read_csv(project_root() / "data" / "samples" / "players.csv")
     lineups = pd.read_csv(project_root() / "data" / "samples" / "lineups.csv")
     stats = pd.read_csv(project_root() / "data" / "samples" / "player_match_stats.csv")
+    injuries = pd.read_csv(project_root() / "data" / "samples" / "injuries.csv")
     as_of = pd.Timestamp("2022-12-18T15:00:00Z", tz="UTC")
     home_players, home_mask, home_positions = build_team_player_tensors(
         match_id="wc2022_arg_fra_final",
@@ -47,6 +48,7 @@ def test_build_matchup_graph_for_final():
         players=players,
         lineups=lineups,
         stats=stats,
+        injuries=injuries,
     )
     away_players, away_mask, away_positions = build_team_player_tensors(
         match_id="wc2022_arg_fra_final",
@@ -56,6 +58,7 @@ def test_build_matchup_graph_for_final():
         players=players,
         lineups=lineups,
         stats=stats,
+        injuries=injuries,
     )
     assert home_mask.sum() == 11
     assert away_mask.sum() == 11

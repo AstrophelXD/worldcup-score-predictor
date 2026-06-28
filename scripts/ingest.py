@@ -41,13 +41,15 @@ def main(cfg: DictConfig) -> None:
         players_csv=_resolve_path(data.sources.get("players")),
         lineups_csv=_resolve_path(data.sources.get("lineups")),
         player_stats_csv=_resolve_path(data.sources.get("player_match_stats")),
+        injuries_csv=_resolve_path(data.sources.get("injuries")),
         source_systems=source_systems,
     )
 
     logger.info("Raw outputs: %s", {k: str(v) for k, v in result.raw_paths.items()})
     logger.info("Curated outputs: %s", {k: str(v) for k, v in result.curated_paths.items()})
     logger.info(
-        "Counts: teams=%s matches=%s elo=%s fifa=%s players=%s lineups=%s player_stats=%s",
+        "Counts: teams=%s matches=%s elo=%s fifa=%s players=%s lineups=%s "
+        "player_stats=%s injuries=%s",
         result.team_count,
         result.match_count,
         result.elo_count,
@@ -55,6 +57,7 @@ def main(cfg: DictConfig) -> None:
         result.player_count,
         result.lineup_count,
         result.player_stat_count,
+        result.injury_count,
     )
 
     report = validate_curated(Path(str(data.curated_dir)))

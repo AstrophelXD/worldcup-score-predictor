@@ -33,6 +33,10 @@ class PreparedPaths:
     matches: Path | None
     elo: Path | None
     fifa_rankings: Path | None
+    players: Path | None = None
+    lineups: Path | None = None
+    player_match_stats: Path | None = None
+    injuries: Path | None = None
 
 
 def _read_source(path: Path, fmt: SourceFormat) -> pd.DataFrame:
@@ -67,18 +71,35 @@ def _dedupe_matches(df: pd.DataFrame) -> pd.DataFrame:
     return ordered.drop_duplicates(subset=["match_id"], keep="last").reset_index(drop=True)
 
 
+def _write_canonical(frames: list[pd.DataFrame], path: Path, subset: list[str] | None) -> Path:
+    df = _align_concat(frames)
+    if subset and not df.empty:
+        df = df.drop_duplicates(subset=subset, keep="last")
+    df.to_csv(path, index=False)
+    return path
+
+
 def prepare_external_sources(
     *,
     staging_dir: Path,
     match_sources: list[dict],
     elo_sources: list[dict],
     fifa_sources: list[dict],
+    player_sources: list[dict] | None = None,
+    lineup_sources: list[dict] | None = None,
+    player_stat_sources: list[dict] | None = None,
+    injury_sources: list[dict] | None = None,
     include_samples: bool,
     samples_dir: Path,
 ) -> PreparedPaths:
     ensure_dir(staging_dir)
     canonical_dir = staging_dir / "canonical"
     ensure_dir(canonical_dir)
+
+    player_sources = player_sources or []
+    lineup_sources = lineup_sources or []
+    player_stat_sources = player_stat_sources or []
+    injury_sources = injury_sources or []
 
     match_frames: list[pd.DataFrame] = []
     if include_samples:
@@ -114,11 +135,11 @@ def prepare_external_sources(
     elo_frames = [frame for frame in elo_frames if not frame.empty]
     elo_path = None
     if elo_frames:
-        elo_df = _align_concat(elo_frames).drop_duplicates(
-            subset=["team_name", "rating_date"], keep="last"
+        elo_path = _write_canonical(
+            elo_frames,
+            canonical_dir / "elo.csv",
+            ["team_name", "rating_date"],
         )
-        elo_path = canonical_dir / "elo.csv"
-        elo_df.to_csv(elo_path, index=False)
 
     fifa_frames: list[pd.DataFrame] = []
     if include_samples:
@@ -134,10 +155,56 @@ def prepare_external_sources(
     fifa_frames = [frame for frame in fifa_frames if not frame.empty]
     fifa_path = None
     if fifa_frames:
-        fifa_df = _align_concat(fifa_frames).drop_duplicates(
-            subset=["team_name", "ranking_date"], keep="last"
+        fifa_path = _write_canonical(
+            fifa_frames,
+            canonical_dir / "fifa_rankings.csv",
+            ["team_name", "ranking_date"],
         )
-        fifa_path = canonical_dir / "fifa_rankings.csv"
-        fifa_df.to_csv(fifa_path, index=False)
 
-    return PreparedPaths(matches=matches_path, elo=elo_path, fifa_rankings=fifa_path)
+    def _prepare_player_table(
+        sample_name: str,
+        sources: list[dict],
+        output_name: str,
+        dedupe_cols: list[str],
+    ) -> Path | None:
+        frames: list[pd.DataFrame] = []
+        sample_path = samples_dir / sample_name
+        if include_samples and sample_path.exists():
+            frames.append(_transform(sample_path, SourceFormat.CANONICAL))
+        for item in sources:
+            path = Path(str(item["path"]))
+            fmt = SourceFormat(str(item["format"]))
+            if not path.exists():
+                raise FileNotFoundError(f"{output_name} source not found: {path}")
+            frames.append(_transform(path, fmt))
+        frames = [frame for frame in frames if not frame.empty]
+        if not frames:
+            return None
+        out = canonical_dir / output_name
+        return _write_canonical(frames, out, dedupe_cols)
+
+    players_path = _prepare_player_table(
+        "players.csv", player_sources, "players.csv", ["player_id"]
+    )
+    lineups_path = _prepare_player_table(
+        "lineups.csv", lineup_sources, "lineups.csv", ["lineup_id"]
+    )
+    stats_path = _prepare_player_table(
+        "player_match_stats.csv",
+        player_stat_sources,
+        "player_match_stats.csv",
+        ["stat_id"],
+    )
+    injuries_path = _prepare_player_table(
+        "injuries.csv", injury_sources, "injuries.csv", ["injury_id"]
+    )
+
+    return PreparedPaths(
+        matches=matches_path,
+        elo=elo_path,
+        fifa_rankings=fifa_path,
+        players=players_path,
+        lineups=lineups_path,
+        player_match_stats=stats_path,
+        injuries=injuries_path,
+    )

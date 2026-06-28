@@ -18,12 +18,17 @@ def main(cfg: DictConfig) -> None:
     resolved = OmegaConf.to_container(cfg, resolve=True)
     assert isinstance(resolved, dict)
     data_cfg = resolved["data"]
+    external_inputs = data_cfg.get("external_inputs", {})
 
     result = prepare_external_sources(
         staging_dir=Path(str(data_cfg["staging_dir"])),
-        match_sources=list(data_cfg.get("external_inputs", {}).get("matches", [])),
-        elo_sources=list(data_cfg.get("external_inputs", {}).get("elo", [])),
-        fifa_sources=list(data_cfg.get("external_inputs", {}).get("fifa_rankings", [])),
+        match_sources=list(external_inputs.get("matches", [])),
+        elo_sources=list(external_inputs.get("elo", [])),
+        fifa_sources=list(external_inputs.get("fifa_rankings", [])),
+        player_sources=list(external_inputs.get("players", [])),
+        lineup_sources=list(external_inputs.get("lineups", [])),
+        player_stat_sources=list(external_inputs.get("player_match_stats", [])),
+        injury_sources=list(external_inputs.get("injuries", [])),
         include_samples=bool(data_cfg.get("include_samples", False)),
         samples_dir=Path(str(data_cfg["samples_dir"])),
     )
@@ -32,6 +37,10 @@ def main(cfg: DictConfig) -> None:
     logger.info("  matches=%s", result.matches)
     logger.info("  elo=%s", result.elo)
     logger.info("  fifa_rankings=%s", result.fifa_rankings)
+    logger.info("  players=%s", result.players)
+    logger.info("  lineups=%s", result.lineups)
+    logger.info("  player_match_stats=%s", result.player_match_stats)
+    logger.info("  injuries=%s", result.injuries)
     logger.info("Next: python -m scripts.ingest --config-name=config data=external")
 
 

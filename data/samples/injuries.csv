@@ -1,0 +1,6 @@
+injury_id,player_id,team_id,injury_type,status,start_date,expected_return_date,confidence,notes
+inj_fra_kante_wc22,pla_kante,team_fra,muscle,out,2022-11-01,2023-03-01,0.95,Did not travel to Qatar
+inj_fra_pogba_wc22,pla_pogba,team_fra,knee,out,2022-09-01,,0.99,Season-ending surgery
+inj_fra_benzema_wc22,pla_benzema,team_fra,muscle,out,2022-11-19,,0.98,Left camp before WC
+inj_arg_dybala_wc22,pla_dybala,team_arg,muscle,doubtful,2022-11-10,2022-12-01,0.6,Limited minutes risk
+inj_eng_kane_wc22,pla_kane,team_eng,ankle,fit,2022-11-01,,1.0,Cleared for WC

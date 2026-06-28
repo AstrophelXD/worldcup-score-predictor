@@ -18,14 +18,27 @@ external_inputs:
   fifa_rankings:
     - path: ${data.external_dir}/examples/fifa_rankings_history.csv
       format: fifa_rankings
+  players: []
+  lineups: []
+  player_match_stats: []
+  injuries: []
 
 # After prepare_data, ingest reads from staging canonical CSVs.
 sources:
   matches: ${data.staging_dir}/canonical/matches.csv
   elo: ${data.staging_dir}/canonical/elo.csv
   fifa_rankings: ${data.staging_dir}/canonical/fifa_rankings.csv
+  players: ${data.staging_dir}/canonical/players.csv
+  lineups: ${data.staging_dir}/canonical/lineups.csv
+  player_match_stats: ${data.staging_dir}/canonical/player_match_stats.csv
+  injuries: ${data.staging_dir}/canonical/injuries.csv
+  odds: ${data.samples_dir}/odds.csv
 
 source_systems:
   matches: external_prepared_csv
   elo: external_prepared_csv
   fifa_rankings: external_prepared_csv
+  players: external_prepared_csv
+  lineups: external_prepared_csv
+  player_match_stats: external_prepared_csv
+  injuries: external_prepared_csv

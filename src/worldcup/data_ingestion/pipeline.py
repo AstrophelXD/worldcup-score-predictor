@@ -9,6 +9,7 @@ from worldcup.data_ingestion.base import read_parquet, write_parquet
 from worldcup.data_ingestion.csv_loader import load_csv_to_raw
 from worldcup.data_ingestion.curated.matches import build_matches_curated, build_teams_curated
 from worldcup.data_ingestion.curated.players import (
+    build_injuries_curated,
     build_lineups_curated,
     build_player_match_stats_curated,
     build_players_curated,
@@ -29,6 +30,7 @@ class IngestResult:
     player_count: int = 0
     lineup_count: int = 0
     player_stat_count: int = 0
+    injury_count: int = 0
 
 
 def run_ingest(
@@ -42,6 +44,7 @@ def run_ingest(
     players_csv: Path | None = None,
     lineups_csv: Path | None = None,
     player_stats_csv: Path | None = None,
+    injuries_csv: Path | None = None,
     source_systems: dict[str, str],
 ) -> IngestResult:
     ensure_dir(raw_dir)
@@ -133,6 +136,19 @@ def run_ingest(
         curated_paths["player_match_stats"] = curated_dir / "player_match_stats.parquet"
         write_parquet(player_stats_curated, str(curated_paths["player_match_stats"]))
 
+    injuries_curated = pd.DataFrame()
+    if injuries_csv and injuries_csv.exists():
+        raw_paths["injuries"] = load_csv_to_raw(
+            injuries_csv,
+            raw_dir,
+            source_systems.get("injuries", "injuries_csv"),
+            "injuries",
+        )
+        injuries_raw = read_parquet(str(raw_paths["injuries"]))
+        injuries_curated = build_injuries_curated(injuries_raw, resolver)
+        curated_paths["injuries"] = curated_dir / "injuries.parquet"
+        write_parquet(injuries_curated, str(curated_paths["injuries"]))
+
     return IngestResult(
         raw_paths=raw_paths,
         curated_paths=curated_paths,
@@ -143,4 +159,5 @@ def run_ingest(
         player_count=len(players_curated),
         lineup_count=len(lineups_curated),
         player_stat_count=len(player_stats_curated),
+        injury_count=len(injuries_curated),
     )

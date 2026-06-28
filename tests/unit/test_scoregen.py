@@ -84,6 +84,7 @@ def test_scoregen_train_and_predict_smoke(pipeline_paths):
         players_csv=pipeline_paths["players_csv"],
         lineups_csv=pipeline_paths["lineups_csv"],
         player_stats_csv=pipeline_paths["player_stats_csv"],
+        injuries_csv=project_root() / "data" / "samples" / "injuries.csv",
         source_systems={
             "matches": "t",
             "elo": "t",
@@ -91,6 +92,7 @@ def test_scoregen_train_and_predict_smoke(pipeline_paths):
             "players": "t",
             "lineups": "t",
             "player_match_stats": "t",
+            "injuries": "t",
         },
     )
     build_match_feature_mart(
@@ -112,7 +114,7 @@ def test_scoregen_train_and_predict_smoke(pipeline_paths):
         odds_path=pipeline_paths["odds_csv"],
         player_context=player_context,
     )
-    assert spec.player_dim == 6
+    assert spec.player_dim == 7
     assert spec.odds_dim == 6
     assert odds_df.shape[0] >= 1
 

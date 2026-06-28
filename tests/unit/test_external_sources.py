@@ -71,4 +71,25 @@ def test_prepare_external_sources_merges_samples():
     assert result.matches and result.matches.exists()
     matches = pd.read_csv(result.matches)
     assert len(matches) > 5
+def test_prepare_external_sources_includes_player_tables():
+    import shutil
+
+    staging_dir = project_root() / "tests" / "tmp" / "prepare_player"
+    if staging_dir.exists():
+        shutil.rmtree(staging_dir)
+    staging_dir.mkdir(parents=True)
+
+    result = prepare_external_sources(
+        staging_dir=staging_dir,
+        match_sources=[],
+        elo_sources=[],
+        fifa_sources=[],
+        include_samples=True,
+        samples_dir=project_root() / "data" / "samples",
+    )
+    assert result.players and result.players.exists()
+    assert result.lineups and result.lineups.exists()
+    assert result.injuries and result.injuries.exists()
+    injuries = pd.read_csv(result.injuries)
+    assert len(injuries) >= 1
     shutil.rmtree(staging_dir, ignore_errors=True)

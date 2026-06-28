@@ -11,11 +11,9 @@ from worldcup.features.matchup_graph import (
     EDGE_FEATURE_DIM,
     build_matchup_graph,
 )
-from worldcup.features.player_state import build_team_player_tensors
+from worldcup.features.player_state import PLAYER_FEATURE_DIM, build_team_player_tensors
 from worldcup.features.point_in_time import filter_before
 from worldcup.features.tabular import TabularFeatureSpec, fit_feature_spec
-
-PLAYER_FEATURE_DIM = 6
 
 SEQ_FEATURE_NAMES = [
     "goals_for",
@@ -40,6 +38,7 @@ class PlayerContext:
     players: pd.DataFrame
     lineups: pd.DataFrame
     stats: pd.DataFrame
+    injuries: pd.DataFrame
 
 
 @dataclass
@@ -97,14 +96,17 @@ class ScoreGenFeatureSpec:
 
 def load_player_context(curated_dir: Path | None) -> PlayerContext:
     if curated_dir is None:
-        return PlayerContext(players=pd.DataFrame(), lineups=pd.DataFrame(), stats=pd.DataFrame())
+        empty = pd.DataFrame()
+        return PlayerContext(players=empty, lineups=empty, stats=empty, injuries=empty)
     players_path = curated_dir / "players.parquet"
     lineups_path = curated_dir / "lineups.parquet"
     stats_path = curated_dir / "player_match_stats.parquet"
+    injuries_path = curated_dir / "injuries.parquet"
     players = pd.read_parquet(players_path) if players_path.exists() else pd.DataFrame()
     lineups = pd.read_parquet(lineups_path) if lineups_path.exists() else pd.DataFrame()
     stats = pd.read_parquet(stats_path) if stats_path.exists() else pd.DataFrame()
-    return PlayerContext(players=players, lineups=lineups, stats=stats)
+    injuries = pd.read_parquet(injuries_path) if injuries_path.exists() else pd.DataFrame()
+    return PlayerContext(players=players, lineups=lineups, stats=stats, injuries=injuries)
 
 
 def _normalize_odds(home: float, draw: float, away: float) -> tuple[float, float, float]:
@@ -260,7 +262,10 @@ def fit_scoregen_spec(
 ) -> ScoreGenFeatureSpec:
     tabular_spec = fit_feature_spec(features)
     player_context = player_context or PlayerContext(
-        players=pd.DataFrame(), lineups=pd.DataFrame(), stats=pd.DataFrame()
+        players=pd.DataFrame(),
+        lineups=pd.DataFrame(),
+        stats=pd.DataFrame(),
+        injuries=pd.DataFrame(),
     )
 
     seq_rows: list[np.ndarray] = []
@@ -282,6 +287,7 @@ def fit_scoregen_spec(
             players=player_context.players,
             lineups=player_context.lineups,
             stats=player_context.stats,
+            injuries=player_context.injuries,
         )
         away_players, away_player_mask, _ = build_team_player_tensors(
             match_id=str(row.match_id),
@@ -291,6 +297,7 @@ def fit_scoregen_spec(
             players=player_context.players,
             lineups=player_context.lineups,
             stats=player_context.stats,
+            injuries=player_context.injuries,
         )
         if home_player_mask.any():
             player_rows.append(home_players[home_player_mask])
@@ -353,7 +360,10 @@ def build_scoregen_batch_item(
     player_context: PlayerContext | None = None,
 ) -> dict[str, np.ndarray | bool]:
     player_context = player_context or PlayerContext(
-        players=pd.DataFrame(), lineups=pd.DataFrame(), stats=pd.DataFrame()
+        players=pd.DataFrame(),
+        lineups=pd.DataFrame(),
+        stats=pd.DataFrame(),
+        injuries=pd.DataFrame(),
     )
     as_of = pd.to_datetime(row["as_of_time"], utc=True)
     tabular = vectorize_tabular_row(row, spec)
@@ -372,6 +382,7 @@ def build_scoregen_batch_item(
         players=player_context.players,
         lineups=player_context.lineups,
         stats=player_context.stats,
+        injuries=player_context.injuries,
     )
     away_players, away_player_mask, away_positions = build_team_player_tensors(
         match_id=str(row["match_id"]),
@@ -381,6 +392,7 @@ def build_scoregen_batch_item(
         players=player_context.players,
         lineups=player_context.lineups,
         stats=player_context.stats,
+        injuries=player_context.injuries,
     )
     home_players = normalize_players(home_players, spec)
     away_players = normalize_players(away_players, spec)

@@ -44,6 +44,12 @@ def build_lineups_curated(raw_df: pd.DataFrame, resolver: TeamResolver) -> pd.Da
     rows: list[dict] = []
     for record in raw_df.to_dict(orient="records"):
         team_id = _resolve_team_id(resolver, str(record["team_id"]))
+        snapshot = record.get("snapshot_ts")
+        snapshot_ts = (
+            pd.to_datetime(snapshot, utc=True).isoformat()
+            if snapshot is not None and not pd.isna(snapshot) and str(snapshot).strip()
+            else None
+        )
         rows.append(
             {
                 "lineup_id": str(record["lineup_id"]),
@@ -56,6 +62,36 @@ def build_lineups_curated(raw_df: pd.DataFrame, resolver: TeamResolver) -> pd.Da
                 "formation_slot": record.get("formation_slot"),
                 "lineup_status": str(record.get("lineup_status", "historical")),
                 "projection_prob": _nullable_float(record.get("projection_prob")),
+                "snapshot_ts": snapshot_ts,
+                "source_system": record["source_system"],
+                "source_record_id": record.get("source_record_id"),
+                "ingested_at": record["ingested_at"],
+                "updated_at": record["updated_at"],
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def build_injuries_curated(raw_df: pd.DataFrame, resolver: TeamResolver) -> pd.DataFrame:
+    rows: list[dict] = []
+    for record in raw_df.to_dict(orient="records"):
+        team_id = _resolve_team_id(resolver, str(record["team_id"]))
+        expected = record.get("expected_return_date")
+        rows.append(
+            {
+                "injury_id": str(record["injury_id"]),
+                "player_id": str(record["player_id"]),
+                "team_id": team_id,
+                "injury_type": record.get("injury_type"),
+                "status": str(record.get("status", "out")),
+                "start_date": pd.to_datetime(record["start_date"]).date(),
+                "expected_return_date": (
+                    pd.to_datetime(expected).date()
+                    if expected is not None and not pd.isna(expected) and str(expected).strip()
+                    else None
+                ),
+                "confidence": _nullable_float(record.get("confidence")),
+                "notes": record.get("notes"),
                 "source_system": record["source_system"],
                 "source_record_id": record.get("source_record_id"),
                 "ingested_at": record["ingested_at"],
