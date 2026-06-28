@@ -13,10 +13,9 @@ from worldcup.data_ingestion.sources.world_cup_catalog import (
     WorldCupMatch,
 )
 from worldcup.data_ingestion.sources.world_cup_squads import (
-    GENERIC_FORMATION,
+    MIN_SQUAD_SIZE,
     TEAM_ALIASES,
-    WORLD_CUP_SQUADS,
-    SquadPlayer,
+    squad_for,
 )
 from worldcup.utils.paths import project_root
 
@@ -91,23 +90,12 @@ def _match_row(record: WorldCupMatch) -> dict:
     }
 
 
-def _generic_squad(team_name: str) -> list[SquadPlayer]:
-    slug = _slug(team_name)
-    return [
-        SquadPlayer(f"{slug}_{pos.lower()}", f"{team_name} {pos}", pos, 72, 1_000_000)
-        for pos in GENERIC_FORMATION
-    ]
-
-
-def squad_for(team_name: str) -> list[SquadPlayer]:
-    return WORLD_CUP_SQUADS.get(team_name) or _generic_squad(team_name)
-
-
-def export_players() -> pd.DataFrame:
+def export_players(matches: pd.DataFrame) -> pd.DataFrame:
     rows: dict[str, dict] = {}
-    for team_name, players in WORLD_CUP_SQUADS.items():
+    teams = sorted(set(matches["home_team_name"]) | set(matches["away_team_name"]))
+    for team_name in teams:
         team_id = TEAM_ALIASES.get(team_name, f"team_{_slug(team_name)}")
-        for player in players:
+        for player in squad_for(team_name):
             player_id = f"pla_{player.slug}"
             rows[player_id] = {
                 "player_id": player_id,
@@ -130,43 +118,33 @@ def export_elo_fifa(matches: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     teams = sorted(set(matches["home_team_name"]) | set(matches["away_team_name"]))
     elo_rows: list[dict] = []
     fifa_rows: list[dict] = []
+    ratings_2017 = {name: 1490 + (idx * 13) % 580 for idx, name in enumerate(teams)}
     ratings_2018 = {name: 1500 + (idx * 17) % 600 for idx, name in enumerate(teams)}
     ratings_2022 = {name: 1480 + (idx * 19) % 620 for idx, name in enumerate(teams)}
-    for name in teams:
-        elo_rows.append(
-            {
-                "team_name": name,
-                "rating": round(ratings_2018[name], 1),
-                "rating_date": "2018-06-01",
-                "rating_system": "elo",
-                "rank": None,
-            }
-        )
-        elo_rows.append(
-            {
-                "team_name": name,
-                "rating": round(ratings_2022[name], 1),
-                "rating_date": "2022-11-01",
-                "rating_system": "elo",
-                "rank": None,
-            }
-        )
-        fifa_rows.append(
-            {
-                "team_name": name,
-                "ranking_date": "2018-06-07",
-                "rank": 5 + (hash(name) % 60),
-                "points": round(1100 + ratings_2018[name] / 3, 2),
-            }
-        )
-        fifa_rows.append(
-            {
-                "team_name": name,
-                "ranking_date": "2022-10-06",
-                "rank": 3 + (hash(name) % 55),
-                "points": round(1150 + ratings_2022[name] / 3, 2),
-            }
-        )
+    snapshots = [
+        ("2017-06-01", ratings_2017, "2017-06-07"),
+        ("2018-06-01", ratings_2018, "2018-06-07"),
+        ("2022-11-01", ratings_2022, "2022-10-06"),
+    ]
+    for rating_date, ratings, fifa_date in snapshots:
+        for name in teams:
+            elo_rows.append(
+                {
+                    "team_name": name,
+                    "rating": round(ratings[name], 1),
+                    "rating_date": rating_date,
+                    "rating_system": "elo",
+                    "rank": None,
+                }
+            )
+            fifa_rows.append(
+                {
+                    "team_name": name,
+                    "ranking_date": fifa_date,
+                    "rank": 5 + (hash(name + rating_date) % 60),
+                    "points": round(1100 + ratings[name] / 3, 2),
+                }
+            )
     return pd.DataFrame(elo_rows), pd.DataFrame(fifa_rows)
 
 
@@ -281,17 +259,24 @@ def export_odds(matches: pd.DataFrame) -> pd.DataFrame:
     for _, match in matches.iterrows():
         if not match["is_world_cup"]:
             continue
-        if match["stage_name"] not in {"Quarter-finals", "Semi-finals", "Final", "Round of 16"}:
-            continue
         kickoff = pd.Timestamp(match["kickoff_ts"])
         snapshot = (kickoff - pd.Timedelta(hours=3)).isoformat()
+        stage = str(match["stage_name"])
+        if stage == "Group stage":
+            home_odds, draw_odds, away_odds = 2.60, 3.20, 2.80
+        elif stage == "Round of 16":
+            home_odds, draw_odds, away_odds = 2.40, 3.20, 3.00
+        elif stage in {"Quarter-finals", "Semi-finals"}:
+            home_odds, draw_odds, away_odds = 2.50, 3.15, 2.90
+        else:
+            home_odds, draw_odds, away_odds = 2.45, 3.25, 2.85
         rows.append(
             {
                 "match_id": match["match_id"],
                 "snapshot_ts": snapshot,
-                "home_odds": 2.40,
-                "draw_odds": 3.20,
-                "away_odds": 3.00,
+                "home_odds": home_odds,
+                "draw_odds": draw_odds,
+                "away_odds": away_odds,
                 "over25_odds": 2.05,
                 "under25_odds": 1.78,
                 "btts_yes_odds": 1.90,
@@ -373,6 +358,47 @@ def export_injuries() -> pd.DataFrame:
     )
 
 
+def _validate_export(
+    matches: pd.DataFrame,
+    players: pd.DataFrame,
+    lineups: pd.DataFrame,
+    stats: pd.DataFrame,
+) -> None:
+    teams = sorted(set(matches["home_team_name"]) | set(matches["away_team_name"]))
+    for team_name in teams:
+        squad = squad_for(team_name)
+        if len(squad) < MIN_SQUAD_SIZE:
+            raise ValueError(f"Squad too small for {team_name}: {len(squad)}")
+        team_id = TEAM_ALIASES.get(team_name, f"team_{_slug(team_name)}")
+        roster = players.loc[players["national_team_id"] == team_id]
+        if len(roster) < MIN_SQUAD_SIZE:
+            raise ValueError(
+                f"players.csv missing roster for {team_name}: {len(roster)} < {MIN_SQUAD_SIZE}"
+            )
+
+    wc_matches = matches.loc[matches["is_world_cup"]]
+    for _, match in wc_matches.iterrows():
+        if match["match_id"] in PROJECTED_ONLY_MATCHES:
+            continue
+        for side in ("home", "away"):
+            team_id = TEAM_ALIASES.get(
+                match[f"{side}_team_name"],
+                f"team_{_slug(match[f'{side}_team_name'])}",
+            )
+            starters = lineups.loc[
+                (lineups["match_id"] == match["match_id"])
+                & (lineups["team_id"] == team_id)
+                & (lineups["is_starting"] == True)  # noqa: E712
+            ]
+            if len(starters) != 11:
+                raise ValueError(
+                    f"Lineup incomplete for {match['match_id']} {side}: {len(starters)}/11"
+                )
+
+    if stats.empty:
+        raise ValueError("player_match_stats.csv is empty")
+
+
 def export_all(samples_dir: Path | None = None) -> dict[str, int]:
     root = samples_dir or project_root() / "data" / "samples"
     mappings_dir = project_root() / "data" / "external_mappings"
@@ -382,7 +408,7 @@ def export_all(samples_dir: Path | None = None) -> dict[str, int]:
     matches = pd.DataFrame([_match_row(record) for record in all_records])
     matches = matches.drop_duplicates(subset=["match_id"], keep="last").sort_values("kickoff_ts")
 
-    players = export_players()
+    players = export_players(matches)
     elo, fifa = export_elo_fifa(matches)
     lineups = export_lineups(matches, players)
     stats = export_player_stats(matches, players)
@@ -399,6 +425,8 @@ def export_all(samples_dir: Path | None = None) -> dict[str, int]:
     odds.to_csv(root / "odds.csv", index=False)
     injuries.to_csv(root / "injuries.csv", index=False)
     aliases.to_csv(mappings_dir / "team_aliases.csv", index=False)
+
+    _validate_export(matches, players, lineups, stats)
 
     return {
         "matches": len(matches),

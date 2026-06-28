@@ -46,7 +46,6 @@ WORLD_CUP_SQUADS: dict[str, list[SquadPlayer]] = {
         SquadPlayer("coman", "Kingsley Coman", "LW", 83, 50_000_000),
         SquadPlayer("pavard", "Benjamin Pavard", "RB", 82, 35_000_000),
         SquadPlayer("kolo_muani", "Randal Kolo Muani", "ST", 82, 65_000_000),
-        SquadPlayer("kolo_muani", "Randal Kolo Muani", "ST", 82, 65_000_000),
         SquadPlayer("kante", "N'Golo Kante", "CDM", 86, 15_000_000),
         SquadPlayer("pogba", "Paul Pogba", "CM", 84, 15_000_000),
         SquadPlayer("benzema", "Karim Benzema", "ST", 90, 25_000_000),
@@ -142,9 +141,11 @@ WORLD_CUP_SQUADS: dict[str, list[SquadPlayer]] = {
         SquadPlayer("de_ligt", "Matthijs de Ligt", "CB", 85, 60_000_000),
         SquadPlayer("blind", "Daley Blind", "LB", 81, 8_000_000),
         SquadPlayer("de_jong", "Frenkie de Jong", "CM", 87, 70_000_000),
+        SquadPlayer("klaassen", "Davy Klaassen", "CM", 79, 12_000_000),
         SquadPlayer("gakpo", "Cody Gakpo", "LW", 84, 50_000_000),
         SquadPlayer("depay", "Memphis Depay", "ST", 84, 25_000_000),
         SquadPlayer("bergwijn", "Steven Bergwijn", "RW", 80, 25_000_000),
+        SquadPlayer("simons", "Xavi Simons", "CAM", 82, 40_000_000),
     ],
     "Belgium": [
         SquadPlayer("courtois", "Thibaut Courtois", "GK", 89, 45_000_000),
@@ -153,8 +154,10 @@ WORLD_CUP_SQUADS: dict[str, list[SquadPlayer]] = {
         SquadPlayer("vertonghen", "Jan Vertonghen", "CB", 80, 3_000_000),
         SquadPlayer("carrasco", "Yannick Carrasco", "LB", 82, 25_000_000),
         SquadPlayer("witsel", "Axel Witsel", "CDM", 83, 10_000_000),
+        SquadPlayer("tielemans", "Youri Tielemans", "CM", 82, 35_000_000),
         SquadPlayer("de_bruyne", "Kevin De Bruyne", "CAM", 91, 60_000_000),
         SquadPlayer("hazard", "Eden Hazard", "LW", 82, 15_000_000),
+        SquadPlayer("trossard", "Leandro Trossard", "RW", 81, 30_000_000),
         SquadPlayer("lukaku", "Romelu Lukaku", "ST", 85, 40_000_000),
     ],
     "Uruguay": [
@@ -166,6 +169,7 @@ WORLD_CUP_SQUADS: dict[str, list[SquadPlayer]] = {
         SquadPlayer("bentancur", "Rodrigo Bentancur", "CM", 83, 30_000_000),
         SquadPlayer("valverde", "Federico Valverde", "CM", 86, 100_000_000),
         SquadPlayer("de_la_cruz", "Nicolas de la Cruz", "CAM", 80, 15_000_000),
+        SquadPlayer("arrascaeta", "Giorgian de Arrascaeta", "CAM", 79, 12_000_000),
         SquadPlayer("suarez", "Luis Suarez", "ST", 82, 4_000_000),
         SquadPlayer("cavani", "Edinson Cavani", "ST", 80, 3_000_000),
     ],
@@ -178,7 +182,9 @@ WORLD_CUP_SQUADS: dict[str, list[SquadPlayer]] = {
         SquadPlayer("freuler", "Remo Freuler", "CDM", 80, 12_000_000),
         SquadPlayer("xhaka", "Granit Xhaka", "CM", 83, 12_000_000),
         SquadPlayer("shaqiri", "Xherdan Shaqiri", "RW", 79, 5_000_000),
+        SquadPlayer("vargas", "Ruben Vargas", "LW", 78, 10_000_000),
         SquadPlayer("embolo", "Breel Embolo", "ST", 81, 25_000_000),
+        SquadPlayer("seferovic", "Haris Seferovic", "ST", 77, 4_000_000),
     ],
     "Serbia": [
         SquadPlayer("milinkovic_savic_g", "Predrag Rajkovic", "GK", 80, 8_000_000),
@@ -196,16 +202,21 @@ WORLD_CUP_SQUADS: dict[str, list[SquadPlayer]] = {
         SquadPlayer("agnard", "Nayef Aguerd", "CB", 81, 25_000_000),
         SquadPlayer("mazraoui", "Noussair Mazraoui", "LB", 82, 30_000_000),
         SquadPlayer("amrabat", "Sofyan Amrabat", "CDM", 83, 30_000_000),
+        SquadPlayer("amallah", "Selim Amallah", "CM", 78, 8_000_000),
         SquadPlayer("ziyech", "Hakim Ziyech", "RW", 83, 20_000_000),
+        SquadPlayer("boufal", "Sofiane Boufal", "LW", 79, 12_000_000),
         SquadPlayer("en_nesyri", "Youssef En-Nesyri", "ST", 80, 20_000_000),
+        SquadPlayer("tissoudali", "Ilias Chair", "CAM", 77, 5_000_000),
     ],
     "Japan": [
         SquadPlayer("gonda", "Eiji Kawashima", "GK", 76, 1_000_000),
         SquadPlayer("sakai", "Hiroki Sakai", "RB", 75, 2_000_000),
         SquadPlayer("tomiyasu", "Takehiro Tomiyasu", "CB", 82, 35_000_000),
         SquadPlayer("yoshida", "Maya Yoshida", "CB", 77, 2_000_000),
-        SquadPlayer("itoh", "Junya Ito", "RW", 78, 8_000_000),
+        SquadPlayer("nagatomo", "Yuto Nagatomo", "LB", 74, 1_000_000),
         SquadPlayer("endo", "Wataru Endo", "CDM", 80, 12_000_000),
+        SquadPlayer("tanaka", "Ao Tanaka", "CM", 77, 5_000_000),
+        SquadPlayer("itoh", "Junya Ito", "RW", 78, 8_000_000),
         SquadPlayer("kamada", "Daichi Kamada", "CAM", 81, 20_000_000),
         SquadPlayer("minamino", "Takumi Minamino", "LW", 79, 12_000_000),
         SquadPlayer("osako", "Yuya Osako", "ST", 76, 3_000_000),
@@ -341,6 +352,56 @@ WORLD_CUP_SQUADS: dict[str, list[SquadPlayer]] = {
 
 # Generic fallback XI for teams without explicit squad
 GENERIC_FORMATION = ["GK", "RB", "CB", "CB", "LB", "CDM", "CM", "CM", "RW", "LW", "ST"]
+MIN_SQUAD_SIZE = 11
+
+
+def _pad_squad(team_name: str, squad: list[SquadPlayer]) -> list[SquadPlayer]:
+    if len(squad) >= MIN_SQUAD_SIZE:
+        return squad
+    slug = team_name.strip().lower().replace(" ", "_")
+    padded = list(squad)
+    fill_idx = 0
+    for pos in GENERIC_FORMATION:
+        if len(padded) >= MIN_SQUAD_SIZE:
+            break
+        padded.append(
+            SquadPlayer(
+                f"{slug}_squad_{fill_idx}",
+                f"{team_name} Squad Player {fill_idx + 1}",
+                pos,
+                70,
+                500_000,
+            )
+        )
+        fill_idx += 1
+    while len(padded) < MIN_SQUAD_SIZE:
+        padded.append(
+            SquadPlayer(
+                f"{slug}_squad_{fill_idx}",
+                f"{team_name} Squad Player {fill_idx + 1}",
+                "CM",
+                70,
+                500_000,
+            )
+        )
+        fill_idx += 1
+    return padded
+
+
+def squad_for(team_name: str) -> list[SquadPlayer]:
+    base = WORLD_CUP_SQUADS.get(team_name)
+    if base is None:
+        return _generic_squad(team_name)
+    return _pad_squad(team_name, list(base))
+
+
+def _generic_squad(team_name: str) -> list[SquadPlayer]:
+    slug = team_name.strip().lower().replace(" ", "_")
+    return [
+        SquadPlayer(f"{slug}_{pos.lower()}", f"{team_name} {pos}", pos, 72, 1_000_000)
+        for pos in GENERIC_FORMATION
+    ]
+
 
 TEAM_ALIASES: dict[str, str] = {
     "Brazil": "team_bra",

@@ -25,6 +25,14 @@ CHECKPOINT_DIR = project_root() / "artifacts" / "checkpoints"
 BACKTEST_DIR = project_root() / "artifacts" / "backtests"
 
 
+def _json_value(value: Any) -> Any:
+    if value is None or (isinstance(value, float) and pd.isna(value)):
+        return None
+    if hasattr(value, "item"):
+        return value.item()
+    return value
+
+
 @lru_cache(maxsize=1)
 def _team_names() -> dict[str, str]:
     if not CURATED_TEAMS.exists():
@@ -111,22 +119,22 @@ def get_features(match_id: str) -> dict[str, Any]:
         "match_id": match_id,
         "as_of_time": str(row["as_of_time"]),
         "team_strength": {
-            "home_elo": row.get("home_elo"),
-            "away_elo": row.get("away_elo"),
-            "home_fifa_rank": row.get("home_fifa_rank"),
-            "away_fifa_rank": row.get("away_fifa_rank"),
-            "home_fifa_points": row.get("home_fifa_points"),
-            "away_fifa_points": row.get("away_fifa_points"),
+            "home_elo": _json_value(row.get("home_elo")),
+            "away_elo": _json_value(row.get("away_elo")),
+            "home_fifa_rank": _json_value(row.get("home_fifa_rank")),
+            "away_fifa_rank": _json_value(row.get("away_fifa_rank")),
+            "home_fifa_points": _json_value(row.get("home_fifa_points")),
+            "away_fifa_points": _json_value(row.get("away_fifa_points")),
         },
         "recent_form": {
-            "home_goals_for_last5": row.get("home_goals_for_last5"),
-            "away_goals_for_last5": row.get("away_goals_for_last5"),
-            "home_goals_against_last5": row.get("home_goals_against_last5"),
-            "away_goals_against_last5": row.get("away_goals_against_last5"),
+            "home_goals_for_last5": _json_value(row.get("home_goals_for_last5")),
+            "away_goals_for_last5": _json_value(row.get("away_goals_for_last5")),
+            "home_goals_against_last5": _json_value(row.get("home_goals_against_last5")),
+            "away_goals_against_last5": _json_value(row.get("away_goals_against_last5")),
         },
         "rest_days": {
-            "home_rest_days": row.get("home_rest_days"),
-            "away_rest_days": row.get("away_rest_days"),
+            "home_rest_days": _json_value(row.get("home_rest_days")),
+            "away_rest_days": _json_value(row.get("away_rest_days")),
         },
     }
 

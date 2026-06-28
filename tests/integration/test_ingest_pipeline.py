@@ -49,8 +49,8 @@ def test_run_ingest_builds_curated_tables(sample_paths):
     )
     assert result.match_count == 139
     assert result.team_count == 41
-    assert result.elo_count == 82
-    assert result.fifa_count == 82
+    assert result.elo_count == 123
+    assert result.fifa_count == 123
     assert (sample_paths["curated_dir"] / "matches.parquet").exists()
     assert (sample_paths["curated_dir"] / "teams.parquet").exists()
 
