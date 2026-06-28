@@ -12,9 +12,11 @@ from worldcup.data_ingestion.sources.world_cup_catalog import (
     FRIENDLY_MATCHES,
     WorldCupMatch,
 )
+from worldcup.data_ingestion.sources.world_cup_2026_catalog import world_cup_2026_match_rows
 from worldcup.data_ingestion.sources.world_cup_squads import (
     MIN_SQUAD_SIZE,
     TEAM_ALIASES,
+    WORLD_CUP_SQUADS,
     squad_for,
 )
 from worldcup.utils.paths import project_root
@@ -31,6 +33,7 @@ def _slug(value: str) -> str:
 def _stage_slug(stage: str) -> str:
     mapping = {
         "Group stage": "gs",
+        "Round of 32": "r32",
         "Round of 16": "r16",
         "Quarter-finals": "qf",
         "Semi-finals": "sf",
@@ -90,12 +93,31 @@ def _match_row(record: WorldCupMatch) -> dict:
     }
 
 
+def _squad_name_for(team_name: str) -> str:
+    team_id = TEAM_ALIASES.get(team_name, f"team_{_slug(team_name)}")
+    for alias, tid in sorted(TEAM_ALIASES.items()):
+        if tid == team_id and alias in WORLD_CUP_SQUADS:
+            return alias
+    return team_name
+
+
+def _unique_teams(matches: pd.DataFrame) -> list[str]:
+    """One display name per canonical team_id (prefer longer/stable names)."""
+    by_id: dict[str, str] = {}
+    for team_name in set(matches["home_team_name"]) | set(matches["away_team_name"]):
+        team_id = TEAM_ALIASES.get(team_name, f"team_{_slug(team_name)}")
+        current = by_id.get(team_id)
+        if current is None or len(team_name) > len(current):
+            by_id[team_id] = team_name
+    return sorted(by_id.values())
+
+
 def export_players(matches: pd.DataFrame) -> pd.DataFrame:
     rows: dict[str, dict] = {}
-    teams = sorted(set(matches["home_team_name"]) | set(matches["away_team_name"]))
+    teams = _unique_teams(matches)
     for team_name in teams:
         team_id = TEAM_ALIASES.get(team_name, f"team_{_slug(team_name)}")
-        for player in squad_for(team_name):
+        for player in squad_for(_squad_name_for(team_name)):
             player_id = f"pla_{player.slug}"
             rows[player_id] = {
                 "player_id": player_id,
@@ -115,7 +137,7 @@ def export_team_aliases() -> pd.DataFrame:
 
 
 def export_elo_fifa(matches: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-    teams = sorted(set(matches["home_team_name"]) | set(matches["away_team_name"]))
+    teams = _unique_teams(matches)
     elo_rows: list[dict] = []
     fifa_rows: list[dict] = []
     ratings_2017 = {name: 1490 + (idx * 13) % 580 for idx, name in enumerate(teams)}
@@ -125,6 +147,7 @@ def export_elo_fifa(matches: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
         ("2017-06-01", ratings_2017, "2017-06-07"),
         ("2018-06-01", ratings_2018, "2018-06-07"),
         ("2022-11-01", ratings_2022, "2022-10-06"),
+        ("2026-06-01", {name: 1470 + (idx * 23) % 640 for idx, name in enumerate(teams)}, "2026-05-29"),
     ]
     for rating_date, ratings, fifa_date in snapshots:
         for name in teams:
@@ -156,10 +179,12 @@ def export_lineups(matches: pd.DataFrame, players: pd.DataFrame) -> pd.DataFrame
             continue
         if match["match_id"] in PROJECTED_ONLY_MATCHES:
             continue
+        if str(match.get("status", "finished")) == "scheduled":
+            continue
         for side in ("home", "away"):
             team_name = match[f"{side}_team_name"]
             team_id = TEAM_ALIASES.get(team_name, f"team_{_slug(team_name)}")
-            squad = squad_for(team_name)[:11]
+            squad = squad_for(_squad_name_for(team_name))[:11]
             for idx, squad_player in enumerate(squad):
                 player_id = f"pla_{squad_player.slug}"
                 if player_id not in player_lookup.index:
@@ -184,7 +209,7 @@ def export_lineups(matches: pd.DataFrame, players: pd.DataFrame) -> pd.DataFrame
     snapshot = "2022-12-10T12:00:00Z"
     for side, team_name in (("home", "England"), ("away", "France")):
         team_id = TEAM_ALIASES[team_name]
-        for idx, squad_player in enumerate(squad_for(team_name)[:11]):
+        for idx, squad_player in enumerate(squad_for(_squad_name_for(team_name))[:11]):
             player_id = f"pla_{squad_player.slug}"
             if player_id not in player_lookup.index:
                 continue
@@ -203,6 +228,34 @@ def export_lineups(matches: pd.DataFrame, players: pd.DataFrame) -> pd.DataFrame
                     "snapshot_ts": snapshot,
                 }
             )
+
+    for _, match in matches.iterrows():
+        if not match["is_world_cup"] or str(match.get("status", "finished")) != "scheduled":
+            continue
+        kickoff = pd.Timestamp(match["kickoff_ts"])
+        snapshot = (kickoff - pd.Timedelta(hours=12)).isoformat()
+        for side in ("home", "away"):
+            team_name = match[f"{side}_team_name"]
+            team_id = TEAM_ALIASES.get(team_name, f"team_{_slug(team_name)}")
+            for idx, squad_player in enumerate(squad_for(_squad_name_for(team_name))[:11]):
+                player_id = f"pla_{squad_player.slug}"
+                if player_id not in player_lookup.index:
+                    continue
+                rows.append(
+                    {
+                        "lineup_id": f"lu_proj_{match['match_id']}_{side}_{idx}",
+                        "match_id": match["match_id"],
+                        "team_id": team_id,
+                        "player_id": player_id,
+                        "is_starting": True,
+                        "bench_order": "",
+                        "position_code": squad_player.position,
+                        "formation_slot": f"4-3-3-{squad_player.position}",
+                        "lineup_status": "projected",
+                        "projection_prob": round(0.92 - idx * 0.02, 2),
+                        "snapshot_ts": snapshot,
+                    }
+                )
     return pd.DataFrame(rows)
 
 
@@ -225,11 +278,23 @@ def _pick_scorers(team_name: str, goals: int, players: pd.DataFrame) -> list[str
     return chosen
 
 
+def _has_final_score(match: pd.Series) -> bool:
+    home = match["home_score_ft"]
+    away = match["away_score_ft"]
+    if str(match.get("status", "finished")) == "scheduled":
+        return False
+    if home is None or away is None or pd.isna(home) or pd.isna(away):
+        return False
+    if str(home).strip() == "" or str(away).strip() == "":
+        return False
+    return True
+
+
 def export_player_stats(matches: pd.DataFrame, players: pd.DataFrame) -> pd.DataFrame:
     rows: list[dict] = []
     stat_idx = 0
     for _, match in matches.iterrows():
-        if pd.isna(match["home_score_ft"]) or pd.isna(match["away_score_ft"]):
+        if not _has_final_score(match):
             continue
         for side, goals in (
             ("home", int(match["home_score_ft"])),
@@ -292,7 +357,7 @@ def export_team_match_stats(matches: pd.DataFrame) -> pd.DataFrame:
     rows: list[dict] = []
     idx = 0
     for _, match in matches.iterrows():
-        if pd.isna(match["home_score_ft"]) or pd.isna(match["away_score_ft"]):
+        if not _has_final_score(match):
             continue
         if not match.get("is_world_cup"):
             continue
@@ -425,9 +490,9 @@ def _validate_export(
     lineups: pd.DataFrame,
     stats: pd.DataFrame,
 ) -> None:
-    teams = sorted(set(matches["home_team_name"]) | set(matches["away_team_name"]))
+    teams = _unique_teams(matches)
     for team_name in teams:
-        squad = squad_for(team_name)
+        squad = squad_for(_squad_name_for(team_name))
         if len(squad) < MIN_SQUAD_SIZE:
             raise ValueError(f"Squad too small for {team_name}: {len(squad)}")
         team_id = TEAM_ALIASES.get(team_name, f"team_{_slug(team_name)}")
@@ -441,6 +506,7 @@ def _validate_export(
     for _, match in wc_matches.iterrows():
         if match["match_id"] in PROJECTED_ONLY_MATCHES:
             continue
+        expected_status = "projected" if str(match.get("status", "finished")) == "scheduled" else "historical"
         for side in ("home", "away"):
             team_id = TEAM_ALIASES.get(
                 match[f"{side}_team_name"],
@@ -450,10 +516,12 @@ def _validate_export(
                 (lineups["match_id"] == match["match_id"])
                 & (lineups["team_id"] == team_id)
                 & (lineups["is_starting"] == True)  # noqa: E712
+                & (lineups["lineup_status"] == expected_status)
             ]
             if len(starters) != 11:
                 raise ValueError(
-                    f"Lineup incomplete for {match['match_id']} {side}: {len(starters)}/11"
+                    f"Lineup incomplete for {match['match_id']} {side}: "
+                    f"{len(starters)}/11 ({expected_status})"
                 )
 
     if stats.empty:
@@ -467,6 +535,8 @@ def export_all(samples_dir: Path | None = None) -> dict[str, int]:
 
     all_records = ALL_WORLD_CUP_MATCHES + FRIENDLY_MATCHES
     matches = pd.DataFrame([_match_row(record) for record in all_records])
+    wc2026 = pd.DataFrame(world_cup_2026_match_rows())
+    matches = pd.concat([matches, wc2026], ignore_index=True)
     matches = matches.drop_duplicates(subset=["match_id"], keep="last").sort_values("kickoff_ts")
 
     players = export_players(matches)
