@@ -172,8 +172,9 @@ WorldCup/
 | [`system-design.md`](docs/system-design.md) | 整体架构与模型方案 |
 | [`mvp-task-list.md`](docs/mvp-task-list.md) | MVP 范围与验收标准 |
 | [`data-sources.md`](docs/data-sources.md) | 数据源 CSV 格式与 external 对接 |
+| [`world-cup-2026-playbook.md`](docs/world-cup-2026-playbook.md) | 2026 数据准备、赛中调参、可回滚与报告口径 |
 
-> 💡 建议阅读顺序：`constraints.md` → `system-design.md` → `mvp-task-list.md`
+> 💡 建议阅读顺序：`constraints.md` → `system-design.md` → `mvp-task-list.md`；若面向 2026 实战，再加 `world-cup-2026-playbook.md`。
 
 ---
 

@@ -4,6 +4,8 @@
 
 外部真实数据对接见 [`data/external/README.md`](../data/external/README.md) 与 `configs/data/external.yaml`。
 
+**2026 世界杯实战**（要准备哪些表、赛中如何调参且可回滚）见 [`docs/world-cup-2026-playbook.md`](../docs/world-cup-2026-playbook.md)。
+
 ## 标准 canonical 格式
 
 以下列名是 `scripts.ingest` 直接消费的格式。外部 CSV 可先经 `scripts.prepare_data` 转换到 `data/staging/canonical/`。
