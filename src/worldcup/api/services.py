@@ -180,6 +180,38 @@ def predict_match(match_id: str, model_name: str | None = None) -> MatchPredicti
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
+def prediction_payload(match_id: str, model_name: str | None = None) -> dict[str, Any]:
+    prediction = predict_match(match_id, model_name)
+    meta = checkpoint_info(model_name)
+    payload = prediction.to_dict()
+    payload["model_name"] = meta.get("model_name")
+    payload["model_type"] = meta.get("model_type")
+    payload["model_version"] = meta.get("model_version")
+    payload["prediction_source"] = "trained_checkpoint"
+    return payload
+
+
+def predict_matches(match_ids: list[str], model_name: str | None = None) -> list[dict[str, Any]]:
+    if not match_ids:
+        return []
+    features = load_features()
+    predictor = get_predictor(model_name)
+    meta = checkpoint_info(model_name)
+    items: list[dict[str, Any]] = []
+    for match_id in match_ids:
+        try:
+            prediction = predictor.predict_match_id(features, match_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        payload = prediction.to_dict()
+        payload["model_name"] = meta.get("model_name")
+        payload["model_type"] = meta.get("model_type")
+        payload["model_version"] = meta.get("model_version")
+        payload["prediction_source"] = "trained_checkpoint"
+        items.append(payload)
+    return items
+
+
 def file_mtime(path: Path | None) -> str | None:
     if path is None or not path.exists():
         return None

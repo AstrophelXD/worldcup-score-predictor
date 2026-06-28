@@ -33,22 +33,36 @@ class PredictResponse(BaseModel):
     lambda_home: float
     lambda_away: float
     lambda_scale: float
+    model_name: str | None = None
+    model_type: str | None = None
+    model_version: str | None = None
+    prediction_source: str = "trained_checkpoint"
 
 
-def _to_predict_response(prediction) -> PredictResponse:
-    payload = prediction.to_dict()
+class BatchPredictRequest(BaseModel):
+    match_ids: list[str]
+    model_name: str | None = None
+
+
+def _to_predict_response(prediction_payload: dict) -> PredictResponse:
     return PredictResponse(
-        match_id=payload["match_id"],
-        top3_scorelines=[ScorelineResponse(**item) for item in payload["top3_scorelines"]],
-        result_probs=payload["result_probs"],
-        ou25_probs=payload["ou25_probs"],
-        btts_probs=payload["btts_probs"],
-        expected_goals=payload["expected_goals"],
-        uncertainty=payload["uncertainty"],
-        overflow_prob=payload["overflow_prob"],
-        lambda_home=payload["lambda_home"],
-        lambda_away=payload["lambda_away"],
-        lambda_scale=payload["lambda_scale"],
+        match_id=prediction_payload["match_id"],
+        top3_scorelines=[
+            ScorelineResponse(**item) for item in prediction_payload["top3_scorelines"]
+        ],
+        result_probs=prediction_payload["result_probs"],
+        ou25_probs=prediction_payload["ou25_probs"],
+        btts_probs=prediction_payload["btts_probs"],
+        expected_goals=prediction_payload["expected_goals"],
+        uncertainty=prediction_payload["uncertainty"],
+        overflow_prob=prediction_payload["overflow_prob"],
+        lambda_home=prediction_payload["lambda_home"],
+        lambda_away=prediction_payload["lambda_away"],
+        lambda_scale=prediction_payload["lambda_scale"],
+        model_name=prediction_payload.get("model_name"),
+        model_type=prediction_payload.get("model_type"),
+        model_version=prediction_payload.get("model_version"),
+        prediction_source=prediction_payload.get("prediction_source", "trained_checkpoint"),
     )
 
 
@@ -77,7 +91,17 @@ def get_features(match_id: str) -> dict:
 
 @app.post("/predict", response_model=PredictResponse)
 def predict(request: PredictRequest) -> PredictResponse:
-    return _to_predict_response(svc.predict_match(request.match_id, request.model_name))
+    return _to_predict_response(svc.prediction_payload(request.match_id, request.model_name))
+
+
+@app.post("/predict/batch")
+def predict_batch(request: BatchPredictRequest) -> dict:
+    return {
+        "items": [
+            _to_predict_response(item).model_dump()
+            for item in svc.predict_matches(request.match_ids, request.model_name)
+        ]
+    }
 
 
 @app.get("/predictions/{match_id}", response_model=PredictResponse)
@@ -85,7 +109,7 @@ def get_prediction(
     match_id: str,
     model_name: str | None = Query(default=None),
 ) -> PredictResponse:
-    return _to_predict_response(svc.predict_match(match_id, model_name))
+    return _to_predict_response(svc.prediction_payload(match_id, model_name))
 
 
 @app.get("/score-matrix/{match_id}")

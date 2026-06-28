@@ -78,7 +78,7 @@ def render_result_probabilities(prediction: dict) -> None:
 
 
 def render_market_probabilities(prediction: dict) -> None:
-    st.subheader("市场衍生概率")
+    st.subheader("模型衍生概率")
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Over 2.5", format_pct(prediction["ou25_probs"]["over_2_5"]))
     c2.metric("Under 2.5", format_pct(prediction["ou25_probs"]["under_2_5"]))
@@ -137,18 +137,49 @@ def render_model_diagnostics(prediction: dict) -> None:
     )
 
 
-def render_feature_summary(features: dict | None) -> None:
+def render_model_badge(prediction: dict) -> None:
+    model_name = prediction.get("model_name") or "unknown"
+    model_type = prediction.get("model_type") or "model"
+    version = prediction.get("model_version") or ""
+    source = prediction.get("prediction_source", "trained_checkpoint")
+    label = f"模型预测 · {model_name} ({model_type})"
+    if version:
+        label += f" · {version}"
+    st.caption(f"{label} · source={source}")
+
+
+def render_feature_summary(
+    features: dict | None,
+    *,
+    prediction: dict | None = None,
+) -> None:
     st.subheader("特征摘要")
+    if prediction:
+        st.markdown("**模型输出（非样例 mock 数据）**")
+        result = prediction["result_probs"]
+        ou = prediction["ou25_probs"]
+        btts = prediction["btts_probs"]
+        st.write(
+            f"1X2 概率: {format_pct(result['home_win'])} / "
+            f"{format_pct(result['draw'])} / {format_pct(result['away_win'])}\n\n"
+            f"Over 2.5: {format_pct(ou['over_2_5'])} · "
+            f"BTTS: {format_pct(btts['yes'])}\n\n"
+            f"期望进球: {prediction['expected_goals']['home']:.2f} - "
+            f"{prediction['expected_goals']['away']:.2f}"
+        )
+        render_model_badge(prediction)
+
     if not features:
-        st.info("特征接口不可用或未返回数据。")
+        if not prediction:
+            st.info("特征接口不可用或未返回数据。")
         return
 
     strength = features.get("team_strength", {})
     form = features.get("recent_form", {})
     players = features.get("player_summary", {})
-    odds = features.get("market_odds", {})
     events = features.get("match_events", {})
 
+    st.markdown("**输入特征（样例/PIT 数据，仅供解释）**")
     c1, c2 = st.columns(2)
     with c1:
         st.markdown("**实力**")
@@ -173,21 +204,12 @@ def render_feature_summary(features: dict | None) -> None:
             f"预计首发占比: {players.get('home_lineup_projected_share', '—')} vs "
             f"{players.get('away_lineup_projected_share', '—')}"
         )
-        if odds.get("available"):
-            st.markdown("**赔率隐含概率**")
-            st.write(
-                f"1X2: {odds.get('home_implied', '—')} / {odds.get('draw_implied', '—')} / "
-                f"{odds.get('away_implied', '—')}"
-            )
         if events.get("available"):
             st.markdown("**事件 form (xG)**")
             st.write(
                 f"xG 进: {events.get('home_xg_for_last5', '—')} vs "
                 f"{events.get('away_xg_for_last5', '—')}"
             )
-
-
-def render_heatmap(matrix: list[list[float]], grid_max_goal: int) -> None:
     data = np.array(matrix)
     fig, ax = plt.subplots(figsize=(8, 6))
     im = ax.imshow(data, cmap="YlOrRd", origin="lower")
@@ -229,6 +251,7 @@ def render_full_prediction_panel(
     schedule_meta: dict[str, Any] | None = None,
 ) -> None:
     render_match_header(match_detail, schedule_meta=schedule_meta)
+    render_model_badge(prediction)
     st.divider()
     left, right = st.columns([1, 1])
     with left:
@@ -238,7 +261,7 @@ def render_full_prediction_panel(
         render_top_scorelines(prediction, top_n=8)
         render_model_diagnostics(prediction)
     st.divider()
-    render_feature_summary(features)
+    render_feature_summary(features, prediction=prediction)
     if matrix_payload:
         st.subheader("比分矩阵")
         if matrix_payload.get("overflow_prob", 0) > 0:

@@ -153,10 +153,29 @@ def _current_tournament_matches(
     return active[:limit]
 
 
+def _lookup_prediction(
+    match_id: str | None,
+    *,
+    predictions_by_id: dict[str, dict] | None,
+    predict_fn: Callable[[str], dict | None] | None,
+) -> dict | None:
+    if not match_id:
+        return None
+    if predictions_by_id and match_id in predictions_by_id:
+        return predictions_by_id[match_id]
+    if predict_fn:
+        try:
+            return predict_fn(match_id)
+        except Exception:  # noqa: BLE001
+            return None
+    return None
+
+
 def render_current_predictions(
     api_matches: list[dict[str, Any]] | None,
     *,
     predict_fn: Callable[[str], dict | None] | None = None,
+    predictions_by_id: dict[str, dict] | None = None,
     today: date | None = None,
 ) -> str | None:
     ref = today or date.today()
@@ -189,20 +208,19 @@ def render_current_predictions(
             with top[1]:
                 st.write(status)
             with top[2]:
-                if api_id and predict_fn:
-                    try:
-                        pred = predict_fn(api_id)
-                    except Exception as exc:  # noqa: BLE001
-                        st.warning(f"预测失败: {exc}")
-                        pred = None
-                    if pred:
-                        render_compact_prediction(
-                            pred,
-                            home_team=match.home_team,
-                            away_team=match.away_team,
-                        )
+                pred = _lookup_prediction(
+                    api_id,
+                    predictions_by_id=predictions_by_id,
+                    predict_fn=predict_fn,
+                )
+                if pred:
+                    render_compact_prediction(
+                        pred,
+                        home_team=match.home_team,
+                        away_team=match.away_team,
+                    )
                 elif api_id:
-                    st.caption("预测服务未连接")
+                    st.caption("模型预测加载中…")
                 else:
                     st.caption("尚未入库")
 
@@ -227,6 +245,7 @@ def render_schedule_tab(
     api_matches: list[dict[str, Any]] | None = None,
     *,
     predict_fn: Callable[[str], dict | None] | None = None,
+    predictions_by_id: dict[str, dict] | None = None,
     today: date | None = None,
 ) -> str | None:
     """Render the 2026 schedule page. Returns selected API match_id if any."""
@@ -248,6 +267,7 @@ def render_schedule_tab(
     picked_current = render_current_predictions(
         api_matches,
         predict_fn=predict_fn,
+        predictions_by_id=predictions_by_id,
         today=ref,
     )
 
@@ -330,27 +350,27 @@ def render_schedule_tab(
                 cols[3].caption(f"{match.venue}, {match.city}")
 
                 api_id = find_api_match_id(match, api_index, api_by_id)
-                if api_id and predict_fn:
-                    try:
-                        pred = predict_fn(api_id)
-                    except Exception:  # noqa: BLE001
-                        pred = None
-                    if pred:
-                        probs = pred["result_probs"]
-                        top = pred["top3_scorelines"][0]
-                        st.caption(
-                            f"预测：主胜 {format_pct(probs['home_win'])} · "
-                            f"平 {format_pct(probs['draw'])} · "
-                            f"客胜 {format_pct(probs['away_win'])} · "
-                            f"最可能 {top['home_goals']}-{top['away_goals']}"
-                        )
+                pred = _lookup_prediction(
+                    api_id,
+                    predictions_by_id=predictions_by_id,
+                    predict_fn=predict_fn,
+                )
+                if pred:
+                    probs = pred["result_probs"]
+                    top = pred["top3_scorelines"][0]
+                    st.caption(
+                        f"模型预测：主胜 {format_pct(probs['home_win'])} · "
+                        f"平 {format_pct(probs['draw'])} · "
+                        f"客胜 {format_pct(probs['away_win'])} · "
+                        f"最可能 {top['home_goals']}-{top['away_goals']}"
+                    )
                 if api_id and st.button("查看完整预测", key=f"predict_{match.match_number}"):
                     selected_match_id = api_id
 
     if predictable == 0 and api_matches is not None:
         st.info(
             "2026 赛程尚未入库或 API 未重启。请运行："
-            "`python -m scripts.export_sample_data` → `ingest` → `build_features` → 重启 `serve`。"
+            "`export_sample_data` → `ingest` → `build_features` → `export_model_odds` → 重启 `serve`。"
         )
 
     return selected_match_id

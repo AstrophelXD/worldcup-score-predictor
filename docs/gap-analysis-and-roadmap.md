@@ -102,7 +102,7 @@ pytest
 - `configs/models/scoregen_4090.yaml`（待增）— 4090 / 24GB 专用
 - **`configs/models/scoregen_4060.yaml`** — 8GB 4060 主力（d_model=96, seq_len=8, batch 8×4）
 - **`configs/models/scoregen_4060_safe.yaml`** — OOM 回退（d_model=64, batch 4×8）
-- **`configs/training/4060.yaml`** — `mixed_precision: fp16`
+- **`configs/training/gpu_4060.yaml`** — `mixed_precision: fp16`
 - Dashboard 多页：球队对比、伤停、对位、解释
 
 #### GPU 配置对照
@@ -116,10 +116,10 @@ pytest
 
 ```bash
 # RTX 4060 推荐
-python -m scripts.train --config-name=config models=scoregen_4060 training=4060
+python -m scripts.train --config-name=config models=scoregen_4060 training=gpu_4060
 
 # OOM 时
-python -m scripts.train --config-name=config models=scoregen_4060_safe training=4060
+python -m scripts.train --config-name=config models=scoregen_4060_safe training=gpu_4060
 ```
 
 ### P3 — 事件级数据（已完成）
@@ -137,7 +137,7 @@ python -m scripts.export_external_seeds
 
 python -m scripts.ingest
 python -m scripts.build_features
-python -m scripts.train models=scoregen_4060 training=4060
+python -m scripts.train models=scoregen_4060 training=gpu_4060
 ```
 
 ---

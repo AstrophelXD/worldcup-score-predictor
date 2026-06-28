@@ -75,6 +75,16 @@ function Ensure-Bootstrap {
     if (-not $latestCheckpoint) {
         Write-Step "Checkpoint missing. Running train ..."
         python -m scripts.train
+        $latestCheckpoint = Get-ChildItem -Path $checkpointDir -Filter "baseline_dixon_coles_*.json" -ErrorAction SilentlyContinue |
+            Sort-Object Name |
+            Select-Object -Last 1
+    }
+
+    if (Test-Path $featureMart) {
+        Write-Step "Syncing wc2026 model-implied odds ..."
+        python -m scripts.export_model_odds
+        python -m scripts.ingest
+        python -m scripts.build_features
     }
 }
 

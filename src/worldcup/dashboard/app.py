@@ -88,6 +88,17 @@ def sort_matches_for_picker(matches: list[dict]) -> list[dict]:
     return wc2026 + wc_hist + others
 
 
+def load_wc2026_predictions(client: httpx.Client, matches: list[dict]) -> dict[str, dict]:
+    wc_ids = [m["match_id"] for m in matches if str(m["match_id"]).startswith("wc2026_")]
+    if not wc_ids:
+        return {}
+    try:
+        payload = post_json(client, "/predict/batch", {"match_ids": wc_ids})
+    except httpx.HTTPStatusError:
+        return {}
+    return {item["match_id"]: item for item in payload.get("items", [])}
+
+
 def main() -> None:
     st.set_page_config(
         page_title="WorldCup Predictor",
@@ -106,6 +117,7 @@ def main() -> None:
             openapi_paths = load_openapi_paths(client)
             query = f"/matches?limit=500&world_cup_only={'true' if world_cup_only else 'false'}"
             matches_payload = fetch_json(client, query)
+            freshness = fetch_json(client, "/data/freshness")
     except httpx.HTTPError as exc:
         st.error(f"无法连接 API：{exc}")
         st.info(
@@ -126,11 +138,26 @@ def main() -> None:
     matches = sort_matches_for_picker(matches_payload["items"])
     wc2026_count = sum(1 for m in matches if str(m.get("match_id", "")).startswith("wc2026_"))
     st.sidebar.metric("2026 可预测场次", wc2026_count)
+    model_info = freshness.get("model") or {}
+    if model_info.get("model_name"):
+        st.sidebar.caption(
+            f"当前模型: {model_info['model_name']} ({model_info.get('model_type', 'n/a')})"
+        )
+
+    with httpx.Client(base_url=api_url) as client:
+        wc2026_predictions = load_wc2026_predictions(client, matches)
+
+    if wc2026_predictions:
+        st.sidebar.success(f"已加载 {len(wc2026_predictions)} 场 2026 模型预测")
+    else:
+        st.sidebar.info("2026 模型预测未加载（需重启 API 并运行 export_model_odds）")
 
     if "selected_match_id" not in st.session_state:
         st.session_state.selected_match_id = matches[0]["match_id"] if matches else None
 
     def predict_fn(match_id: str) -> dict | None:
+        if match_id in wc2026_predictions:
+            return wc2026_predictions[match_id]
         with httpx.Client(base_url=api_url) as client:
             return post_json(client, "/predict", {"match_id": match_id})
 
@@ -146,7 +173,11 @@ def main() -> None:
     )
 
     with tabs[0]:
-        picked = render_schedule_tab(matches, predict_fn=predict_fn)
+        picked = render_schedule_tab(
+            matches,
+            predict_fn=predict_fn,
+            predictions_by_id=wc2026_predictions,
+        )
         if picked:
             st.session_state.selected_match_id = picked
             st.success("已选择比赛，请切换到「场次预测」查看完整结果。")
@@ -216,8 +247,6 @@ def main() -> None:
                 st.dataframe(pd.DataFrame(rows), use_container_width=True)
 
     with tabs[5]:
-        with httpx.Client(base_url=api_url) as client:
-            freshness = fetch_json(client, "/data/freshness")
         st.subheader("数据 Freshness")
         st.dataframe(freshness["items"], use_container_width=True)
         if freshness.get("model"):

@@ -2,8 +2,8 @@ defaults:
   - scoregen
 
 # 本机训练：较小 batch + 适中 epoch，适合 8GB 级显存
-# 推荐：models=scoregen_4060 training=4060
-# 若 OOM：models=scoregen_4060_safe training=4060
+# 推荐：models=scoregen_4060 training=gpu_4060
+# 若 OOM：models=scoregen_4060_safe training=gpu_4060
 epochs: 80
 patience: 20
 batch_size: 8

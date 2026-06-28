@@ -385,6 +385,8 @@ def export_odds(matches: pd.DataFrame) -> pd.DataFrame:
     for _, match in matches.iterrows():
         if not match["is_world_cup"]:
             continue
+        if str(match["match_id"]).startswith("wc2026_"):
+            continue
         kickoff = pd.Timestamp(match["kickoff_ts"])
         snapshot = (kickoff - pd.Timedelta(hours=3)).isoformat()
         stage = str(match["stage_name"])
