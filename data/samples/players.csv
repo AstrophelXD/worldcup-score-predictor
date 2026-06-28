@@ -6,13 +6,14 @@ pla_otamendi,Nicolas Otamendi,team_arg,CB,4000000,82
 pla_molina,Nahuel Molina,team_arg,RB,18000000,81
 pla_tagliafico,Marcos Acuna,team_arg,LB,8000000,79
 pla_fernandez,Enzo Fernandez,team_arg,CM,80000000,86
-pla_depaul, Rodrigo De Paul,team_arg,CM,25000000,83
+pla_depaul,Rodrigo De Paul,team_arg,CM,25000000,83
 pla_mac_allister,Alexis Mac Allister,team_arg,CM,65000000,85
 pla_di_maria,Angel Di Maria,team_arg,LW,5000000,84
 pla_romero,Cristian Romero,team_arg,CB,65000000,84
 pla_lautaro,Lautaro Martinez,team_arg,ST,110000000,86
 pla_paredes,Leandro Paredes,team_arg,CDM,8000000,80
 pla_foyth,Matias Acuna,team_arg,RB,10000000,78
+pla_dybala,Paulo Dybala,team_arg,CAM,12000000,83
 pla_mbappe,Kylian Mbappe,team_fra,ST,180000000,91
 pla_giroud,Olivier Giroud,team_fra,ST,6000000,82
 pla_lloris,Hugo Lloris,team_fra,GK,5000000,85
@@ -27,15 +28,53 @@ pla_rabiot,Adrien Rabiot,team_fra,CM,40000000,83
 pla_coman,Kingsley Coman,team_fra,LW,50000000,83
 pla_pavard,Benjamin Pavard,team_fra,RB,35000000,82
 pla_kolo_muani,Randal Kolo Muani,team_fra,ST,65000000,82
+pla_kante,N'Golo Kante,team_fra,CDM,15000000,86
+pla_pogba,Paul Pogba,team_fra,CM,15000000,84
+pla_benzema,Karim Benzema,team_fra,ST,25000000,90
+pla_umtiti,Samuel Umtiti,team_fra,CB,8000000,80
+pla_matuidi,Blaise Matuidi,team_fra,CM,3000000,79
+pla_lucas_hernandez,Lucas Hernandez,team_fra,LB,45000000,83
 pla_martinelli,Gabriel Martinelli,team_bra,LW,90000000,84
 pla_vinicius,Vinicius Junior,team_bra,LW,150000000,89
 pla_casemiro,Casemiro,team_bra,CDM,30000000,86
 pla_neymar,Neymar,team_bra,CAM,30000000,85
+pla_alisson,Alisson Becker,team_bra,GK,35000000,89
+pla_marquinhos,Marquinhos,team_bra,CB,75000000,88
+pla_silva_thiago,Thiago Silva,team_bra,CB,5000000,84
+pla_danilo,Danilo,team_bra,RB,10000000,82
+pla_richarlison,Richarlison,team_bra,ST,35000000,83
+pla_raphinha,Raphinha,team_bra,RW,55000000,85
+pla_paqueta,Lucas Paqueta,team_bra,CM,45000000,84
 pla_modric,Luka Modric,team_cro,CM,10000000,88
 pla_perisic,Ivan Perisic,team_cro,LW,5000000,83
+pla_lovren,Dejan Lovren,team_cro,CB,3000000,79
+pla_vida,Domagoj Vida,team_cro,CB,2000000,78
+pla_rakitic,Ivan Rakitic,team_cro,CM,4000000,82
+pla_brozovic,Marcelo Brozovic,team_cro,CDM,12000000,84
+pla_mandzukic,Mario Mandzukic,team_cro,ST,4000000,81
+pla_subasic,Danijel Subasic,team_cro,GK,2000000,80
+pla_kramaric,Andrej Kramaric,team_cro,CAM,6000000,81
+pla_rebic,Ante Rebic,team_cro,RW,5000000,80
 pla_kane,Harry Kane,team_eng,ST,100000000,89
-pla_kante,N'Golo Kante,team_fra,CDM,15000000,86
-pla_pogba,Paul Pogba,team_fra,CM,15000000,84
-pla_benzema,Karim Benzema,team_fra,ST,25000000,90
-pla_dybala,Paulo Dybala,team_arg,CAM,12000000,83
 pla_bellingham,Jude Bellingham,team_eng,CM,150000000,88
+pla_pickford,Jordan Pickford,team_eng,GK,18000000,84
+pla_walker,Kyle Walker,team_eng,RB,12000000,84
+pla_stones,John Stones,team_eng,CB,28000000,85
+pla_maguire,Harry Maguire,team_eng,CB,15000000,82
+pla_shaw,Luke Shaw,team_eng,LB,35000000,83
+pla_rice,Declan Rice,team_eng,CDM,90000000,86
+pla_mount,Mason Mount,team_eng,CAM,55000000,84
+pla_saka,Bukayo Saka,team_eng,RW,90000000,86
+pla_foden,Phil Foden,team_eng,LW,100000000,87
+pla_sterling,Raheem Sterling,team_eng,LW,45000000,84
+pla_mitrovic,Aleksandar Mitrovic,team_srb,ST,18000000,81
+pla_tadic,Dusan Tadic,team_srb,CAM,8000000,82
+pla_sommer,Yann Sommer,team_sui,GK,5000000,84
+pla_xhaka,Granit Xhaka,team_sui,CM,12000000,83
+pla_suarez,Luis Suarez,team_uru,ST,4000000,82
+pla_cavani,Edinson Cavani,team_uru,ST,3000000,80
+pla_valverde,Federico Valverde,team_uru,CM,100000000,86
+pla_ayew_andre,Andre Ayew,team_gha,CM,3000000,76
+pla_ryan,Mat Ryan,team_aus,GK,4000000,78
+pla_taremi,Mehdi Taremi,team_irn,ST,12000000,80
+pla_al_dawsari,Salem Al-Dawsari,team_ksa,LW,5000000,77

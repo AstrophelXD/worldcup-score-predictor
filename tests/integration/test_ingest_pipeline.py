@@ -47,16 +47,16 @@ def test_run_ingest_builds_curated_tables(sample_paths):
             "fifa_rankings": "test_fifa",
         },
     )
-    assert result.match_count == 25
+    assert result.match_count == 31
     assert result.team_count == 16
-    assert result.elo_count == 11
-    assert result.fifa_count == 11
+    assert result.elo_count == 26
+    assert result.fifa_count == 26
     assert (sample_paths["curated_dir"] / "matches.parquet").exists()
     assert (sample_paths["curated_dir"] / "teams.parquet").exists()
 
     report = validate_curated(sample_paths["curated_dir"])
     assert report.ok
-    assert report.stats["world_cup_matches"] == 16
+    assert report.stats["world_cup_matches"] == 20
 
 def test_world_cup_final_has_ft_label_not_aet_only(sample_paths):
     curated_dir = sample_paths["curated_dir"].parent / "curated_matches_only"

@@ -1,6 +1,10 @@
 date,home_team,away_team,home_score,away_score,tournament,city,country,neutral
-2018-06-14,Russia,Saudi Arabia,5,0,FIFA World Cup,Moscow,Russia,FALSE
-2018-07-15,France,Argentina,4,2,FIFA World Cup,Moscow,Russia,FALSE
-2022-11-22,Argentina,Saudi Arabia,1,2,FIFA World Cup,Lusail,Qatar,FALSE
-2022-12-18,Argentina,France,3,3,FIFA World Cup,Lusail,Qatar,FALSE
-2023-06-08,Brazil,Argentina,0,1,Friendly,Santiago,Chile,TRUE
+2014-06-12,Brazil,Croatia,3,1,FIFA World Cup,Sao Paulo,Brazil,FALSE
+2018-06-27,Iceland,Croatia,1,2,FIFA World Cup,Rostov,Russia,FALSE
+2018-06-30,France,Argentina,4,3,FIFA World Cup,Kazan,Russia,FALSE
+2018-06-28,England,Belgium,0,1,FIFA World Cup,Kaliningrad,Russia,FALSE
+2022-11-26,Australia,Tunisia,1,0,FIFA World Cup,Al Wakrah,Qatar,FALSE
+2022-11-28,Brazil,Switzerland,1,0,FIFA World Cup,Doha,Qatar,FALSE
+2022-11-23,Japan,Germany,2,1,FIFA World Cup,Doha,Qatar,FALSE
+2019-11-15,Brazil,Argentina,0,1,Friendly,Buenos Aires,Argentina,FALSE
+2023-06-16,Argentina,Australia,2,0,Friendly,Beijing,China,TRUE
