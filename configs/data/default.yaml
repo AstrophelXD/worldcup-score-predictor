@@ -8,8 +8,15 @@ sources:
   matches: ${data.samples_dir}/matches.csv
   elo: ${data.samples_dir}/elo.csv
   fifa_rankings: ${data.samples_dir}/fifa_rankings.csv
+  players: ${data.samples_dir}/players.csv
+  lineups: ${data.samples_dir}/lineups.csv
+  player_match_stats: ${data.samples_dir}/player_match_stats.csv
+  odds: ${data.samples_dir}/odds.csv
 
 source_systems:
   matches: sample_matches_csv
   elo: sample_elo_csv
   fifa_rankings: sample_fifa_csv
+  players: sample_players_csv
+  lineups: sample_lineups_csv
+  player_match_stats: sample_player_stats_csv

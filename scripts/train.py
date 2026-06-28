@@ -74,6 +74,7 @@ def main(cfg: DictConfig) -> None:
             seed=int(training_cfg["seed"]),
             mixed_precision=str(training_cfg.get("mixed_precision")),
             odds_path=odds_path,
+            curated_dir=Path(str(data_cfg["curated_dir"])),
         )
         result = train_scoregen_football_transformer(
             features=features,

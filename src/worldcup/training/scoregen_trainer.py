@@ -11,10 +11,13 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 
 from worldcup.features.scoregen import (
+    PLAYER_FEATURE_DIM,
+    PlayerContext,
     ScoreGenFeatureSpec,
     build_scoregen_batch_item,
     fit_scoregen_spec,
     load_odds_table,
+    load_player_context,
 )
 from worldcup.features.tabular import extract_labels
 from worldcup.models.advanced.scoregen import ScoreGenFootballTransformer
@@ -41,6 +44,27 @@ class ScoregenTrainConfig:
     seed: int
     mixed_precision: str | None
     odds_path: Path | None
+    curated_dir: Path | None = None
+
+
+def _model_forward(model: ScoreGenFootballTransformer, batch: dict[str, torch.Tensor]):
+    return model(
+        batch["tabular"],
+        batch["home_seq"],
+        batch["home_seq_mask"],
+        batch["away_seq"],
+        batch["away_seq_mask"],
+        batch["home_players"],
+        batch["home_player_mask"],
+        batch["away_players"],
+        batch["away_player_mask"],
+        batch["odds"],
+        batch["odds_mask"],
+        batch["edge_home_idx"],
+        batch["edge_away_idx"],
+        batch["edge_feats"],
+        batch["edge_mask"],
+    )
 
 
 class ScoreGenMatchDataset(Dataset):
@@ -50,18 +74,26 @@ class ScoreGenMatchDataset(Dataset):
         matches: pd.DataFrame,
         spec: ScoreGenFeatureSpec,
         odds_df: pd.DataFrame,
+        player_context: PlayerContext,
     ) -> None:
         self.features = features.reset_index(drop=True)
         self.matches = matches
         self.spec = spec
         self.odds_df = odds_df
+        self.player_context = player_context
 
     def __len__(self) -> int:
         return len(self.features)
 
     def __getitem__(self, index: int) -> dict[str, torch.Tensor | bool]:
         row = self.features.iloc[index]
-        item = build_scoregen_batch_item(row, self.matches, self.spec, self.odds_df)
+        item = build_scoregen_batch_item(
+            row,
+            self.matches,
+            self.spec,
+            self.odds_df,
+            self.player_context,
+        )
         home_goals, away_goals = extract_labels(pd.DataFrame([row]))
         return {
             "tabular": torch.from_numpy(item["tabular"]),
@@ -73,6 +105,10 @@ class ScoreGenMatchDataset(Dataset):
             "home_player_mask": torch.from_numpy(item["home_player_mask"]),
             "away_players": torch.from_numpy(item["away_players"]),
             "away_player_mask": torch.from_numpy(item["away_player_mask"]),
+            "edge_home_idx": torch.from_numpy(item["edge_home_idx"]),
+            "edge_away_idx": torch.from_numpy(item["edge_away_idx"]),
+            "edge_feats": torch.from_numpy(item["edge_feats"]),
+            "edge_mask": torch.from_numpy(item["edge_mask"]),
             "odds": torch.from_numpy(item["odds"]),
             "odds_mask": torch.tensor(item["odds_mask"], dtype=torch.bool),
             "home_goals": torch.tensor(int(home_goals[0]), dtype=torch.long),
@@ -120,19 +156,7 @@ def _evaluate(
     with torch.no_grad():
         for batch in loader:
             batch = {key: value.to(device) for key, value in batch.items()}
-            _, log_probs = model(
-                batch["tabular"],
-                batch["home_seq"],
-                batch["home_seq_mask"],
-                batch["away_seq"],
-                batch["away_seq_mask"],
-                batch["home_players"],
-                batch["home_player_mask"],
-                batch["away_players"],
-                batch["away_player_mask"],
-                batch["odds"],
-                batch["odds_mask"],
-            )
+            _, log_probs = _model_forward(model, batch)
             loss = combined_scoregen_loss(
                 log_probs,
                 batch["home_goals"],
@@ -165,20 +189,23 @@ def train_scoregen_football_transformer(
         raise ValueError("no scored training rows before train_cutoff")
 
     odds_df = load_odds_table(train_cfg.odds_path)
+    player_context = load_player_context(train_cfg.curated_dir)
     spec = fit_scoregen_spec(
         train_df,
         matches,
         seq_len=train_cfg.seq_len,
         player_slots=train_cfg.player_slots,
         odds_path=train_cfg.odds_path,
+        player_context=player_context,
     )
 
-    train_ds = ScoreGenMatchDataset(train_df, matches, spec, odds_df)
+    train_ds = ScoreGenMatchDataset(train_df, matches, spec, odds_df, player_context)
     val_ds = ScoreGenMatchDataset(
         val_df if not val_df.empty else train_df.iloc[0:0],
         matches,
         spec,
         odds_df,
+        player_context,
     )
     train_loader = DataLoader(
         train_ds,
@@ -196,12 +223,14 @@ def train_scoregen_football_transformer(
     model = ScoreGenFootballTransformer(
         tabular_dim=tabular_dim,
         seq_dim=len(spec.seq_means),
-        player_dim=5,
+        player_dim=PLAYER_FEATURE_DIM,
         odds_dim=spec.odds_dim,
+        edge_dim=spec.edge_dim,
         d_model=train_cfg.d_model,
         n_heads=train_cfg.n_heads,
         n_layers=train_cfg.n_layers,
         max_players=train_cfg.player_slots,
+        max_edges=spec.max_matchup_edges,
         grid_max_goal=grid_max_goal,
         n_components=train_cfg.n_components,
         dropout=train_cfg.dropout,
@@ -231,19 +260,7 @@ def train_scoregen_football_transformer(
             optimizer.zero_grad(set_to_none=True)
             if use_amp:
                 with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-                    _, log_probs = model(
-                        batch["tabular"],
-                        batch["home_seq"],
-                        batch["home_seq_mask"],
-                        batch["away_seq"],
-                        batch["away_seq_mask"],
-                        batch["home_players"],
-                        batch["home_player_mask"],
-                        batch["away_players"],
-                        batch["away_player_mask"],
-                        batch["odds"],
-                        batch["odds_mask"],
-                    )
+                    _, log_probs = _model_forward(model, batch)
                     loss = combined_scoregen_loss(
                         log_probs,
                         batch["home_goals"],
@@ -253,19 +270,7 @@ def train_scoregen_football_transformer(
                     )
                 loss.backward()
             else:
-                _, log_probs = model(
-                    batch["tabular"],
-                    batch["home_seq"],
-                    batch["home_seq_mask"],
-                    batch["away_seq"],
-                    batch["away_seq_mask"],
-                    batch["home_players"],
-                    batch["home_player_mask"],
-                    batch["away_players"],
-                    batch["away_player_mask"],
-                    batch["odds"],
-                    batch["odds_mask"],
-                )
+                _, log_probs = _model_forward(model, batch)
                 loss = combined_scoregen_loss(
                     log_probs,
                     batch["home_goals"],

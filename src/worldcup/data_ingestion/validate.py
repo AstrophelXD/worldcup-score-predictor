@@ -93,5 +93,23 @@ def validate_curated(curated_dir: Path) -> ValidationReport:
                 ValidationIssue("error", f"duplicate fifa_ranking_id rows: {dup_fifa}")
             )
 
+    optional = {
+        "players": curated_dir / "players.parquet",
+        "lineups": curated_dir / "lineups.parquet",
+        "player_match_stats": curated_dir / "player_match_stats.parquet",
+    }
+    for name, path in optional.items():
+        if not path.exists():
+            report.issues.append(
+                ValidationIssue("warning", f"optional curated table missing: {name}")
+            )
+            continue
+        con.execute(
+            f"CREATE OR REPLACE TABLE {name} AS "
+            f"SELECT * FROM read_parquet('{path.as_posix()}')"
+        )
+        count = con.execute(f"SELECT COUNT(*) FROM {name}").fetchone()[0]
+        report.stats[f"{name}_rows"] = int(count)
+
     con.close()
     return report

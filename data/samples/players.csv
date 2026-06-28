@@ -1,0 +1,37 @@
+player_id,full_name,national_team_id,primary_position,market_value_eur,player_rating
+pla_messi,Lionel Messi,team_arg,RW,35000000,93
+pla_alvarez,Julian Alvarez,team_arg,ST,90000000,84
+pla_martinez_emi,Emiliano Martinez,team_arg,GK,28000000,88
+pla_otamendi,Nicolas Otamendi,team_arg,CB,4000000,82
+pla_molina,Nahuel Molina,team_arg,RB,18000000,81
+pla_tagliafico,Marcos Acuna,team_arg,LB,8000000,79
+pla_fernandez,Enzo Fernandez,team_arg,CM,80000000,86
+pla_depaul, Rodrigo De Paul,team_arg,CM,25000000,83
+pla_mac_allister,Alexis Mac Allister,team_arg,CM,65000000,85
+pla_di_maria,Angel Di Maria,team_arg,LW,5000000,84
+pla_romero,Cristian Romero,team_arg,CB,65000000,84
+pla_lautaro,Lautaro Martinez,team_arg,ST,110000000,86
+pla_paredes,Leandro Paredes,team_arg,CDM,8000000,80
+pla_foyth,Matias Acuna,team_arg,RB,10000000,78
+pla_mbappe,Kylian Mbappe,team_fra,ST,180000000,91
+pla_giroud,Olivier Giroud,team_fra,ST,6000000,82
+pla_lloris,Hugo Lloris,team_fra,GK,5000000,85
+pla_varane,Raphael Varane,team_fra,CB,25000000,84
+pla_upamecano,Dayot Upamecano,team_fra,CB,60000000,84
+pla_hernandez_theo,Theo Hernandez,team_fra,LB,55000000,85
+pla_kounde,Jules Kounde,team_fra,RB,60000000,85
+pla_tchouameni,Aurelien Tchouameni,team_fra,CDM,100000000,86
+pla_griezmann,Antoine Griezmann,team_fra,CAM,25000000,87
+pla_dembele,Ousmane Dembele,team_fra,RW,50000000,84
+pla_rabiot,Adrien Rabiot,team_fra,CM,40000000,83
+pla_coman,Kingsley Coman,team_fra,LW,50000000,83
+pla_pavard,Benjamin Pavard,team_fra,RB,35000000,82
+pla_kolo_muani,Randal Kolo Muani,team_fra,ST,65000000,82
+pla_martinelli,Gabriel Martinelli,team_bra,LW,90000000,84
+pla_vinicius,Vinicius Junior,team_bra,LW,150000000,89
+pla_casemiro,Casemiro,team_bra,CDM,30000000,86
+pla_neymar,Neymar,team_bra,CAM,30000000,85
+pla_modric,Luka Modric,team_cro,CM,10000000,88
+pla_perisic,Ivan Perisic,team_cro,LW,5000000,83
+pla_kane,Harry Kane,team_eng,ST,100000000,89
+pla_bellingham,Jude Bellingham,team_eng,CM,150000000,88

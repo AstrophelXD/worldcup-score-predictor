@@ -28,11 +28,19 @@ class TeamSequenceEncoder(nn.Module):
 
     def forward(self, sequence: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
         x = self.input_proj(sequence)
-        key_padding = ~mask
-        encoded = self.encoder(x, src_key_padding_mask=key_padding)
-        weights = mask.float().unsqueeze(-1)
-        pooled = (encoded * weights).sum(dim=1) / weights.sum(dim=1).clamp(min=1.0)
-        return pooled
+        outputs: list[torch.Tensor] = []
+        for idx in range(sequence.shape[0]):
+            if not mask[idx].any():
+                outputs.append(torch.zeros(x.shape[-1], device=x.device, dtype=x.dtype))
+                continue
+            encoded = self.encoder(
+                x[idx : idx + 1],
+                src_key_padding_mask=~mask[idx : idx + 1],
+            )
+            weights = mask[idx].float().unsqueeze(-1)
+            pooled = (encoded * weights).sum(dim=1) / weights.sum().clamp(min=1.0)
+            outputs.append(pooled.squeeze(0))
+        return torch.stack(outputs, dim=0)
 
 
 class MatchContextTransformer(nn.Module):

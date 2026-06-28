@@ -64,6 +64,9 @@ def pipeline_paths():
         "matches_csv": root / "data" / "samples" / "matches.csv",
         "elo_csv": root / "data" / "samples" / "elo.csv",
         "fifa_csv": root / "data" / "samples" / "fifa_rankings.csv",
+        "players_csv": root / "data" / "samples" / "players.csv",
+        "lineups_csv": root / "data" / "samples" / "lineups.csv",
+        "player_stats_csv": root / "data" / "samples" / "player_match_stats.csv",
         "odds_csv": root / "data" / "samples" / "odds.csv",
     }
     yield paths
@@ -78,7 +81,17 @@ def test_scoregen_train_and_predict_smoke(pipeline_paths):
         matches_csv=pipeline_paths["matches_csv"],
         elo_csv=pipeline_paths["elo_csv"],
         fifa_csv=pipeline_paths["fifa_csv"],
-        source_systems={"matches": "t", "elo": "t", "fifa_rankings": "t"},
+        players_csv=pipeline_paths["players_csv"],
+        lineups_csv=pipeline_paths["lineups_csv"],
+        player_stats_csv=pipeline_paths["player_stats_csv"],
+        source_systems={
+            "matches": "t",
+            "elo": "t",
+            "fifa_rankings": "t",
+            "players": "t",
+            "lineups": "t",
+            "player_match_stats": "t",
+        },
     )
     build_match_feature_mart(
         curated_dir=pipeline_paths["curated_dir"],
@@ -88,13 +101,18 @@ def test_scoregen_train_and_predict_smoke(pipeline_paths):
     features = pd.read_parquet(pipeline_paths["feature_mart_dir"] / "match_features.parquet")
     matches = pd.read_parquet(pipeline_paths["curated_dir"] / "matches.parquet")
     odds_df = load_odds_table(pipeline_paths["odds_csv"])
+    from worldcup.features.scoregen import load_player_context
+
+    player_context = load_player_context(pipeline_paths["curated_dir"])
     spec = fit_scoregen_spec(
         features,
         matches,
         seq_len=5,
         player_slots=11,
         odds_path=pipeline_paths["odds_csv"],
+        player_context=player_context,
     )
+    assert spec.player_dim == 6
     assert spec.odds_dim == 6
     assert odds_df.shape[0] >= 1
 
@@ -124,6 +142,7 @@ def test_scoregen_train_and_predict_smoke(pipeline_paths):
             seed=42,
             mixed_precision=None,
             odds_path=pipeline_paths["odds_csv"],
+            curated_dir=pipeline_paths["curated_dir"],
         ),
     )
     assert result.checkpoint_path.exists()
@@ -135,6 +154,7 @@ def test_scoregen_train_and_predict_smoke(pipeline_paths):
         result.checkpoint_path,
         matches_path=pipeline_paths["curated_dir"] / "matches.parquet",
         odds_path=pipeline_paths["odds_csv"],
+        curated_dir=pipeline_paths["curated_dir"],
     )
     prediction = predictor.predict_match_id(features, "wc2022_arg_fra_final")
     assert len(prediction.output.top3_scorelines) == 3

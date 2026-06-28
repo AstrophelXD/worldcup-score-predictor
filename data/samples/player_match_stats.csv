@@ -1,0 +1,15 @@
+stat_id,match_id,player_id,team_id,match_date,minutes_played,goals,assists
+ps_wc22_gs_arg_messi,wc2022_arg_ksa_gs,pla_messi,team_arg,2022-11-22,90,1,1
+ps_wc22_gs_fra_mbappe,wc2022_fra_aus_gs,pla_mbappe,team_fra,2022-11-22,90,3,0
+ps_wc22_gs_arg_alvarez,wc2022_arg_ksa_gs,pla_alvarez,team_arg,2022-11-22,45,0,0
+ps_wc22_qf_eng_kane,wc2022_fra_eng_qf,pla_kane,team_eng,2022-12-10,90,1,0
+ps_wc22_qf_fra_mbappe,wc2022_fra_eng_qf,pla_mbappe,team_fra,2022-12-10,90,2,0
+ps_wc22_qf_fra_griezmann,wc2022_fra_eng_qf,pla_griezmann,team_fra,2022-12-10,90,0,1
+ps_wc22_qf_cro_modric,wc2022_cro_bra_qf,pla_modric,team_cro,2022-12-09,120,0,0
+ps_wc22_qf_bra_vinicius,wc2022_cro_bra_qf,pla_vinicius,team_bra,2022-12-09,90,0,0
+ps_wc22_sf_arg_messi,intl_arg_ita_2022,pla_messi,team_arg,2022-06-01,90,2,0
+ps_wc22_sf_arg_depaul,intl_arg_ita_2022,pla_depaul,team_arg,2022-06-01,90,0,1
+ps_wc22_sf_fra_griezmann,intl_fra_cro_2023,pla_griezmann,team_fra,2023-03-23,90,0,0
+ps_wc18_final_fra_griezmann,wc2018_fra_cro_final,pla_griezmann,team_fra,2018-07-15,90,1,0
+ps_wc18_final_cro_modric,wc2018_fra_cro_final,pla_modric,team_cro,2018-07-15,90,0,0
+ps_wc18_gs_fra_mbappe,wc2018_fra_aus_gs,pla_mbappe,team_fra,2018-06-16,70,1,0

@@ -21,10 +21,12 @@ class ScoreGenFootballTransformer(nn.Module):
         seq_dim: int,
         player_dim: int,
         odds_dim: int,
+        edge_dim: int,
         d_model: int = 64,
         n_heads: int = 4,
         n_layers: int = 2,
         max_players: int = 11,
+        max_edges: int = 24,
         grid_max_goal: int = 7,
         n_components: int = 3,
         dropout: float = 0.1,
@@ -47,7 +49,12 @@ class ScoreGenFootballTransformer(nn.Module):
             seq_dim, d_model, n_heads=n_heads, n_layers=n_layers, dropout=dropout
         )
         self.graph_encoder = TeamPlayerGraphEncoder(
-            player_dim, d_model, max_players=max_players, n_heads=n_heads
+            player_dim,
+            d_model,
+            edge_dim=edge_dim,
+            max_players=max_players,
+            max_edges=max_edges,
+            n_heads=n_heads,
         )
         self.match_transformer = MatchContextTransformer(
             d_model, n_heads=n_heads, n_layers=n_layers, dropout=dropout
@@ -72,6 +79,10 @@ class ScoreGenFootballTransformer(nn.Module):
         away_player_mask: torch.Tensor,
         odds: torch.Tensor,
         odds_mask: torch.Tensor,
+        edge_home_idx: torch.Tensor,
+        edge_away_idx: torch.Tensor,
+        edge_feats: torch.Tensor,
+        edge_mask: torch.Tensor,
     ) -> torch.Tensor:
         tabular_token = self.tabular_proj(tabular).unsqueeze(1)
         home_ctx = tabular_token.squeeze(1)
@@ -85,6 +96,10 @@ class ScoreGenFootballTransformer(nn.Module):
             away_player_mask,
             home_ctx,
             away_ctx,
+            edge_home_idx,
+            edge_away_idx,
+            edge_feats,
+            edge_mask,
         )
         tokens = torch.cat(
             [
@@ -123,6 +138,10 @@ class ScoreGenFootballTransformer(nn.Module):
         away_player_mask: torch.Tensor,
         odds: torch.Tensor,
         odds_mask: torch.Tensor,
+        edge_home_idx: torch.Tensor,
+        edge_away_idx: torch.Tensor,
+        edge_feats: torch.Tensor,
+        edge_mask: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         context = self._match_context(
             tabular,
@@ -136,6 +155,10 @@ class ScoreGenFootballTransformer(nn.Module):
             away_player_mask,
             odds,
             odds_mask,
+            edge_home_idx,
+            edge_away_idx,
+            edge_feats,
+            edge_mask,
         )
         return self.score_head(context)
 
@@ -152,6 +175,10 @@ class ScoreGenFootballTransformer(nn.Module):
         away_player_mask: torch.Tensor,
         odds: torch.Tensor,
         odds_mask: torch.Tensor,
+        edge_home_idx: torch.Tensor,
+        edge_away_idx: torch.Tensor,
+        edge_feats: torch.Tensor,
+        edge_mask: torch.Tensor,
         temperature: float = 1.0,
     ) -> tuple[torch.Tensor, float]:
         context = self._match_context(
@@ -166,5 +193,9 @@ class ScoreGenFootballTransformer(nn.Module):
             away_player_mask,
             odds,
             odds_mask,
+            edge_home_idx,
+            edge_away_idx,
+            edge_feats,
+            edge_mask,
         )
         return self.score_head.predict_matrix(context, temperature=temperature)
