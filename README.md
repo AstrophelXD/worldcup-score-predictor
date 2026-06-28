@@ -95,6 +95,10 @@ python -m scripts.build_features
 # Baseline 模型训练
 python -m scripts.train
 
+# Mid-level tabular 模型（实验室 RTX 4090 上训练）
+python -m scripts.train --config-name=config models=midlevel
+python -m scripts.calibrate --config-name=config models=midlevel
+
 # 世界杯回测（默认 2018 + 2022）
 python -m scripts.backtest
 python -m scripts.backtest test_set=world_cup_2018
@@ -186,7 +190,8 @@ WorldCup/
 ## 🗺️ Roadmap
 
 - [x] 外部 CSV adapter + `scripts.prepare_data`（Kaggle / Elo / FIFA）
-- [ ] Mid-level / Advanced 模型
+- [x] Mid-level tabular 模型（`models=midlevel`，PyTorch MLP → 8×8 矩阵）
+- [ ] Advanced 模型
 
 ---
 

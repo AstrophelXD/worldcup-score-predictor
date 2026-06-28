@@ -10,15 +10,19 @@ import pandas as pd
 from fastapi import HTTPException
 
 from worldcup.data_ingestion.base import read_parquet
-from worldcup.inference.predictor import BaselinePredictor, MatchPrediction
-from worldcup.models.registry import latest_checkpoint, load_checkpoint
+from worldcup.inference.factory import (
+    checkpoint_metadata,
+    default_model_name,
+    load_predictor,
+)
+from worldcup.inference.predictor import MatchPrediction
+from worldcup.models.registry import latest_checkpoint
 from worldcup.utils.paths import project_root
 
 FEATURE_MART = project_root() / "data" / "feature_mart" / "match_features.parquet"
 CURATED_TEAMS = project_root() / "data" / "curated" / "teams.parquet"
 CHECKPOINT_DIR = project_root() / "artifacts" / "checkpoints"
 BACKTEST_DIR = project_root() / "artifacts" / "backtests"
-MODEL_NAME = "baseline_dixon_coles"
 
 
 @lru_cache(maxsize=1)
@@ -38,26 +42,16 @@ def load_features() -> pd.DataFrame:
     return df if isinstance(df, pd.DataFrame) else pd.DataFrame(df)
 
 
-def load_predictor() -> BaselinePredictor:
-    checkpoint_path = latest_checkpoint(CHECKPOINT_DIR, MODEL_NAME)
-    if checkpoint_path is None:
-        raise HTTPException(status_code=503, detail="baseline checkpoint not found")
-    return BaselinePredictor.from_path(checkpoint_path)
+def get_predictor(model_name: str | None = None):
+    try:
+        return load_predictor(model_name=model_name, checkpoint_dir=CHECKPOINT_DIR)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
 
 
-def checkpoint_info() -> dict[str, Any]:
-    checkpoint_path = latest_checkpoint(CHECKPOINT_DIR, MODEL_NAME)
-    if checkpoint_path is None:
-        return {"model_name": MODEL_NAME, "checkpoint_path": None}
-    checkpoint = load_checkpoint(checkpoint_path)
-    return {
-        "model_name": checkpoint.model_name,
-        "model_version": checkpoint.model_version,
-        "checkpoint_path": str(checkpoint_path),
-        "train_cutoff": checkpoint.train_cutoff,
-        "lambda_scale": checkpoint.lambda_scale,
-        "calibrated_at": checkpoint.calibrated_at,
-    }
+def checkpoint_info(model_name: str | None = None) -> dict[str, Any]:
+    name = model_name or default_model_name()
+    return checkpoint_metadata(name, CHECKPOINT_DIR)
 
 
 def list_matches(limit: int = 100, world_cup_only: bool = False) -> list[dict[str, Any]]:
@@ -137,9 +131,9 @@ def get_features(match_id: str) -> dict[str, Any]:
     }
 
 
-def predict_match(match_id: str) -> MatchPrediction:
+def predict_match(match_id: str, model_name: str | None = None) -> MatchPrediction:
     features = load_features()
-    predictor = load_predictor()
+    predictor = get_predictor(model_name)
     try:
         return predictor.predict_match_id(features, match_id)
     except KeyError as exc:
@@ -153,8 +147,9 @@ def file_mtime(path: Path | None) -> str | None:
     return ts.isoformat()
 
 
-def data_freshness() -> list[dict[str, Any]]:
-    checkpoint_path = latest_checkpoint(CHECKPOINT_DIR, MODEL_NAME)
+def data_freshness(model_name: str | None = None) -> list[dict[str, Any]]:
+    name = model_name or default_model_name()
+    checkpoint_path = latest_checkpoint(CHECKPOINT_DIR, name)
     curated_matches = project_root() / "data" / "curated" / "matches.parquet"
     return [
         {
@@ -163,7 +158,8 @@ def data_freshness() -> list[dict[str, Any]]:
             "updated_at": file_mtime(FEATURE_MART),
         },
         {
-            "source": "baseline_checkpoint",
+            "source": "checkpoint",
+            "model_name": name,
             "path": str(checkpoint_path) if checkpoint_path else None,
             "updated_at": file_mtime(checkpoint_path),
         },

@@ -8,9 +8,15 @@ import pandas as pd
 from omegaconf import DictConfig, OmegaConf
 
 from scripts._config import CONFIG_DIR
-from worldcup.calibration.fit import calibrate_checkpoint, fit_lambda_scale
+from worldcup.calibration.fit import (
+    calibrate_checkpoint,
+    calibrate_midlevel_checkpoint,
+    fit_lambda_scale,
+    fit_temperature,
+)
 from worldcup.data_ingestion.base import read_parquet
-from worldcup.models.registry import latest_checkpoint, load_checkpoint
+from worldcup.inference.midlevel_predictor import MidlevelPredictor
+from worldcup.models.registry import is_midlevel_checkpoint, latest_checkpoint, load_checkpoint
 
 logger = logging.getLogger(__name__)
 
@@ -40,18 +46,39 @@ def main(cfg: DictConfig) -> None:
     if not isinstance(features, pd.DataFrame):
         features = pd.DataFrame(features)
 
+    val_ratio = float(training_cfg["val_ratio"])
+
+    if is_midlevel_checkpoint(checkpoint_path):
+        predictor = MidlevelPredictor.from_path(checkpoint_path)
+        temperature, val_nll = fit_temperature(
+            predictor.checkpoint,
+            predictor,
+            features,
+            val_ratio,
+        )
+        logger.info("Best temperature=%.4f validation score NLL=%.4f", temperature, val_nll)
+        calibrated = calibrate_midlevel_checkpoint(
+            predictor.checkpoint,
+            predictor,
+            features,
+            val_ratio=val_ratio,
+            checkpoint_dir=checkpoint_dir,
+        )
+        logger.info(
+            "Calibrated checkpoint saved: temperature=%.4f calibrated_at=%s",
+            calibrated.temperature,
+            calibrated.calibrated_at,
+        )
+        return
+
     checkpoint = load_checkpoint(checkpoint_path)
-    scale, val_nll = fit_lambda_scale(
-        checkpoint,
-        features,
-        val_ratio=float(training_cfg["val_ratio"]),
-    )
+    scale, val_nll = fit_lambda_scale(checkpoint, features, val_ratio)
     logger.info("Best lambda_scale=%.4f validation score NLL=%.4f", scale, val_nll)
 
     calibrated = calibrate_checkpoint(
         checkpoint,
         features,
-        val_ratio=float(training_cfg["val_ratio"]),
+        val_ratio=val_ratio,
         checkpoint_dir=checkpoint_dir,
     )
     logger.info(

@@ -12,6 +12,7 @@ app = FastAPI(title="WorldCup Predictor API", version=__version__)
 class PredictRequest(BaseModel):
     match_id: str
     model_version: str | None = None
+    model_name: str | None = None
 
 
 class ScorelineResponse(BaseModel):
@@ -76,17 +77,23 @@ def get_features(match_id: str) -> dict:
 
 @app.post("/predict", response_model=PredictResponse)
 def predict(request: PredictRequest) -> PredictResponse:
-    return _to_predict_response(svc.predict_match(request.match_id))
+    return _to_predict_response(svc.predict_match(request.match_id, request.model_name))
 
 
 @app.get("/predictions/{match_id}", response_model=PredictResponse)
-def get_prediction(match_id: str) -> PredictResponse:
-    return _to_predict_response(svc.predict_match(match_id))
+def get_prediction(
+    match_id: str,
+    model_name: str | None = Query(default=None),
+) -> PredictResponse:
+    return _to_predict_response(svc.predict_match(match_id, model_name))
 
 
 @app.get("/score-matrix/{match_id}")
-def score_matrix(match_id: str) -> dict:
-    prediction = svc.predict_match(match_id)
+def score_matrix(
+    match_id: str,
+    model_name: str | None = Query(default=None),
+) -> dict:
+    prediction = svc.predict_match(match_id, model_name)
     matrix = prediction.output.matrix.tolist()
     return {
         "match_id": match_id,
@@ -97,8 +104,11 @@ def score_matrix(match_id: str) -> dict:
 
 
 @app.get("/data/freshness")
-def data_freshness() -> dict:
-    return {"items": svc.data_freshness(), "model": svc.checkpoint_info()}
+def data_freshness(model_name: str | None = Query(default=None)) -> dict:
+    return {
+        "items": svc.data_freshness(model_name),
+        "model": svc.checkpoint_info(model_name),
+    }
 
 
 @app.get("/backtest/runs")

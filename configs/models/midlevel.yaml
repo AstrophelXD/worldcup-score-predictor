@@ -1,0 +1,12 @@
+type: midlevel
+name: midlevel_tabular
+version: v1
+grid_max_goal: 7
+hidden_dims: [64, 32]
+dropout: 0.3
+learning_rate: 0.001
+weight_decay: 0.01
+epochs: 200
+patience: 20
+batch_size: 32
+aux_loss_weight: 0.1
