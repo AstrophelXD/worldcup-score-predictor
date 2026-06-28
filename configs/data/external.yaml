@@ -1,0 +1,31 @@
+defaults:
+  - default
+
+external_dir: ${project.root}/data/external
+staging_dir: ${project.root}/data/staging
+include_samples: true
+
+# Place downloaded CSVs under data/external/downloads/ and update paths below.
+downloads_dir: ${data.external_dir}/downloads
+
+external_inputs:
+  matches:
+    - path: ${data.external_dir}/examples/kaggle_results.csv
+      format: kaggle_international
+  elo:
+    - path: ${data.external_dir}/examples/elo_history.csv
+      format: elo_history
+  fifa_rankings:
+    - path: ${data.external_dir}/examples/fifa_rankings_history.csv
+      format: fifa_rankings
+
+# After prepare_data, ingest reads from staging canonical CSVs.
+sources:
+  matches: ${data.staging_dir}/canonical/matches.csv
+  elo: ${data.staging_dir}/canonical/elo.csv
+  fifa_rankings: ${data.staging_dir}/canonical/fifa_rankings.csv
+
+source_systems:
+  matches: external_prepared_csv
+  elo: external_prepared_csv
+  fifa_rankings: external_prepared_csv

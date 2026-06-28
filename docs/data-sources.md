@@ -1,8 +1,14 @@
 # 数据源 CSV 格式说明
 
-项目内置样例位于 `data/samples/`，可直接用于本地测试与实验室首次跑通。替换为真实公开数据时，保持列名一致即可。
+项目内置样例位于 `data/samples/`，可直接用于本地测试与实验室首次跑通。
 
-## matches.csv
+外部真实数据对接见 [`data/external/README.md`](../data/external/README.md) 与 `configs/data/external.yaml`。
+
+## 标准 canonical 格式
+
+以下列名是 `scripts.ingest` 直接消费的格式。外部 CSV 可先经 `scripts.prepare_data` 转换到 `data/staging/canonical/`。
+
+### matches.csv
 
 | 列名 | 必填 | 说明 |
 |------|------|------|
@@ -27,7 +33,9 @@
 | is_knockout | 否 | 是否淘汰赛 |
 | venue / city / country | 否 | 场地信息 |
 
-## elo.csv
+模板文件：`data/templates/matches.template.csv`
+
+### elo.csv
 
 | 列名 | 必填 | 说明 |
 |------|------|------|
@@ -37,7 +45,9 @@
 | rating_system | 否 | 默认 elo |
 | rank | 否 | 排名 |
 
-## fifa_rankings.csv
+模板文件：`data/templates/elo.template.csv`
+
+### fifa_rankings.csv
 
 | 列名 | 必填 | 说明 |
 |------|------|------|
@@ -46,24 +56,50 @@
 | rank | 是 | FIFA 排名 |
 | points | 是 | FIFA 积分 |
 
+模板文件：`data/templates/fifa_rankings.template.csv`
+
+## 支持的 external 输入格式
+
+| format 值 | 典型来源 | 必需列（灵活匹配） |
+|-----------|----------|-------------------|
+| `kaggle_international` | Kaggle International Football Results | `date`, `home_team`, `away_team` |
+| `elo_history` | Elo 历史 CSV | `date`/`rating_date`, `team`/`country`, `rating`/`elo` |
+| `fifa_rankings` | FIFA 排名 CSV | `rank_date`/`ranking_date`, `country`, `rank`, `points`/`total_points` |
+| `canonical` | 已符合上表 | 全部 canonical 列名 |
+
 ## 球队名称对齐
 
 在 `data/external_mappings/team_aliases.csv` 中维护别名到 `canonical_team_id` 的映射。未命中别名的球队会自动生成 `team_{slug}`。
 
 ## 配置
 
-在 `configs/data/default.yaml` 中设置 `sources.*` 指向 CSV 路径。默认已指向 `data/samples/`。
+| Profile | 用途 |
+|---------|------|
+| `configs/data/default.yaml` | 默认样例数据 `data/samples/` |
+| `configs/data/external.yaml` | 外部数据 + staging canonical |
 
 ## 运行
 
-实验室 RTX 4090 主机（或本地轻量验证）：
+### 样例数据（默认）
 
 ```bash
 python -m scripts.ingest
 python -m scripts.validate_data
 ```
 
+### 外部真实数据
+
+```bash
+python -m scripts.prepare_data --config-name=config data=external
+python -m scripts.ingest --config-name=config data=external
+python -m scripts.validate_data
+python -m scripts.build_features
+```
+
+将下载 CSV 放入 `data/external/downloads/`，并更新 `configs/data/external.yaml` 中 `external_inputs` 路径。
+
 输出：
 
+- `data/staging/canonical/*.csv` — 标准化中间 CSV
 - `data/raw/*.parquet` — 带来源元数据的原始层
 - `data/curated/*.parquet` — 标准化实体表

@@ -62,6 +62,10 @@ data/curated/**
 !data/curated/.gitkeep
 data/feature_mart/**
 !data/feature_mart/.gitkeep
+data/staging/**
+!data/staging/.gitkeep
+data/external/downloads/**
+!data/external/downloads/.gitkeep
 
 # Artifacts (checkpoints, backtests, reports)
 artifacts/checkpoints/**

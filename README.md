@@ -82,8 +82,12 @@ python -m scripts.ingest --help
 完整数据处理与建模可按以下顺序手动执行：
 
 ```bash
-# 数据接入 raw → curated
+# 样例数据
 python -m scripts.ingest
+
+# 外部真实数据（下载 CSV 放入 data/external/downloads/ 后）
+python -m scripts.prepare_data --config-name=config data=external
+python -m scripts.ingest --config-name=config data=external
 
 # Point-in-time 特征构建
 python -m scripts.build_features
@@ -158,7 +162,7 @@ WorldCup/
 | [`constraints.md`](docs/constraints.md) | 预测口径、数据边界、反泄漏规则 |
 | [`system-design.md`](docs/system-design.md) | 整体架构与模型方案 |
 | [`mvp-task-list.md`](docs/mvp-task-list.md) | MVP 范围与验收标准 |
-| [`data-sources.md`](docs/data-sources.md) | 数据源 CSV 格式说明 |
+| [`data-sources.md`](docs/data-sources.md) | 数据源 CSV 格式与 external 对接 |
 
 > 💡 建议阅读顺序：`constraints.md` → `system-design.md` → `mvp-task-list.md`
 
@@ -181,7 +185,7 @@ WorldCup/
 
 ## 🗺️ Roadmap
 
-- [ ] 接入真实大规模历史数据
+- [x] 外部 CSV adapter + `scripts.prepare_data`（Kaggle / Elo / FIFA）
 - [ ] Mid-level / Advanced 模型
 
 ---
