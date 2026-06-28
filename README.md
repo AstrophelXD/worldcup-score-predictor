@@ -99,6 +99,10 @@ python -m scripts.train
 python -m scripts.train --config-name=config models=midlevel
 python -m scripts.calibrate --config-name=config models=midlevel
 
+# ScoreGen-Football Transformer（Graph + Transformer + 混合双变量比分头）
+python -m scripts.train --config-name=config models=scoregen
+python -m scripts.calibrate --config-name=config models=scoregen
+
 # 世界杯回测（默认 2018 + 2022）
 python -m scripts.backtest
 python -m scripts.backtest test_set=world_cup_2018
@@ -191,7 +195,8 @@ WorldCup/
 
 - [x] 外部 CSV adapter + `scripts.prepare_data`（Kaggle / Elo / FIFA）
 - [x] Mid-level tabular 模型（`models=midlevel`，PyTorch MLP → 8×8 矩阵）
-- [ ] Advanced 模型
+- [x] ScoreGen-Football Transformer（`models=scoregen`，Graph + Transformer + 混合双变量分布头）
+- [ ] Advanced 模型（球员数据 / 对位图 / 实时首发全量接入）
 
 ---
 

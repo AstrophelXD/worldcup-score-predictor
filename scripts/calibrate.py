@@ -11,12 +11,16 @@ from scripts._config import CONFIG_DIR
 from worldcup.calibration.fit import (
     calibrate_checkpoint,
     calibrate_midlevel_checkpoint,
+    calibrate_scoregen_checkpoint,
     fit_lambda_scale,
+    fit_scoregen_temperature,
     fit_temperature,
 )
 from worldcup.data_ingestion.base import read_parquet
+from worldcup.inference.factory import default_odds_path
 from worldcup.inference.midlevel_predictor import MidlevelPredictor
-from worldcup.models.registry import is_midlevel_checkpoint, latest_checkpoint, load_checkpoint
+from worldcup.inference.scoregen_predictor import ScoregenPredictor
+from worldcup.models.registry import checkpoint_model_type, latest_checkpoint, load_checkpoint
 
 logger = logging.getLogger(__name__)
 
@@ -47,8 +51,32 @@ def main(cfg: DictConfig) -> None:
         features = pd.DataFrame(features)
 
     val_ratio = float(training_cfg["val_ratio"])
+    model_type = checkpoint_model_type(checkpoint_path)
 
-    if is_midlevel_checkpoint(checkpoint_path):
+    if model_type == "scoregen":
+        predictor = ScoregenPredictor.from_path(checkpoint_path, odds_path=default_odds_path())
+        temperature, val_nll = fit_scoregen_temperature(
+            predictor.checkpoint,
+            predictor,
+            features,
+            val_ratio,
+        )
+        logger.info("Best temperature=%.4f validation score NLL=%.4f", temperature, val_nll)
+        calibrated = calibrate_scoregen_checkpoint(
+            predictor.checkpoint,
+            predictor,
+            features,
+            val_ratio=val_ratio,
+            checkpoint_dir=checkpoint_dir,
+        )
+        logger.info(
+            "Calibrated checkpoint saved: temperature=%.4f calibrated_at=%s",
+            calibrated.temperature,
+            calibrated.calibrated_at,
+        )
+        return
+
+    if model_type == "midlevel":
         predictor = MidlevelPredictor.from_path(checkpoint_path)
         temperature, val_nll = fit_temperature(
             predictor.checkpoint,

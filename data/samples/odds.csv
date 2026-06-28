@@ -1,0 +1,4 @@
+match_id,snapshot_ts,home_odds,draw_odds,away_odds,over25_odds,under25_odds,btts_yes_odds
+wc2022_arg_fra_final,2022-12-18T12:00:00Z,2.10,3.40,3.50,2.05,1.80,1.95
+wc2018_fra_cro_final,2018-07-15T12:00:00Z,1.85,3.60,4.20,2.15,1.72,2.05
+wc2022_bra_cro_qf,2022-12-09T12:00:00Z,1.95,3.30,4.00,2.00,1.85,1.90

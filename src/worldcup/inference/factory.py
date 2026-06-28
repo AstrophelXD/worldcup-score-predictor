@@ -5,23 +5,38 @@ from pathlib import Path
 
 from worldcup.inference.midlevel_predictor import MidlevelPredictor
 from worldcup.inference.predictor import BaselinePredictor
+from worldcup.inference.scoregen_predictor import ScoregenPredictor
 from worldcup.models.registry import (
-    is_midlevel_checkpoint,
+    checkpoint_model_type,
     latest_checkpoint,
     load_checkpoint,
     load_midlevel_checkpoint,
+    load_scoregen_checkpoint,
 )
 from worldcup.utils.paths import project_root
 
-Predictor = BaselinePredictor | MidlevelPredictor
+Predictor = BaselinePredictor | MidlevelPredictor | ScoregenPredictor
 
 DEFAULT_BASELINE_MODEL = "baseline_dixon_coles"
 DEFAULT_MIDLEVEL_MODEL = "midlevel_tabular"
+DEFAULT_SCOREGEN_MODEL = "scoregen_football"
 DEFAULT_CHECKPOINT_DIR = project_root() / "artifacts" / "checkpoints"
 
 
 def default_model_name() -> str:
     return os.environ.get("WORLDCUP_MODEL", DEFAULT_BASELINE_MODEL)
+
+
+def default_odds_path() -> Path | None:
+    root = project_root()
+    candidates = [
+        root / "data" / "samples" / "odds.csv",
+        root / "data" / "curated" / "odds.parquet",
+    ]
+    for path in candidates:
+        if path.exists():
+            return path if path.suffix == ".csv" else None
+    return None
 
 
 def load_predictor(
@@ -34,9 +49,11 @@ def load_predictor(
     if checkpoint_path is None:
         raise FileNotFoundError(f"checkpoint not found for model: {name}")
 
-    if is_midlevel_checkpoint(checkpoint_path):
+    model_type = checkpoint_model_type(checkpoint_path)
+    if model_type == "scoregen":
+        return ScoregenPredictor.from_path(checkpoint_path, odds_path=default_odds_path())
+    if model_type == "midlevel":
         return MidlevelPredictor.from_path(checkpoint_path)
-
     return BaselinePredictor(load_checkpoint(checkpoint_path))
 
 
@@ -50,7 +67,23 @@ def checkpoint_metadata(
     if checkpoint_path is None:
         return {"model_name": name, "checkpoint_path": None, "model_type": None}
 
-    if is_midlevel_checkpoint(checkpoint_path):
+    model_type = checkpoint_model_type(checkpoint_path)
+    if model_type == "scoregen":
+        checkpoint, _ = load_scoregen_checkpoint(checkpoint_path)
+        return {
+            "model_name": checkpoint.model_name,
+            "model_version": checkpoint.model_version,
+            "model_type": "scoregen",
+            "checkpoint_path": str(checkpoint_path),
+            "train_cutoff": checkpoint.train_cutoff,
+            "temperature": checkpoint.temperature,
+            "calibrated_at": checkpoint.calibrated_at,
+            "train_nll": checkpoint.train_nll,
+            "val_nll": checkpoint.val_nll,
+            "n_components": checkpoint.n_components,
+        }
+
+    if model_type == "midlevel":
         checkpoint, _ = load_midlevel_checkpoint(checkpoint_path)
         return {
             "model_name": checkpoint.model_name,
