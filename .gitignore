@@ -1,0 +1,100 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+.eggs/
+dist/
+build/
+pip-wheel-metadata/
+share/python-wheels/
+*.manifest
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+secrets.toml
+.streamlit/secrets.toml
+
+# IDE & editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Cursor (keep shared project rules)
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
+
+# Linting, typing, testing
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pytype/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data layers (generated at runtime; keep directory skeleton via .gitkeep)
+data/raw/**
+!data/raw/.gitkeep
+data/curated/**
+!data/curated/.gitkeep
+data/feature_mart/**
+!data/feature_mart/.gitkeep
+
+# Artifacts (checkpoints, backtests, reports)
+artifacts/checkpoints/**
+!artifacts/checkpoints/.gitkeep
+artifacts/backtests/**
+!artifacts/backtests/.gitkeep
+artifacts/reports/**
+!artifacts/reports/.gitkeep
+
+# ML / experiment tracking
+outputs/
+multirun/
+.mlflow/
+wandb/
+lightning_logs/
+runs/
+tensorboard/
+
+# Model weights (future advanced models)
+*.pt
+*.pth
+*.onnx
+*.safetensors
+
+# DuckDB local databases
+*.duckdb
+*.duckdb.wal
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# Local test artifacts
+tests/tmp/

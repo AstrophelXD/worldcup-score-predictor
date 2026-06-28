@@ -1,0 +1,5 @@
+name: baseline_dixon_coles
+version: v1
+grid_max_goal: 7
+home_advantage: 0.15
+rho: -0.13

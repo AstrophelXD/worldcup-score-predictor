@@ -1,0 +1,15 @@
+defaults:
+  - data: default
+  - features: default
+  - models: baseline
+  - training: default
+  - api: default
+  - backtest: default
+  - _self_
+
+project:
+  name: worldcup-predictor
+  root: ${oc.env:WORLDCUP_ROOT,.}
+
+# CLI override example: python -m scripts.backtest test_set=world_cup_2018
+test_set: null

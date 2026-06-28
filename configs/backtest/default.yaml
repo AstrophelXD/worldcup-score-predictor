@@ -1,0 +1,8 @@
+test_scopes:
+  - world_cup_2018
+  - world_cup_2022
+
+# Set via root config override: test_set=world_cup_2018
+test_set: null
+
+report_dir: ${project.root}/artifacts/backtests

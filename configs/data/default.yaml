@@ -1,0 +1,15 @@
+raw_dir: ${project.root}/data/raw
+curated_dir: ${project.root}/data/curated
+feature_mart_dir: ${project.root}/data/feature_mart
+mappings_dir: ${project.root}/data/external_mappings
+samples_dir: ${project.root}/data/samples
+
+sources:
+  matches: ${data.samples_dir}/matches.csv
+  elo: ${data.samples_dir}/elo.csv
+  fifa_rankings: ${data.samples_dir}/fifa_rankings.csv
+
+source_systems:
+  matches: sample_matches_csv
+  elo: sample_elo_csv
+  fifa_rankings: sample_fifa_csv

@@ -1,0 +1,26 @@
+match_id,competition_name,season_name,stage_name,match_date,kickoff_ts,home_team_name,away_team_name,home_score_ft,away_score_ft,home_score_ht,away_score_ht,aet_score_home,aet_score_away,pen_score_home,pen_score_away,status,is_world_cup,is_knockout,venue,city,country
+intl_fra_eng_2017,Friendly,2017,Friendly,2017-06-13,2017-06-13T20:00:00Z,France,England,3,2,2,1,,,,,finished,False,False,Stade de France,Paris,France
+intl_bra_arg_2017,Friendly,2017,Friendly,2017-06-09,2017-06-09T18:30:00Z,Brazil,Argentina,1,0,0,0,,,,,finished,False,False,Melbourne Cricket Ground,Melbourne,Australia
+intl_cro_eng_2017,Friendly,2017,Friendly,2017-10-08,2017-10-08T17:00:00Z,England,Croatia,0,0,0,0,,,,,finished,False,False,Wembley Stadium,London,England
+intl_srb_fra_2018,Friendly,2018,Friendly,2018-03-23,2018-03-23T20:00:00Z,France,Serbia,2,0,1,0,,,,,finished,False,False,Stade de France,Paris,France
+intl_arg_ita_2022,Friendly,2022,Friendly,2022-06-01,2022-06-01T20:00:00Z,Argentina,Italy,3,0,2,0,,,,,finished,False,False,Wembley Stadium,London,England
+intl_bra_ghana_2022,Friendly,2022,Friendly,2022-09-23,2022-09-23T19:30:00Z,Brazil,Ghana,3,0,1,0,,,,,finished,False,False,Stade Océane,Le Havre,France
+wc2018_rus_ksa_opener,FIFA World Cup,2018,Group stage,2018-06-14,2018-06-14T15:00:00Z,Russia,Saudi Arabia,5,0,2,0,,,,,finished,True,False,Luzhniki Stadium,Moscow,Russia
+wc2018_fra_aus_gs,FIFA World Cup,2018,Group stage,2018-06-16,2018-06-16T12:00:00Z,France,Australia,2,1,0,0,,,,,finished,True,False,Kazan Arena,Kazan,Russia
+wc2018_arg_isl_gs,FIFA World Cup,2018,Group stage,2018-06-16,2018-06-16T15:00:00Z,Argentina,Iceland,1,1,1,1,,,,,finished,True,False,Spartak Stadium,Moscow,Russia
+wc2018_bra_sui_gs,FIFA World Cup,2018,Group stage,2018-06-17,2018-06-17T20:00:00Z,Brazil,Switzerland,1,1,1,0,,,,,finished,True,False,Rostov Arena,Rostov,Russia
+wc2018_eng_pan_gs,FIFA World Cup,2018,Group stage,2018-06-24,2018-06-24T19:00:00Z,England,Panama,6,1,5,0,,,,,finished,True,False,Nizhny Novgorod Stadium,Nizhny Novgorod,Russia
+wc2018_cro_arg_gs,FIFA World Cup,2018,Group stage,2018-06-21,2018-06-21T20:00:00Z,Croatia,Argentina,3,0,0,0,,,,,finished,True,False,Nizhny Novgorod Stadium,Nizhny Novgorod,Russia
+wc2018_fra_uru_qf,FIFA World Cup,2018,Quarter-finals,2018-07-06,2018-07-06T16:00:00Z,France,Uruguay,2,0,1,0,,,,,finished,True,True,Nizhny Novgorod Stadium,Nizhny Novgorod,Russia
+wc2018_cro_eng_sf,FIFA World Cup,2018,Semi-finals,2018-07-11,2018-07-11T19:00:00Z,Croatia,England,2,1,1,1,2,1,,,finished,True,True,Luzhniki Stadium,Moscow,Russia
+wc2018_fra_arg_final,FIFA World Cup,2018,Final,2018-07-15,2018-07-15T16:00:00Z,France,Argentina,4,2,2,1,,,,,finished,True,True,Luzhniki Stadium,Moscow,Russia
+wc2022_arg_ksa_gs,FIFA World Cup,2022,Group stage,2022-11-22,2022-11-22T10:00:00Z,Argentina,Saudi Arabia,1,2,1,0,,,,,finished,True,False,Lusail Stadium,Lusail,Qatar
+wc2022_fra_aus_gs,FIFA World Cup,2022,Group stage,2022-11-22,2022-11-22T20:00:00Z,France,Australia,4,1,2,1,,,,,finished,True,False,Al Janoub Stadium,Al Wakrah,Qatar
+wc2022_bra_srb_gs,FIFA World Cup,2022,Group stage,2022-11-24,2022-11-24T20:00:00Z,Brazil,Serbia,2,0,0,0,,,,,finished,True,False,Lusail Stadium,Lusail,Qatar
+wc2022_eng_iran_gs,FIFA World Cup,2022,Group stage,2022-11-21,2022-11-21T16:00:00Z,England,Iran,6,2,3,0,,,,,finished,True,False,Khalifa International Stadium,Al Rayyan,Qatar
+wc2022_cro_bra_qf,FIFA World Cup,2022,Quarter-finals,2022-12-09,2022-12-09T18:00:00Z,Croatia,Brazil,1,1,0,0,1,1,4,2,finished,True,True,Education City Stadium,Al Rayyan,Qatar
+wc2022_fra_eng_qf,FIFA World Cup,2022,Quarter-finals,2022-12-10,2022-12-10T20:00:00Z,England,France,1,2,0,1,,,,,finished,True,True,Al Bayt Stadium,Al Khor,Qatar
+wc2022_arg_fra_final,FIFA World Cup,2022,Final,2022-12-18,2022-12-18T15:00:00Z,Argentina,France,3,3,2,0,3,3,4,2,finished,True,True,Lusail Stadium,Lusail,Qatar
+intl_bra_arg_2023,Friendly,2023,Friendly,2023-06-08,2023-06-08T00:30:00Z,Brazil,Argentina,0,1,0,0,,,,,finished,False,False,Estadio Nacional,Santiago,Chile
+intl_fra_cro_2023,Friendly,2023,Friendly,2023-03-23,2023-03-23T20:00:00Z,France,Croatia,0,0,0,0,,,,,finished,False,False,Stade de France,Paris,France
+intl_eng_srb_2023,Friendly,2023,Friendly,2023-03-26,2023-03-26T17:00:00Z,England,Serbia,2,0,1,0,,,,,finished,False,False,Wembley Stadium,London,England

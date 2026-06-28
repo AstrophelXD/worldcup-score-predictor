@@ -1,0 +1,6 @@
+seed: 42
+train_cutoff: "2024-12-31T23:59:59"
+val_ratio: 0.15
+model_version: v1
+checkpoint_dir: ${project.root}/artifacts/checkpoints
+mixed_precision: bf16
