@@ -67,6 +67,10 @@ data/staging/**
 data/external/downloads/**
 !data/external/downloads/.gitkeep
 
+# Sample tables — regenerate locally (see data/samples/README.md)
+data/samples/*.csv
+!data/samples/.gitkeep
+
 # Artifacts (checkpoints, backtests, reports)
 artifacts/checkpoints/**
 !artifacts/checkpoints/.gitkeep
@@ -74,6 +78,10 @@ artifacts/backtests/**
 !artifacts/backtests/.gitkeep
 artifacts/reports/**
 !artifacts/reports/.gitkeep
+artifacts/predictions/**
+!artifacts/predictions/.gitkeep
+artifacts/data_snapshots/**
+!artifacts/data_snapshots/.gitkeep
 artifacts/**/*.log
 
 # ML / experiment tracking

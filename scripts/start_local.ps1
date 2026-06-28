@@ -63,7 +63,11 @@ function Ensure-Bootstrap {
     $featureMart = Join-Path $ProjectRoot "data\feature_mart\match_features.parquet"
 
     if (-not (Test-Path $featureMart)) {
-        Write-Step "Feature mart missing. Running ingest + build_features ..."
+        Write-Step "Feature mart missing. Running export + ingest + build_features ..."
+        $sampleMatches = Join-Path $ProjectRoot "data\samples\matches.csv"
+        if (-not (Test-Path $sampleMatches)) {
+            python -m scripts.export_sample_data
+        }
         python -m scripts.ingest
         python -m scripts.build_features
     }

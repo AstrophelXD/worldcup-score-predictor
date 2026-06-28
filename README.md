@@ -71,6 +71,9 @@ bash scripts/start_local.sh
 ### 3️⃣ 验证安装
 
 ```bash
+# 生成本地样例 CSV（public 仓库不包含 data/samples/*.csv）
+python -m scripts.export_sample_data
+
 pytest
 ruff check src tests scripts
 python -m scripts.ingest --help
