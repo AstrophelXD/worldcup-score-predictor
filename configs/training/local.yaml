@@ -1,0 +1,5 @@
+defaults:
+  - default
+
+# RTX 4060 Laptop / 本机 GPU 训练
+mixed_precision: bf16

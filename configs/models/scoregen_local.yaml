@@ -1,0 +1,7 @@
+defaults:
+  - scoregen
+
+# 本机训练：较小 batch + 适中 epoch，兼顾 RTX 4060 8GB 显存与收敛
+epochs: 80
+patience: 20
+batch_size: 8
