@@ -46,11 +46,11 @@ pip install -e ".[dev]"
 ### 2️⃣ 一键启动（API + Dashboard）
 
 ```bash
-# PowerShell
+# PowerShell / Windows
 .\scripts\start_local.ps1
 
-# 或双击
-scripts\start_local.bat
+# Linux / macOS / 实验室主机
+bash scripts/start_local.sh
 ```
 
 脚本会自动检查 feature mart 与 checkpoint；缺失时依次执行 `ingest` → `build_features` → `train`，然后启动服务。
@@ -95,6 +95,12 @@ python -m scripts.train
 python -m scripts.backtest
 python -m scripts.backtest test_set=world_cup_2018
 
+# 概率校准（lambda 缩放，保持矩阵为唯一输出源）
+python -m scripts.calibrate
+
+# 数据 QA 报告
+python -m scripts.data_qa
+
 # 单独启动 API / Dashboard
 python -m scripts.serve
 python -m scripts.dashboard
@@ -110,10 +116,13 @@ python -m scripts.predict --match-id wc2022_arg_fra_final
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | `GET` | `/health` | 健康检查 |
-| `GET` | `/matches` | 可预测比赛列表 |
+| `GET` | `/matches/{match_id}` | 比赛详情 |
+| `GET` | `/features/{match_id}` | 赛前特征摘要 |
 | `POST` | `/predict` | 提交 `match_id` 获取预测 |
 | `GET` | `/predictions/{match_id}` | 按 ID 查询预测 |
 | `GET` | `/score-matrix/{match_id}` | 比分概率矩阵 |
+| `GET` | `/backtest/runs` | 回测报告列表 |
+| `GET` | `/backtest/{run_id}` | 单场回测详情 |
 | `GET` | `/data/freshness` | 数据与模型新鲜度 |
 
 **预测响应示例字段：** `top3_scorelines` · `result_probs` · `ou25_probs` · `btts_probs` · `expected_goals` · `uncertainty` · `overflow_prob`
@@ -163,14 +172,16 @@ WorldCup/
 - [x] Dixon-Coles baseline MLE 训练（`scripts.train`）
 - [x] 2018 / 2022 世界杯 strict PIT 回测（`scripts.backtest`）
 - [x] Streamlit Dashboard（`scripts.dashboard`，通过 API 展示）
-- [x] FastAPI 全套 MVP 端点 + `/data/freshness`
+- [x] FastAPI 全套 MVP 端点 + `/data/freshness` + `/backtest` + `/features`
+- [x] lambda 缩放校准（`scripts.calibrate`，矩阵仍为唯一概率源）
+- [x] 数据 QA 报告（`scripts.data_qa`）
+- [x] 本机一键启动（Windows `.ps1` / Linux `start_local.sh`）
 
 ---
 
 ## 🗺️ Roadmap
 
 - [ ] 接入真实大规模历史数据
-- [ ] 完整 calibration 流程接入 serving
 - [ ] Mid-level / Advanced 模型
 
 ---

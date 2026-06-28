@@ -7,6 +7,7 @@ import os
 import httpx
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import streamlit as st
 
 DEFAULT_API_URL = os.getenv("WORLDCUP_API_URL", "http://127.0.0.1:8000")
@@ -41,21 +42,30 @@ def format_pct(value: float) -> str:
     return f"{100.0 * value:.1f}%"
 
 
+def match_label(item: dict) -> str:
+    home = item.get("home_team_name") or item["home_team_id"]
+    away = item.get("away_team_name") or item["away_team_id"]
+    stage = item.get("stage") or "n/a"
+    return f"{item['kickoff_ts']} · {home} vs {away} ({stage})"
+
+
 def main() -> None:
     st.set_page_config(page_title="WorldCup Predictor", layout="wide")
     st.title("WorldCup 比分预测 Dashboard")
 
     api_url = st.sidebar.text_input("API URL", value=DEFAULT_API_URL)
     st.sidebar.caption("Dashboard 仅通过 API 访问预测结果。")
+    world_cup_only = st.sidebar.checkbox("仅世界杯比赛", value=False)
 
     try:
         with httpx.Client(base_url=api_url) as client:
             health = fetch_json(client, "/health")
-            matches_payload = fetch_json(client, "/matches?limit=200")
+            query = f"/matches?limit=200&world_cup_only={'true' if world_cup_only else 'false'}"
+            matches_payload = fetch_json(client, query)
     except httpx.HTTPError as exc:
         st.error(f"无法连接 API：{exc}")
         st.info(
-            "请先运行 `python -m scripts.serve`，"
+            "请先运行 `python -m scripts.serve` 或 `scripts/start_local.ps1`，"
             "并确保已完成 ingest / build_features / train。"
         )
         return
@@ -66,13 +76,7 @@ def main() -> None:
         st.warning("API 未返回比赛列表。")
         return
 
-    labels = {
-        item["match_id"]: (
-            f"{item['kickoff_ts']} · {item['home_team_id']} vs {item['away_team_id']} "
-            f"({item.get('stage') or 'n/a'})"
-        )
-        for item in matches
-    }
+    labels = {item["match_id"]: match_label(item) for item in matches}
     selected_id = st.selectbox(
         "选择比赛",
         options=list(labels.keys()),
@@ -80,14 +84,15 @@ def main() -> None:
     )
 
     with httpx.Client(base_url=api_url) as client:
+        match_detail = fetch_json(client, f"/matches/{selected_id}")
+        features = fetch_json(client, f"/features/{selected_id}")
         prediction = post_json(client, "/predict", {"match_id": selected_id})
         matrix_payload = fetch_json(client, f"/score-matrix/{selected_id}")
 
-    tab_summary, tab_matrix, tab_meta = st.tabs(
-        ["Prediction Summary", "Score Matrix", "Data Freshness"]
-    )
+    tabs = st.tabs(["Prediction Summary", "Score Matrix", "Features", "Backtest", "Data Freshness"])
 
-    with tab_summary:
+    with tabs[0]:
+        st.subheader(match_label(match_detail))
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("主胜", format_pct(prediction["result_probs"]["home_win"]))
         col2.metric("平局", format_pct(prediction["result_probs"]["draw"]))
@@ -101,7 +106,6 @@ def main() -> None:
                 f"({format_pct(scoreline['prob'])})"
             )
 
-        st.subheader("大小球 / BTTS / 期望进球")
         c1, c2, c3 = st.columns(3)
         c1.metric("Over 2.5", format_pct(prediction["ou25_probs"]["over_2_5"]))
         c2.metric("BTTS Yes", format_pct(prediction["btts_probs"]["yes"]))
@@ -111,23 +115,45 @@ def main() -> None:
             f"{prediction['expected_goals']['away']:.2f}",
         )
 
+        if match_detail.get("home_score_ft") is not None:
+            st.info(
+                "实际 90 分钟比分："
+                f"{match_detail['home_score_ft']}-{match_detail['away_score_ft']}"
+            )
+
         st.caption(
-            f"λ_home={prediction['lambda_home']:.3f}, "
-            f"λ_away={prediction['lambda_away']:.3f}, "
+            f"lambda_scale={prediction.get('lambda_scale', 1.0):.3f}, "
+            f"lambda_home={prediction['lambda_home']:.3f}, "
+            f"lambda_away={prediction['lambda_away']:.3f}, "
             f"overflow={prediction['overflow_prob']:.4f}"
         )
 
-    with tab_matrix:
+    with tabs[1]:
         grid_max = matrix_payload["grid_max_goal"]
         if matrix_payload["overflow_prob"] > 0:
             st.info(f"尾部概率 overflow_prob = {matrix_payload['overflow_prob']:.4f}")
         render_heatmap(matrix_payload["matrix"], grid_max)
 
-    with tab_meta:
+    with tabs[2]:
+        st.json(features)
+
+    with tabs[3]:
+        with httpx.Client(base_url=api_url) as client:
+            backtests = fetch_json(client, "/backtest/runs")
+        rows = backtests.get("items", [])
+        if not rows:
+            st.warning("暂无回测报告。请在实验室主机运行 `python -m scripts.backtest`。")
+        else:
+            st.dataframe(pd.DataFrame(rows), use_container_width=True)
+
+    with tabs[4]:
         with httpx.Client(base_url=api_url) as client:
             freshness = fetch_json(client, "/data/freshness")
         st.subheader("数据 Freshness")
         st.dataframe(freshness["items"], use_container_width=True)
+        if freshness.get("model"):
+            st.subheader("模型信息")
+            st.json(freshness["model"])
         st.caption(f"API: {api_url}")
 
 

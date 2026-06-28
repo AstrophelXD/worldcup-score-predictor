@@ -17,6 +17,7 @@ class MatchPrediction:
     lambda_home: float
     lambda_away: float
     output: PredictionOutput
+    lambda_scale: float = 1.0
 
     def to_dict(self) -> dict:
         payload = self.output.to_dict()
@@ -24,6 +25,7 @@ class MatchPrediction:
         payload["expected_goals"] = self.output.expected_goals
         payload["lambda_home"] = self.lambda_home
         payload["lambda_away"] = self.lambda_away
+        payload["lambda_scale"] = self.lambda_scale
         return payload
 
 
@@ -40,7 +42,8 @@ class BaselinePredictor:
     def from_path(cls, path: Path) -> BaselinePredictor:
         return cls(load_checkpoint(path))
 
-    def predict_row(self, row: pd.Series) -> MatchPrediction:
+    def predict_row(self, row: pd.Series, lambda_scale: float | None = None) -> MatchPrediction:
+        scale = self.checkpoint.lambda_scale if lambda_scale is None else lambda_scale
         lambda_home, lambda_away = expected_lambdas(
             row["home_team_id"],
             row["away_team_id"],
@@ -48,6 +51,8 @@ class BaselinePredictor:
             self.checkpoint.defense,
             self.checkpoint.home_advantage,
         )
+        lambda_home *= scale
+        lambda_away *= scale
         dc_output = self.model.predict(lambda_home=lambda_home, lambda_away=lambda_away)
         decoded = decode_score_matrix(dc_output.matrix, overflow_prob=dc_output.overflow_prob)
         return MatchPrediction(
@@ -55,6 +60,7 @@ class BaselinePredictor:
             lambda_home=lambda_home,
             lambda_away=lambda_away,
             output=decoded,
+            lambda_scale=scale,
         )
 
     def predict_match_id(self, features: pd.DataFrame, match_id: str) -> MatchPrediction:
