@@ -142,7 +142,7 @@ def main() -> None:
             backtests = fetch_json(client, "/backtest/runs")
         rows = backtests.get("items", [])
         if not rows:
-            st.warning("暂无回测报告。请在实验室主机运行 `python -m scripts.backtest`。")
+            st.warning("暂无回测报告。请运行 `python -m scripts.backtest` 生成报告。")
         else:
             st.dataframe(pd.DataFrame(rows), use_container_width=True)
 

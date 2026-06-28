@@ -9,6 +9,7 @@
 ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white)
 ![Status](https://img.shields.io/badge/Status-MVP-blue)
 ![Tests](https://img.shields.io/badge/Tests-pytest-0A9EDC?logo=pytest&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
 
@@ -30,8 +31,8 @@
 ### 1️⃣ 安装
 
 ```bash
-git clone https://github.com/<your-org>/worldcupScorePredictor.git
-cd worldcupScorePredictor
+git clone https://github.com/AstrophelXD/worldcup-score-predictor.git
+cd worldcup-score-predictor
 
 python -m venv .venv
 
@@ -49,7 +50,7 @@ pip install -e ".[dev]"
 # PowerShell / Windows
 .\scripts\start_local.ps1
 
-# Linux / macOS / 实验室主机
+# Linux / macOS
 bash scripts/start_local.sh
 ```
 
@@ -95,7 +96,7 @@ python -m scripts.build_features
 # Baseline 模型训练
 python -m scripts.train
 
-# Mid-level tabular 模型（实验室 RTX 4090 上训练）
+# Mid-level tabular 模型（需要 GPU）
 python -m scripts.train --config-name=config models=midlevel
 python -m scripts.calibrate --config-name=config models=midlevel
 
@@ -214,6 +215,12 @@ pytest
 # 数据校验
 python -m scripts.validate_data
 ```
+
+---
+
+## 📄 License
+
+[MIT](LICENSE)
 
 ---
 

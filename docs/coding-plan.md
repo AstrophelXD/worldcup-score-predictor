@@ -14,7 +14,7 @@
 
 1. 所有衍生概率（1X2 / OU2.5 / BTTS / top-3）必须从 **8×8 比分矩阵聚合**，不得单独训练分类头覆盖矩阵结果。
 2. 特征与回测必须绑定 `as_of_time`，禁止赛后信息泄漏。
-3. **训练 / 回测 / GPU 任务在实验室 RTX 4090 主机执行**；开发机（Cursor 本地）只做编码、静态检查、不依赖 GPU 的单测。
+3. **训练 / 回测 / GPU 任务在具备 CUDA 的环境中执行**；日常开发可只做编码、静态检查、不依赖 GPU 的单测。
 
 **MVP 技术栈**：
 
@@ -36,10 +36,10 @@ Phase 0 脚手架 → Phase 1 数据层 → Phase 2 特征 + Baseline
 | 阶段 | 周期 | 产出 | 执行环境 |
 |------|------|------|----------|
 | Phase 0 脚手架 | 1–2 天 | 目录结构、依赖、配置骨架、测试框架 | 本地 |
-| Phase 1 数据层 | 3–5 天 | raw/curated Parquet、实体表、首批数据 | 本地写脚本，实验室跑全量 |
-| Phase 2 特征 + Baseline | 5–7 天 | PIT 特征、Dixon-Coles、矩阵解码 | 实验室 RTX 4090 |
-| Phase 3 Serving | 2–3 天 | FastAPI 5 个核心端点 | 本地 / 实验室均可 |
-| Phase 4 回测 + 校准 | 3–4 天 | 2018/2022 回测报告、calibration | 实验室 RTX 4090 |
+| Phase 1 数据层 | 3–5 天 | raw/curated Parquet、实体表、首批数据 | 本地写脚本，目标环境跑全量 |
+| Phase 2 特征 + Baseline | 5–7 天 | PIT 特征、Dixon-Coles、矩阵解码 | GPU 环境 |
+| Phase 3 Serving | 2–3 天 | FastAPI 5 个核心端点 | 本地或 GPU 环境均可 |
+| Phase 4 回测 + 校准 | 3–4 天 | 2018/2022 回测报告、calibration | GPU 环境 |
 | Phase 5 Dashboard | 2–3 天 | Streamlit 三页 MVP | 本地（连 API） |
 
 ## 3. 目标目录结构
@@ -112,7 +112,7 @@ WorldCup/
 - [ ] 用 DuckDB 写集成测试：表关联、行数、主键唯一性
 - [ ] 输出首份数据 QA 报告（缺失率、世界杯场次覆盖）
 
-### 实验室验证命令（示例）
+### GPU 环境验证命令（示例）
 
 ```bash
 conda activate worldcup
@@ -144,7 +144,7 @@ python -m scripts.validate_data
 - [ ] 实现 `models/registry.py`：checkpoint 路径与版本元数据
 - [ ] 训练 baseline 并保存 checkpoint 到 `artifacts/checkpoints/`
 
-### 实验室验证命令（示例）
+### GPU 环境验证命令（示例）
 
 ```bash
 python -m scripts.build_features --cutoff 2024-12-31
@@ -152,7 +152,7 @@ python -m scripts.train --config configs/models/baseline.yaml
 python -m scripts.predict --match-id <id>   # smoke test
 ```
 
-**执行环境**：实验室 RTX 4090
+**执行环境**：GPU 环境
 
 ## 7. Phase 3：FastAPI Serving
 
@@ -175,7 +175,7 @@ python -m scripts.predict --match-id <id>   # smoke test
 uvicorn src.api.main:app --host 0.0.0.0 --port 8000
 ```
 
-**执行环境**：本地 / 实验室均可
+**执行环境**：本地或 GPU 环境均可
 
 ## 8. Phase 4：回测 + 校准
 
@@ -191,7 +191,7 @@ uvicorn src.api.main:app --host 0.0.0.0 --port 8000
 - [ ] 输出 `artifacts/backtests/` 报告（JSON + Markdown）
 - [ ] 反泄漏验收：回测日志记录每场使用的特征 cutoff
 
-### 实验室验证命令（示例）
+### GPU 环境验证命令（示例）
 
 ```bash
 python -m scripts.backtest --test-set world_cup_2018 --model baseline_v1
@@ -199,7 +199,7 @@ python -m scripts.backtest --test-set world_cup_2022 --model baseline_v1
 python -m scripts.calibrate --model baseline_v1
 ```
 
-**执行环境**：实验室 RTX 4090
+**执行环境**：GPU 环境
 
 ## 9. Phase 5：Streamlit Dashboard
 
@@ -225,7 +225,7 @@ streamlit run src/dashboard/app.py
 
 - [ ] Hydra 配置与 CLI 入口统一
 - [ ] MLflow 实验跟踪（Phase 2 训练跑通后再接）
-- [ ] 根目录 `README.md`：环境安装、实验室运行步骤、API 启动
+- [ ] 根目录 `README.md`：环境安装、运行步骤、API 启动
 - [ ] 每新增数据源 / 特征组更新 `docs/` 对应章节
 
 ## 11. 第一 Sprint 建议（优先开工）
@@ -235,12 +235,12 @@ streamlit run src/dashboard/app.py
 | 顺序 | 任务 | 环境 |
 |------|------|------|
 | 1 | Phase 0 脚手架 + 实体 schema | 本地 |
-| 2 | 导入历史赛果 + Elo + FIFA → curated Parquet | 本地写脚本，实验室跑全量 |
-| 3 | PIT 特征 builder + 反泄漏单测 | 本地单测，实验室跑 feature build |
-| 4 | Dixon-Coles + score matrix decoder | 实验室训练 |
+| 2 | 导入历史赛果 + Elo + FIFA → curated Parquet | 本地写脚本，目标环境跑全量 |
+| 3 | PIT 特征 builder + 反泄漏单测 | 本地单测，目标环境跑 feature build |
+| 4 | Dixon-Coles + score matrix decoder | GPU 训练 |
 | 5 | FastAPI `/predict` + `/score-matrix` | 本地 |
 | 6 | Streamlit 三页原型 | 本地 |
-| 7 | 2018/2022 回测 + calibration | 实验室 |
+| 7 | 2018/2022 回测 + calibration | GPU 环境 |
 
 ## 12. MVP 验收 Checklist
 

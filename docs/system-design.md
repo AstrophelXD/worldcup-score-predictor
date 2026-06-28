@@ -524,7 +524,7 @@
 
 **训练成本**
 
-- RTX 4090 上 1 到 6 小时
+- 单卡 GPU 上约 1 到 6 小时
 
 **优点**
 
@@ -560,7 +560,7 @@
 
 **训练成本**
 
-- RTX 4090 上 8 到 36 小时
+- 单卡 GPU 上约 8 到 36 小时
 
 **优点**
 
@@ -1021,7 +1021,7 @@ worldcup-predictor/
 - 解释工具：`SHAP` + attention diagnostics + permutation importance
 - 部署：本地 `uvicorn` / `streamlit run`，后续可 `Docker Compose`
 
-## 13. 4090 本地训练配置
+## 13. 本地 GPU 训练配置
 
 - mixed precision：优先 `bf16`
 - baseline / tabular batch size：`512-4096`

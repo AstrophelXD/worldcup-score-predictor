@@ -74,6 +74,7 @@ artifacts/backtests/**
 !artifacts/backtests/.gitkeep
 artifacts/reports/**
 !artifacts/reports/.gitkeep
+artifacts/**/*.log
 
 # ML / experiment tracking
 outputs/

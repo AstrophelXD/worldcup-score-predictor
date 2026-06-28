@@ -1,6 +1,6 @@
 # 数据源 CSV 格式说明
 
-项目内置样例位于 `data/samples/`，可直接用于本地测试与实验室首次跑通。
+项目内置样例位于 `data/samples/`，可直接用于本地测试与首次跑通。
 
 外部真实数据对接见 [`data/external/README.md`](../data/external/README.md) 与 `configs/data/external.yaml`。
 
