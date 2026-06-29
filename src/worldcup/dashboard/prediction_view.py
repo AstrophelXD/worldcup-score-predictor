@@ -76,6 +76,59 @@ _DASHBOARD_CSS = """
   color: #0f172a;
   margin-top: 0.1rem;
 }
+.wc-outcome-card.wc-schedule {
+  margin-bottom: 0;
+  padding: 1rem 1.15rem 0.95rem;
+}
+.wc-outcome-card.wc-schedule .wc-teams-row {
+  margin-bottom: 0.7rem;
+  gap: 2rem;
+}
+.wc-outcome-card.wc-schedule .wc-team {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 50%;
+  font-size: 1.05rem;
+}
+.wc-outcome-card.wc-schedule .wc-team span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wc-outcome-card.wc-schedule .wc-team.home { justify-content: flex-start; }
+.wc-outcome-card.wc-schedule .wc-team.away { justify-content: flex-end; }
+.wc-outcome-card.wc-schedule .wc-bar { height: 26px; }
+.wc-outcome-card.wc-schedule .wc-label strong { font-size: 1.05rem; }
+.wc-outcome-card.wc-schedule.wc-flags-only .wc-team span { display: none; }
+.wc-outcome-card.wc-schedule.wc-flags-only .wc-teams-row { margin-bottom: 0.55rem; }
+.wc-top-scores {
+  margin: 0.65rem 0 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+.wc-top-scores-label {
+  font-weight: 600;
+  color: #334155;
+  margin-right: 0.25rem;
+  font-size: 0.95rem;
+}
+.wc-score-chip {
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 999px;
+  padding: 0.22rem 0.7rem;
+  font-size: 0.92rem;
+  color: #1e293b;
+  white-space: nowrap;
+}
+.wc-score-chip em {
+  font-style: normal;
+  color: #64748b;
+  margin-left: 0.2rem;
+  font-size: 0.88rem;
+}
 </style>
 """
 
@@ -202,6 +255,9 @@ def render_outcome_bar(
     home_team: str,
     away_team: str,
     prediction: dict,
+    *,
+    variant: str = "full",
+    show_team_names: bool | None = None,
 ) -> None:
     """Single stacked bar: teams+flags on top, 1X2 bar, labels below."""
     inject_dashboard_css()
@@ -219,19 +275,31 @@ def render_outcome_bar(
 
     home_name = html.escape(resolve_team_name(str(home_team)))
     away_name = html.escape(resolve_team_name(str(away_team)))
-    home_flag = team_flag_html(str(home_team), width=40)
-    away_flag = team_flag_html(str(away_team), width=40)
+    flag_width = 32 if variant == "schedule" else 40
+    home_flag = team_flag_html(str(home_team), width=flag_width)
+    away_flag = team_flag_html(str(away_team), width=flag_width)
 
     home_flex = max(1, round(home_p * 1000))
     draw_flex = max(1, round(draw_p * 1000))
     away_flex = max(1, round(away_p * 1000))
 
+    if show_team_names is None:
+        show_team_names = variant != "schedule"
+    card_class = "wc-outcome-card"
+    if variant == "schedule":
+        card_class += " wc-schedule"
+        if not show_team_names:
+            card_class += " wc-flags-only"
+
+    home_label = f"<span>{home_name}</span>" if show_team_names else ""
+    away_label = f"<span>{away_name}</span>" if show_team_names else ""
+
     st.markdown(
         f"""
-        <div class="wc-outcome-card">
+        <div class="{card_class}">
           <div class="wc-teams-row">
-            <div class="wc-team home">{home_flag}<span>{home_name}</span></div>
-            <div class="wc-team away">{away_flag}<span>{away_name}</span></div>
+            <div class="wc-team home">{home_flag}{home_label}</div>
+            <div class="wc-team away">{away_flag}{away_label}</div>
           </div>
           <div class="wc-bar">
             <div class="wc-bar-seg" style="flex:{home_flex};background:#16a34a;"></div>
@@ -251,6 +319,25 @@ def render_outcome_bar(
           </div>
         </div>
         """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_top_scorelines_compact(prediction: dict, *, top_n: int = 3) -> None:
+    """Inline top scorelines for schedule/home cards."""
+    inject_dashboard_css()
+    items = prediction.get("top3_scorelines", [])[:top_n]
+    if not items:
+        return
+    chips = []
+    for item in items:
+        score = f"{item['home_goals']}-{item['away_goals']}"
+        prob = format_pct(float(item["prob"]))
+        chips.append(f'<span class="wc-score-chip">{score} <em>{prob}</em></span>')
+    st.markdown(
+        f'<div class="wc-top-scores">'
+        f'<span class="wc-top-scores-label">最可能比分</span> {"".join(chips)}'
+        f"</div>",
         unsafe_allow_html=True,
     )
 
@@ -432,8 +519,14 @@ def render_compact_prediction(
     home_team: str,
     away_team: str,
 ) -> None:
-    """Mini stacked bar for schedule lists."""
-    render_outcome_bar(home_team, away_team, prediction)
+    """Expanded 1X2 bar for schedule/home cards."""
+    render_outcome_bar(
+        home_team,
+        away_team,
+        prediction,
+        variant="schedule",
+        show_team_names=False,
+    )
 
 
 def render_full_prediction_panel(

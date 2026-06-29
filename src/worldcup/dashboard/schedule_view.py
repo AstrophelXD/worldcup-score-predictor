@@ -13,7 +13,11 @@ from worldcup.dashboard.flags import (
     team_label_html,
     team_label_plain,
 )
-from worldcup.dashboard.prediction_view import format_pct, render_compact_prediction
+from worldcup.dashboard.prediction_view import (
+    format_pct,
+    render_compact_prediction,
+    render_top_scorelines_compact,
+)
 from worldcup.data_ingestion.sources.world_cup_2026_catalog import wc2026_match_id
 from worldcup.dashboard.world_cup_2026_schedule import (
     STAGE_ORDER,
@@ -195,24 +199,30 @@ def render_current_predictions(
     for match in current:
         api_id = find_api_match_id(match, api_index, api_by_id)
         status = schedule_status(match.match_date, today=ref)
+        pred = _lookup_prediction(
+            api_id,
+            predictions_by_id=predictions_by_id,
+            predict_fn=predict_fn,
+        )
         with st.container(border=True):
-            top = st.columns([4, 2, 2])
-            with top[0]:
+            left, right = st.columns([1.05, 1], gap="large")
+            with left:
                 st.markdown(_display_matchup_html(match), unsafe_allow_html=True)
                 st.caption(
                     f"#{match.match_number} · {match.match_date} {match.kickoff_et} ET · "
-                    f"{match.stage_name}"
+                    f"{match.stage_name} · {status}"
                     + (f" · Group {match.group}" if match.group else "")
                     + f" · {match.venue}, {match.city}"
                 )
-            with top[1]:
-                st.write(status)
-            with top[2]:
-                pred = _lookup_prediction(
-                    api_id,
-                    predictions_by_id=predictions_by_id,
-                    predict_fn=predict_fn,
-                )
+                if pred:
+                    render_top_scorelines_compact(pred, top_n=3)
+                elif api_id:
+                    st.caption("模型预测加载中…")
+                else:
+                    st.caption("尚未入库")
+                if api_id and st.button("查看完整预测", key=f"full_pred_{match.match_number}"):
+                    selected = api_id
+            with right:
                 if pred:
                     render_compact_prediction(
                         pred,
@@ -223,9 +233,6 @@ def render_current_predictions(
                     st.caption("模型预测加载中…")
                 else:
                     st.caption("尚未入库")
-
-            if api_id and st.button("查看完整预测", key=f"full_pred_{match.match_number}"):
-                selected = api_id
 
     return selected
 
