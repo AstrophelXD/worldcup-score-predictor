@@ -245,6 +245,14 @@ def prediction_payload(match_id: str, model_name: str | None = None) -> dict[str
     payload["prediction_source"] = "trained_checkpoint_adjusted"
     payload["raw_result_probs"] = raw_prediction.output.result_probs
     payload["raw_expected_goals"] = raw_prediction.output.expected_goals
+    payload["raw_top3_scorelines"] = [
+        {
+            "home_goals": s.home_goals,
+            "away_goals": s.away_goals,
+            "prob": s.prob,
+        }
+        for s in raw_prediction.output.top3_scorelines
+    ]
     payload["market_comparison"] = market_comparison
     payload["market_divergence_note"] = divergence_summary(market_comparison)
     return payload
@@ -270,6 +278,14 @@ def predict_matches(match_ids: list[str], model_name: str | None = None) -> list
         payload["model_version"] = meta.get("model_version")
         payload["prediction_source"] = "trained_checkpoint_adjusted"
         payload["raw_result_probs"] = raw_prediction.output.result_probs
+        payload["raw_top3_scorelines"] = [
+            {
+                "home_goals": s.home_goals,
+                "away_goals": s.away_goals,
+                "prob": s.prob,
+            }
+            for s in raw_prediction.output.top3_scorelines
+        ]
         payload["market_comparison"] = market_comparison
         payload["market_divergence_note"] = divergence_summary(market_comparison)
         items.append(payload)

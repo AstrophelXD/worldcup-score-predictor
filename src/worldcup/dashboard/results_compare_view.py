@@ -9,12 +9,15 @@ from typing import Any, Callable
 import pandas as pd
 import streamlit as st
 
-from worldcup.backtesting.metrics import actual_result, brier_multiclass, ranked_probability_score
 from worldcup.dashboard.flags import team_label_html, team_label_plain
 from worldcup.dashboard.prediction_view import format_pct, inject_dashboard_css
 from worldcup.dashboard.schedule_view import schedule_meta
 from worldcup.dashboard.world_cup_2026_schedule import ScheduleMatch
 from worldcup.data_ingestion.sources.world_cup_2026_results import load_wc2026_results
+from worldcup.evaluation.match_eval import evaluate_played_match, slice_prediction_payload, summarize_evaluations
+from worldcup.utils.paths import project_root
+
+_FEATURE_MART = project_root() / "data" / "feature_mart" / "match_features.parquet"
 
 _RESULT_LABELS = {
     "home_win": "主胜",
@@ -34,10 +37,6 @@ def _top_scoreline_str(top3: list[dict[str, Any]]) -> str:
         return "—"
     top = top3[0]
     return f"{top['home_goals']}-{top['away_goals']}"
-
-
-def _predicted_outcome(probs: dict[str, float]) -> str:
-    return max(probs, key=probs.get)
 
 
 def _resolve_scores(
@@ -88,31 +87,43 @@ def _comparison_bar_html(probs: dict[str, float], actual_key: str) -> str:
     )
 
 
-def _build_row(
+def _load_feature_row(match_id: str) -> dict[str, Any] | None:
+    if not _FEATURE_MART.exists():
+        return None
+    frame = pd.read_parquet(_FEATURE_MART)
+    rows = frame.loc[frame["match_id"] == match_id]
+    if rows.empty:
+        return None
+    return rows.iloc[0].to_dict()
+
+
+def _pct(value: float | None) -> str:
+    if value is None:
+        return "—"
+    return f"{100.0 * float(value):.1f}%"
+
+
+def _build_display_row(
     *,
     detail: dict[str, Any],
     prediction: dict[str, Any],
     schedule: ScheduleMatch | None,
     home_score: int,
     away_score: int,
+    eval_row: dict[str, Any],
+    use_raw: bool,
 ) -> dict[str, Any]:
-    actual = actual_result(home_score, away_score)
-    probs = prediction["result_probs"]
-    predicted = _predicted_outcome(probs)
-    total_goals = home_score + away_score
-    ou_hit = (total_goals >= 3) == (prediction["ou25_probs"]["over_2_5"] >= 0.5)
-    btts_actual = home_score >= 1 and away_score >= 1
-    btts_hit = btts_actual == (prediction["btts_probs"]["yes"] >= 0.5)
-    top_hit = any(
-        int(s["home_goals"]) == home_score and int(s["away_goals"]) == away_score
-        for s in prediction.get("top3_scorelines", [])
-    )
+    pred = slice_prediction_payload(prediction, use_raw=use_raw)
+    branch = eval_row["raw" if use_raw else "adjusted"]
+    probs = pred["result_probs"]
+    top3 = pred.get("top3_scorelines") or []
     top3_text = " · ".join(
         f"{s['home_goals']}-{s['away_goals']} ({format_pct(float(s['prob']))})"
-        for s in prediction.get("top3_scorelines", [])[:3]
+        for s in top3[:3]
     )
     home_name = detail.get("home_team_name") or detail.get("home_team_id")
     away_name = detail.get("away_team_name") or detail.get("away_team_id")
+    actual = eval_row["actual_outcome"]
     return {
         "match_id": detail.get("match_id"),
         "match_number": schedule.match_number if schedule else None,
@@ -128,22 +139,21 @@ def _build_row(
             f"{team_label_html(str(away_name), width=22)}"
         ),
         "actual_score": _format_score(home_score, away_score),
-        "predicted_top1": _top_scoreline_str(prediction.get("top3_scorelines", [])),
+        "predicted_top1": _top_scoreline_str(top3),
         "top3_text": top3_text,
-        "predicted_outcome": predicted,
-        "predicted_outcome_label": _RESULT_LABELS[predicted],
-        "predicted_prob": probs[predicted],
+        "predicted_outcome": branch["predicted_outcome"],
+        "predicted_outcome_label": _RESULT_LABELS[branch["predicted_outcome"]],
+        "predicted_prob": probs[branch["predicted_outcome"]],
         "actual_outcome": actual,
         "actual_outcome_label": _RESULT_LABELS[actual],
-        "hit_1x2": predicted == actual,
-        "hit_top3": top_hit,
-        "hit_ou": ou_hit,
-        "hit_btts": btts_hit,
-        "brier": round(brier_multiclass(probs, actual), 3),
-        "rps": round(ranked_probability_score(probs, actual), 3),
+        "hit_1x2": branch["hit_1x2"],
+        "hit_top3": branch["hit_top3"],
+        "brier": branch["brier"],
+        "rps": branch["rps"],
         "probs": probs,
-        "expected_goals": prediction.get("expected_goals", {}),
+        "expected_goals": pred.get("expected_goals", {}),
         "comparison_html": _comparison_bar_html(probs, actual),
+        "top1_agrees_1x2": branch.get("top1_agrees_1x2"),
     }
 
 
@@ -158,16 +168,16 @@ def render_wc2026_results_compare_tab(
 ) -> None:
     st.subheader("2026 赛果对照")
     st.caption(
-        "对比当前模型预测与已完赛比分（90 分钟）。"
-        "赛果读取 `data/samples/wc2026_results.csv`（截至 2026-06-28 共 72 组赛 + 1 场 Round of 32），"
-        "可用 `python -m scripts.seed_wc2026_results` 更新。"
+        "对比赛前模型预测与已完赛比分（90 分钟）。"
+        "模型质量请优先看 **原始 checkpoint**；**市场校准后**为对外展示口径。"
+        "赛果来自 `data/samples/wc2026_results.csv`。"
     )
 
     fallback_results = load_wc2026_results()
     wc_matches = [m for m in matches if str(m.get("match_id", "")).startswith("wc2026_")]
     wc_matches.sort(key=lambda m: str(m.get("kickoff_ts", "")))
 
-    played_rows: list[dict[str, Any]] = []
+    eval_rows: list[dict[str, Any]] = []
     pending_count = 0
 
     for item in wc_matches:
@@ -190,43 +200,161 @@ def render_wc2026_results_compare_tab(
         if prediction is None:
             continue
 
+        feature_row = _load_feature_row(match_id) or detail
+        eval_rows.append(
+            evaluate_played_match(
+                feature_row=feature_row,
+                prediction=prediction,
+                home_goals=home_score,
+                away_goals=away_score,
+            )
+        )
+
+    summary = summarize_evaluations(eval_rows)
+    played_count = summary.get("count", 0)
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric("2026 已入库", len(wc_matches))
+    c2.metric("已完赛", played_count)
+    c3.metric("待赛", pending_count)
+
+    if not eval_rows:
+        st.info(
+            "暂无已完赛且可对照的 2026 场次。"
+            "请更新 `data/samples/wc2026_results.csv` 或运行 `python -m scripts.seed_wc2026_results`。"
+        )
+        return
+
+    st.markdown("#### 命中率对照（含 baseline）")
+    st.info(
+        "**1X2 命中率**：预测的最高概率胜平负是否与实际一致。"
+        "**Top3 命中率**：实际精确比分是否落在模型概率最高的 3 个比分格内。"
+        "两者均来自同一 `score_matrix`；若校准后 Top3 升高但 1X2 不变，说明市场校准改变了矩阵形状。"
+    )
+
+    raw = summary.get("raw", {})
+    adj = summary.get("adjusted", {})
+    base = summary.get("baselines", {})
+    compare = pd.DataFrame(
+        [
+            {
+                "方法": "模型（原始 checkpoint）",
+                "1X2": _pct(raw.get("hit_1x2")),
+                "Top3 比分": _pct(raw.get("hit_top3")),
+                "Top1↔1X2 一致": _pct(raw.get("top1_agrees_1x2")),
+                "平均 Brier": f"{raw.get('avg_brier', 0):.3f}" if raw.get("count") else "—",
+            },
+            {
+                "方法": "模型（市场校准后）",
+                "1X2": _pct(adj.get("hit_1x2")),
+                "Top3 比分": _pct(adj.get("hit_top3")),
+                "Top1↔1X2 一致": _pct(adj.get("top1_agrees_1x2")),
+                "平均 Brier": f"{adj.get('avg_brier', 0):.3f}" if adj.get("count") else "—",
+            },
+            {
+                "方法": "Elo favorite",
+                "1X2": _pct(base.get("elo_favorite_hit")),
+                "Top3 比分": "—",
+                "Top1↔1X2 一致": "—",
+                "平均 Brier": "—",
+            },
+            {
+                "方法": "FIFA rank favorite",
+                "1X2": _pct(base.get("fifa_favorite_hit")),
+                "Top3 比分": "—",
+                "Top1↔1X2 一致": "—",
+                "平均 Brier": "—",
+            },
+            {
+                "方法": "市场 favorite（有盘口场次）",
+                "1X2": _pct(base.get("market_favorite_hit")),
+                "Top3 比分": "—",
+                "Top1↔1X2 一致": "—",
+                "平均 Brier": "—",
+            },
+            {
+                "方法": "常见比分 Top3（1-1/1-0/0-1）",
+                "1X2": "—",
+                "Top3 比分": _pct(base.get("naive_top3_hit")),
+                "Top1↔1X2 一致": "—",
+                "平均 Brier": "—",
+            },
+            {
+                "方法": "常见比分 Top6",
+                "1X2": "—",
+                "Top3 比分": _pct(base.get("naive_top6_hit")),
+                "Top1↔1X2 一致": "—",
+                "平均 Brier": "—",
+            },
+            {
+                "方法": "随机猜 1X2",
+                "1X2": "33.3%",
+                "Top3 比分": "—",
+                "Top1↔1X2 一致": "—",
+                "平均 Brier": "—",
+            },
+        ]
+    )
+    st.dataframe(compare, use_container_width=True, hide_index=True)
+
+    if (
+        raw.get("hit_1x2") is not None
+        and adj.get("hit_top3") is not None
+        and raw.get("hit_top3") is not None
+        and adj["hit_top3"] - raw["hit_top3"] > 0.12
+    ):
+        st.warning(
+            "市场校准后 Top3 命中率显著高于原始模型，但 1X2 提升有限。"
+            "请优先用 **原始 checkpoint** 评估模型；校准后指标仅反映对外展示口径。"
+        )
+    if summary.get("adjusted_top1_consistent_rate", 1.0) is not None and (
+        summary.get("adjusted_top1_consistent_rate") or 0
+    ) < 0.5:
+        st.warning(
+            f"校准后 Top1 比分与 1X2 最可能结果一致率仅 "
+            f"{_pct(summary.get('adjusted_top1_consistent_rate'))}。"
+            "这是市场拟合 λ 后矩阵变形的正常现象，不代表 Top3 泄漏。"
+        )
+
+    metric_mode = st.radio(
+        "下方逐场表使用的预测口径",
+        options=["raw", "adjusted"],
+        format_func=lambda x: "原始 checkpoint（推荐评估）" if x == "raw" else "市场校准后（对外展示）",
+        horizontal=True,
+        key="wc26_results_metric_mode",
+    )
+    use_raw = metric_mode == "raw"
+
+    played_rows: list[dict[str, Any]] = []
+    for item in wc_matches:
+        match_id = item["match_id"]
+        eval_row = next((e for e in eval_rows if e["match_id"] == match_id), None)
+        if eval_row is None:
+            continue
+        detail = match_detail_fn(match_id) if match_detail_fn else item
+        if detail is None:
+            detail = item
+        detail = {**item, **detail, "match_id": match_id}
+        home_score, away_score = _resolve_scores(detail, fallback_results=fallback_results)
+        if home_score is None or away_score is None:
+            continue
+        prediction = predictions_by_id.get(match_id) if predictions_by_id else None
+        if prediction is None:
+            prediction = predict_fn(match_id)
+        if prediction is None:
+            continue
         schedule = (schedule_by_id or {}).get(match_id)
         played_rows.append(
-            _build_row(
+            _build_display_row(
                 detail=detail,
                 prediction=prediction,
                 schedule=schedule,
                 home_score=home_score,
                 away_score=away_score,
+                eval_row=eval_row,
+                use_raw=use_raw,
             )
         )
-
-    c1, c2, c3, c4, c5, c6 = st.columns(6)
-    c1.metric("2026 已入库", len(wc_matches))
-    c2.metric("已完赛", len(played_rows))
-    c3.metric("待赛", pending_count)
-    if played_rows:
-        df_tmp = pd.DataFrame(played_rows)
-        c4.metric("1X2 命中率", f"{100.0 * df_tmp['hit_1x2'].mean():.1f}%")
-        c5.metric("Top3 命中率", f"{100.0 * df_tmp['hit_top3'].mean():.1f}%")
-        c6.metric("平均 Brier", f"{df_tmp['brier'].mean():.3f}")
-    else:
-        c4.metric("1X2 命中率", "—")
-        c5.metric("Top3 命中率", "—")
-        c6.metric("平均 Brier", "—")
-
-    if not played_rows:
-        st.info(
-            "暂无已完赛且可对照的 2026 场次。"
-            "请在 `data/samples/wc2026_results.csv` 写入比分，"
-            "或运行 `python -m scripts.seed_wc2026_results` 生成截至当日的样例赛果。"
-        )
-        if fallback_results:
-            st.caption(
-                f"本地赛果文件已有 {len(fallback_results)} 场记录；"
-                "Dashboard 会直接读取该文件用于对照。"
-            )
-        return
 
     filter_col1, filter_col2, filter_col3 = st.columns([1, 1, 1])
     outcome_filter = filter_col1.selectbox(
