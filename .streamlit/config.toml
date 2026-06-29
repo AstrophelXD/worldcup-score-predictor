@@ -1,0 +1,10 @@
+[server]
+# Avoid Streamlit probing torch.classes.__path__ (PyTorch + watchdog crash on Windows)
+fileWatcherType = "none"
+headless = true
+
+[browser]
+gatherUsageStats = false
+
+[runner]
+fastReruns = true

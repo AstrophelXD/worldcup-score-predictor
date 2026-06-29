@@ -109,7 +109,8 @@ echo [6/6] Start Dashboard (Ctrl+C here does not stop API^)
 echo       browser: http://localhost:%DASH_PORT%
 echo.
 set "WORLDCUP_API_URL=%API_URL%"
-python -m streamlit run "src\worldcup\dashboard\app.py" --server.port %DASH_PORT%
+set "STREAMLIT_SERVER_FILE_WATCHER_TYPE=none"
+python -m streamlit run "src\worldcup\dashboard\app.py" --server.port %DASH_PORT% --server.fileWatcherType none
 goto END
 
 :API_FAIL
