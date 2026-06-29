@@ -57,12 +57,17 @@ class ScoregenTrainConfig:
 def _resolve_amp(
     mixed_precision: str | None,
     device: torch.device,
-) -> tuple[bool, torch.dtype | None, torch.cuda.amp.GradScaler | None]:
+) -> tuple[bool, torch.dtype | None, object | None]:
     if device.type != "cuda" or not mixed_precision:
         return False, None, None
     mode = mixed_precision.lower()
     if mode in {"fp16", "float16"}:
-        return True, torch.float16, torch.cuda.amp.GradScaler()
+        scaler = (
+            torch.amp.GradScaler("cuda")
+            if hasattr(torch.amp, "GradScaler")
+            else torch.cuda.amp.GradScaler()
+        )
+        return True, torch.float16, scaler
     if mode in {"bf16", "bfloat16"} and torch.cuda.is_bf16_supported():
         return True, torch.bfloat16, None
     return False, None, None

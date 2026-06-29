@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import sys
 from pathlib import Path
 
 import hydra
@@ -18,6 +19,29 @@ from worldcup.training.scoregen_trainer import (
 from worldcup.utils.paths import project_root
 
 logger = logging.getLogger(__name__)
+
+_TRAINING_ALIASES = {
+    "4060": "gpu_4060",
+    "4090": "gpu_4090",
+}
+
+
+def _normalize_hydra_overrides(argv: list[str]) -> list[str]:
+    """Map numeric training overrides to string config names for Hydra."""
+    normalized: list[str] = []
+    for arg in argv:
+        if arg.startswith("training="):
+            _, _, value = arg.partition("=")
+            alias = _TRAINING_ALIASES.get(value, value)
+            if alias != value:
+                logger.info("Remapped CLI override %s -> training=%s", arg, alias)
+            normalized.append(f"training={alias}")
+        else:
+            normalized.append(arg)
+    return normalized
+
+
+sys.argv = _normalize_hydra_overrides(sys.argv)
 
 
 @hydra.main(version_base=None, config_path=CONFIG_DIR, config_name="config")

@@ -210,6 +210,9 @@ def render_feature_summary(
                 f"xG 进: {events.get('home_xg_for_last5', '—')} vs "
                 f"{events.get('away_xg_for_last5', '—')}"
             )
+
+
+def render_heatmap(matrix: list[list[float]], grid_max_goal: int) -> None:
     data = np.array(matrix)
     fig, ax = plt.subplots(figsize=(8, 6))
     im = ax.imshow(data, cmap="YlOrRd", origin="lower")
