@@ -152,7 +152,7 @@ WORLD_CUP_2026_SCHEDULE: list[ScheduleMatch] = [
     _gs(71, "2026-06-27", "19:30", "Colombia", "Portugal", "K", "Hard Rock Stadium", "Miami"),
     _gs(72, "2026-06-27", "19:30", "Congo DR", "Uzbekistan", "K", "Mercedes-Benz Stadium", "Atlanta"),
     _ko(73, "2026-06-28", "15:00", "South Africa", "Canada", "Round of 32", "SoFi Stadium", "Los Angeles"),
-    _ko(74, "2026-06-29", "16:30", "Germany", "Group A/B/C/D/F 3rd Place", "Round of 32", "Gillette Stadium", "Boston"),
+    _ko(74, "2026-06-29", "16:30", "Germany", "Paraguay", "Round of 32", "Gillette Stadium", "Boston"),
     _ko(75, "2026-06-29", "21:00", "Netherlands", "Morocco", "Round of 32", "Estadio BBVA", "Monterrey"),
     _ko(76, "2026-06-29", "13:00", "Brazil", "Japan", "Round of 32", "NRG Stadium", "Houston"),
     _ko(77, "2026-06-30", "17:00", "France", "Group C/D/F/G/H 3rd Place", "Round of 32", "MetLife Stadium", "New York/New Jersey"),

@@ -9,23 +9,33 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from worldcup.inference.decoder import PredictionOutput, decode_score_matrix
+from worldcup.inference.decoder import decode_score_matrix
 from worldcup.inference.market_odds import max_result_divergence, normalize_probs
 from worldcup.inference.predictor import MatchPrediction
 from worldcup.models.score_matrix import apply_dixon_coles_adjustment, independent_score_matrix
 
 DEFAULT_HOME_ADVANTAGE_LOG = 0.15
-DEFAULT_KNOCKOUT_LAMBDA_SCALE = 0.88
-DEFAULT_MARKET_BLEND_WEIGHT = 0.45
+DEFAULT_KNOCKOUT_LAMBDA_SCALE = 0.82
+DEFAULT_MARKET_BLEND_WEIGHT = 0.55
+DEFAULT_OU_BLEND_WEIGHT = 0.62
 DEFAULT_RHO = -0.13
+KNOCKOUT_RHO = -0.20
 DEFAULT_GRID_MAX = 7
+DIVERGENCE_CAUTION_THRESHOLD = 0.15
 DIVERGENCE_WARN_THRESHOLD = 0.20
+MAX_MARKET_BLEND_WEIGHT = 0.72
 
 
 def is_neutral_venue(row: pd.Series | dict[str, Any]) -> bool:
     if isinstance(row, pd.Series):
         row = row.to_dict()
     return bool(row.get("is_world_cup")) and bool(row.get("is_knockout"))
+
+
+def is_knockout_row(row: pd.Series | dict[str, Any]) -> bool:
+    if isinstance(row, pd.Series):
+        row = row.to_dict()
+    return bool(row.get("is_knockout"))
 
 
 def market_probs_from_row(row: pd.Series | dict[str, Any]) -> dict[str, Any] | None:
@@ -88,12 +98,33 @@ def _adjust_lambdas_for_context(
     lambda_home = math.exp(log_home)
     lambda_away = math.exp(log_away)
 
-    if bool(row.get("is_knockout")):
+    if is_knockout_row(row):
         lambda_home *= knockout_scale
         lambda_away *= knockout_scale
         applied.append("knockout_pace")
 
     return lambda_home, lambda_away, applied
+
+
+def _context_rho(row: pd.Series | dict[str, Any]) -> float:
+    return KNOCKOUT_RHO if is_knockout_row(row) else DEFAULT_RHO
+
+
+def _adaptive_blend_weight(divergence: float, *, base: float = DEFAULT_MARKET_BLEND_WEIGHT) -> float:
+    """Raise market weight when raw model diverges from bookmaker lines."""
+    extra = max(0.0, divergence - 0.10) * 1.25
+    return min(MAX_MARKET_BLEND_WEIGHT, base + extra)
+
+
+def _adaptive_ou_blend_weight(divergence: float) -> float:
+    extra = max(0.0, divergence - 0.08) * 1.0
+    return min(0.75, DEFAULT_OU_BLEND_WEIGHT + extra)
+
+
+def _nudge_knockout_draw(probs: dict[str, float]) -> dict[str, float]:
+    boosted = dict(probs)
+    boosted["draw"] = float(boosted["draw"]) + 0.025
+    return normalize_probs(boosted)
 
 
 def _fit_lambdas_to_targets(
@@ -104,11 +135,12 @@ def _fit_lambdas_to_targets(
     *,
     rho: float = DEFAULT_RHO,
     grid_max_goal: int = DEFAULT_GRID_MAX,
+    draw_weight: float = 1.0,
 ) -> tuple[float, float]:
     best_loss = float("inf")
     best_pair = (1.2, 1.0)
-    for lambda_home in np.linspace(0.35, 2.6, 24):
-        for lambda_away in np.linspace(0.35, 2.6, 24):
+    for lambda_home in np.linspace(0.30, 2.4, 28):
+        for lambda_away in np.linspace(0.30, 2.4, 28):
             matrix, overflow = _rebuild_matrix(
                 float(lambda_home),
                 float(lambda_away),
@@ -118,9 +150,9 @@ def _fit_lambdas_to_targets(
             decoded = decode_score_matrix(matrix, overflow)
             loss = (
                 (decoded.result_probs["home_win"] - home_win_t) ** 2
-                + (decoded.result_probs["draw"] - draw_t) ** 2
+                + draw_weight * (decoded.result_probs["draw"] - draw_t) ** 2
                 + (decoded.result_probs["away_win"] - away_win_t) ** 2
-                + 0.5 * (decoded.ou25_probs["over_2_5"] - over25_t) ** 2
+                + 0.65 * (decoded.ou25_probs["over_2_5"] - over25_t) ** 2
             )
             if loss < best_loss:
                 best_loss = loss
@@ -142,17 +174,31 @@ def _blend_probs(
     return normalize_probs(blended)
 
 
+def _divergence_level(divergence: float | None) -> str:
+    if divergence is None:
+        return "none"
+    if divergence >= DIVERGENCE_WARN_THRESHOLD:
+        return "warning"
+    if divergence >= DIVERGENCE_CAUTION_THRESHOLD:
+        return "caution"
+    return "ok"
+
+
 def apply_prediction_adjustments(
     prediction: MatchPrediction,
     row: pd.Series | dict[str, Any],
     *,
     market: dict[str, Any] | None = None,
-    market_blend_weight: float = DEFAULT_MARKET_BLEND_WEIGHT,
-    rho: float = DEFAULT_RHO,
+    market_blend_weight: float | None = None,
+    rho: float | None = None,
     grid_max_goal: int = DEFAULT_GRID_MAX,
 ) -> tuple[MatchPrediction, dict[str, Any]]:
     if isinstance(row, pd.Series):
         row = row.to_dict()
+
+    raw_result_probs = dict(prediction.output.result_probs)
+    context_rho = DEFAULT_RHO if rho is None else rho
+    context_rho = _context_rho(row) if rho is None else rho
 
     lambda_home, lambda_away, applied = _adjust_lambdas_for_context(
         prediction.lambda_home,
@@ -162,7 +208,7 @@ def apply_prediction_adjustments(
     matrix, overflow = _rebuild_matrix(
         lambda_home,
         lambda_away,
-        rho=rho,
+        rho=context_rho,
         grid_max_goal=grid_max_goal,
     )
     output = decode_score_matrix(matrix, overflow)
@@ -171,54 +217,74 @@ def apply_prediction_adjustments(
         "adjustments_applied": applied,
         "market_available": False,
         "market_source": None,
-        "model_result_probs": dict(output.result_probs),
+        "raw_result_probs": raw_result_probs,
+        "pre_blend_result_probs": dict(output.result_probs),
+        "model_result_probs": dict(raw_result_probs),
         "market_result_probs": None,
         "max_result_divergence": None,
+        "market_caution": False,
         "market_warning": False,
+        "divergence_level": "none",
         "market_blend_weight": 0.0,
+        "ou_blend_weight": 0.0,
     }
 
     market_payload = market if market is not None else market_probs_from_row(row)
     if market_payload:
-        comparison["market_available"] = True
-        comparison["market_source"] = market_payload.get("source", "market")
-        comparison["market_result_probs"] = dict(market_payload["result_probs"])
-        comparison["max_result_divergence"] = max_result_divergence(
-            output.result_probs,
-            market_payload["result_probs"],
+        raw_div = max_result_divergence(raw_result_probs, market_payload["result_probs"])
+        level = _divergence_level(raw_div)
+        blend_weight = (
+            market_blend_weight
+            if market_blend_weight is not None
+            else _adaptive_blend_weight(raw_div)
         )
-        comparison["market_warning"] = (
-            comparison["max_result_divergence"] >= DIVERGENCE_WARN_THRESHOLD
+        ou_weight = _adaptive_ou_blend_weight(raw_div)
+
+        comparison.update(
+            {
+                "market_available": True,
+                "market_source": market_payload.get("source", "market"),
+                "market_result_probs": dict(market_payload["result_probs"]),
+                "max_result_divergence": raw_div,
+                "market_caution": level in {"caution", "warning"},
+                "market_warning": level == "warning",
+                "divergence_level": level,
+            }
         )
 
         blended_result = _blend_probs(
             output.result_probs,
             market_payload["result_probs"],
-            weight=market_blend_weight,
+            weight=blend_weight,
         )
+        if is_knockout_row(row):
+            blended_result = _nudge_knockout_draw(blended_result)
         blended_ou = _blend_probs(
             output.ou25_probs,
             market_payload["ou25_probs"],
-            weight=market_blend_weight,
+            weight=ou_weight,
         )
+        draw_weight = 1.35 if is_knockout_row(row) else 1.0
         lambda_home, lambda_away = _fit_lambdas_to_targets(
             blended_result["home_win"],
             blended_result["draw"],
             blended_result["away_win"],
             blended_ou["over_2_5"],
-            rho=rho,
+            rho=context_rho,
             grid_max_goal=grid_max_goal,
+            draw_weight=draw_weight,
         )
         matrix, overflow = _rebuild_matrix(
             lambda_home,
             lambda_away,
-            rho=rho,
+            rho=context_rho,
             grid_max_goal=grid_max_goal,
         )
         output = decode_score_matrix(matrix, overflow)
         applied.append("market_blend")
         comparison["adjustments_applied"] = applied
-        comparison["market_blend_weight"] = market_blend_weight
+        comparison["market_blend_weight"] = blend_weight
+        comparison["ou_blend_weight"] = ou_weight
         comparison["calibrated_result_probs"] = dict(output.result_probs)
         comparison["calibrated_ou25_probs"] = dict(output.ou25_probs)
 
@@ -237,6 +303,10 @@ def divergence_summary(comparison: dict[str, Any]) -> str | None:
     div = comparison.get("max_result_divergence")
     if div is None:
         return None
-    if comparison.get("market_warning"):
-        return f"模型与赛前市场 1X2 最大偏差 {100.0 * div:.1f}%（≥20% 标红）"
-    return f"模型与赛前市场 1X2 最大偏差 {100.0 * div:.1f}%"
+    level = comparison.get("divergence_level", "ok")
+    pct = 100.0 * float(div)
+    if level == "warning":
+        return f"模型与市场 1X2 最大偏差 {pct:.1f}%（≥20% 标红，模型观点较激进）"
+    if level == "caution":
+        return f"模型与市场 1X2 最大偏差 {pct:.1f}%（≥15% 标黄，模型观点较激进）"
+    return f"模型与市场 1X2 最大偏差 {pct:.1f}%"

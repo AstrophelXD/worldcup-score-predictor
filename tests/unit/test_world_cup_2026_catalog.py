@@ -23,3 +23,10 @@ def test_predictable_matches_include_group_stage():
     predictable = [m for m in WORLD_CUP_2026_SCHEDULE if is_predictable_schedule_match(m)]
     group = [m for m in predictable if m.stage_name == "Group stage"]
     assert len(group) == 72
+
+
+def test_germany_round_of_32_opponent_is_paraguay():
+    germany = next(m for m in WORLD_CUP_2026_SCHEDULE if m.match_number == 74)
+    assert germany.home_team == "Germany"
+    assert germany.away_team == "Paraguay"
+    assert is_predictable_schedule_match(germany)

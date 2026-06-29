@@ -107,14 +107,16 @@ def render_market_sanity(prediction: dict, features: dict | None) -> None:
         return
 
     market = comparison.get("market_result_probs") or {}
-    model = comparison.get("model_result_probs") or prediction.get("raw_result_probs") or {}
+    raw_model = comparison.get("raw_result_probs") or prediction.get("raw_result_probs") or {}
     source = comparison.get("market_source") or "market"
     div = comparison.get("max_result_divergence")
-    warning = bool(comparison.get("market_warning"))
+    level = comparison.get("divergence_level", "ok")
 
     title = f"赛前市场对比（{source}）"
-    if warning:
-        st.error(f"{title} · 最大 1X2 偏差 {format_pct(float(div))} ≥ 20%")
+    if level == "warning":
+        st.error(f"{title} · 最大 1X2 偏差 {format_pct(float(div))} · 模型观点较激进")
+    elif level == "caution":
+        st.warning(f"{title} · 最大 1X2 偏差 {format_pct(float(div))} · 模型观点较激进")
     else:
         st.info(f"{title} · 最大 1X2 偏差 {format_pct(float(div))}")
 
@@ -123,11 +125,18 @@ def render_market_sanity(prediction: dict, features: dict | None) -> None:
     cols[1].metric("市场平局", format_pct(market.get("draw", 0)))
     cols[2].metric("市场客胜", format_pct(market.get("away_win", 0)))
 
-    if model:
+    if raw_model:
         st.caption(
-            f"调整前模型：主 {format_pct(model['home_win'])} · "
-            f"平 {format_pct(model['draw'])} · "
-            f"客 {format_pct(model['away_win'])}"
+            f"原始模型：主 {format_pct(raw_model['home_win'])} · "
+            f"平 {format_pct(raw_model['draw'])} · "
+            f"客 {format_pct(raw_model['away_win'])}"
+        )
+    blend_w = comparison.get("market_blend_weight")
+    ou_w = comparison.get("ou_blend_weight")
+    if blend_w:
+        st.caption(
+            f"市场校准权重 1X2={100.0 * float(blend_w):.0f}% · "
+            f"O/U={100.0 * float(ou_w or 0):.0f}%"
         )
     applied = comparison.get("adjustments_applied") or []
     if applied:
