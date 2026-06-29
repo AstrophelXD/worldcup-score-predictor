@@ -8,6 +8,7 @@ import pandas as pd
 from worldcup.data_ingestion.base import read_parquet, write_parquet
 from worldcup.features.form import rest_days, rolling_form, team_match_history
 from worldcup.features.event_features import EVENT_SUMMARY_COLUMNS, build_event_summary_row
+from worldcup.features.market_odds_features import build_market_odds_summary_row, load_market_odds_table
 from worldcup.features.odds_features import build_odds_summary_row, load_odds_curated
 from worldcup.features.player_match_features import PLAYER_SUMMARY_COLUMNS, build_player_summary_row
 from worldcup.features.point_in_time import as_of_timestamp
@@ -42,6 +43,7 @@ def build_match_feature_mart(
     stats = _load_optional_parquet(curated_dir, "player_match_stats.parquet")
     injuries = _load_optional_parquet(curated_dir, "injuries.parquet")
     odds = load_odds_curated(curated_dir)
+    market_odds = load_market_odds_table()
     team_stats = _load_optional_parquet(curated_dir, "team_match_stats.parquet")
 
     matches = matches.sort_values("kickoff_ts").reset_index(drop=True)
@@ -77,6 +79,7 @@ def build_match_feature_mart(
             "stage_name": match.get("stage_name"),
             "is_world_cup": bool(match["is_world_cup"]),
             "is_knockout": bool(match["is_knockout"]),
+            "neutral_site_flag": bool(match["is_world_cup"]) and bool(match["is_knockout"]),
             "must_win_flag": bool(match["is_knockout"]),
             "draw_acceptable_flag": not bool(match["is_knockout"]),
             "home_team_id": home_id,
@@ -120,6 +123,13 @@ def build_match_feature_mart(
         row.update(
             build_odds_summary_row(
                 odds,
+                str(match["match_id"]),
+                pd.Timestamp(as_of),
+            )
+        )
+        row.update(
+            build_market_odds_summary_row(
+                market_odds,
                 str(match["match_id"]),
                 pd.Timestamp(as_of),
             )

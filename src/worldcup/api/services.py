@@ -15,7 +15,7 @@ from worldcup.inference.factory import (
     default_model_name,
     load_predictor,
 )
-from worldcup.inference.predictor import MatchPrediction
+from worldcup.inference.postprocess import apply_prediction_adjustments, divergence_summary
 from worldcup.models.registry import latest_checkpoint
 from worldcup.utils.paths import project_root
 
@@ -149,6 +149,16 @@ def get_features(match_id: str) -> dict[str, Any]:
             "away_lineup_projected_share": _json_value(row.get("away_lineup_projected_share")),
         },
         "market_odds": {
+            "home_implied": _json_value(row.get("market_home_implied")),
+            "draw_implied": _json_value(row.get("market_draw_implied")),
+            "away_implied": _json_value(row.get("market_away_implied")),
+            "over25_implied": _json_value(row.get("market_over25_implied")),
+            "under25_implied": _json_value(row.get("market_under25_implied")),
+            "btts_implied": _json_value(row.get("market_btts_implied")),
+            "available": bool(_json_value(row.get("market_odds_available")) or 0),
+            "source": _json_value(row.get("market_odds_source")),
+        },
+        "model_odds": {
             "home_implied": _json_value(row.get("odds_home_implied")),
             "draw_implied": _json_value(row.get("odds_draw_implied")),
             "away_implied": _json_value(row.get("odds_away_implied")),
@@ -156,6 +166,7 @@ def get_features(match_id: str) -> dict[str, Any]:
             "under25_implied": _json_value(row.get("odds_under25_implied")),
             "btts_implied": _json_value(row.get("odds_btts_implied")),
             "available": bool(_json_value(row.get("odds_available")) or 0),
+            "note": "model-implied (from export_model_odds), not bookmaker",
         },
         "match_events": {
             "home_xg_for_last5": _json_value(row.get("home_xg_for_last5")),
@@ -173,21 +184,39 @@ def get_features(match_id: str) -> dict[str, Any]:
 
 def predict_match(match_id: str, model_name: str | None = None) -> MatchPrediction:
     features = load_features()
+    rows = features.loc[features["match_id"] == match_id]
+    if rows.empty:
+        raise HTTPException(status_code=404, detail=f"match not found: {match_id}")
+    row = rows.iloc[0]
     predictor = get_predictor(model_name)
-    try:
-        return predictor.predict_match_id(features, match_id)
-    except KeyError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    raw_prediction = predictor.predict_row(row)
+    adjusted_prediction, _ = apply_prediction_adjustments(raw_prediction, row)
+    return adjusted_prediction
 
 
 def prediction_payload(match_id: str, model_name: str | None = None) -> dict[str, Any]:
-    prediction = predict_match(match_id, model_name)
+    features = load_features()
+    rows = features.loc[features["match_id"] == match_id]
+    if rows.empty:
+        raise HTTPException(status_code=404, detail=f"match not found: {match_id}")
+    row = rows.iloc[0]
+    predictor = get_predictor(model_name)
+    try:
+        raw_prediction = predictor.predict_row(row)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    adjusted_prediction, market_comparison = apply_prediction_adjustments(raw_prediction, row)
     meta = checkpoint_info(model_name)
-    payload = prediction.to_dict()
+    payload = adjusted_prediction.to_dict()
     payload["model_name"] = meta.get("model_name")
     payload["model_type"] = meta.get("model_type")
     payload["model_version"] = meta.get("model_version")
-    payload["prediction_source"] = "trained_checkpoint"
+    payload["prediction_source"] = "trained_checkpoint_adjusted"
+    payload["raw_result_probs"] = raw_prediction.output.result_probs
+    payload["raw_expected_goals"] = raw_prediction.output.expected_goals
+    payload["market_comparison"] = market_comparison
+    payload["market_divergence_note"] = divergence_summary(market_comparison)
     return payload
 
 
@@ -199,15 +228,20 @@ def predict_matches(match_ids: list[str], model_name: str | None = None) -> list
     meta = checkpoint_info(model_name)
     items: list[dict[str, Any]] = []
     for match_id in match_ids:
-        try:
-            prediction = predictor.predict_match_id(features, match_id)
-        except KeyError as exc:
-            raise HTTPException(status_code=404, detail=str(exc)) from exc
-        payload = prediction.to_dict()
+        rows = features.loc[features["match_id"] == match_id]
+        if rows.empty:
+            raise HTTPException(status_code=404, detail=f"match not found: {match_id}")
+        row = rows.iloc[0]
+        raw_prediction = predictor.predict_row(row)
+        adjusted_prediction, market_comparison = apply_prediction_adjustments(raw_prediction, row)
+        payload = adjusted_prediction.to_dict()
         payload["model_name"] = meta.get("model_name")
         payload["model_type"] = meta.get("model_type")
         payload["model_version"] = meta.get("model_version")
-        payload["prediction_source"] = "trained_checkpoint"
+        payload["prediction_source"] = "trained_checkpoint_adjusted"
+        payload["raw_result_probs"] = raw_prediction.output.result_probs
+        payload["market_comparison"] = market_comparison
+        payload["market_divergence_note"] = divergence_summary(market_comparison)
         items.append(payload)
     return items
 

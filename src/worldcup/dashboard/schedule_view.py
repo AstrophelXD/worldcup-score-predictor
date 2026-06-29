@@ -52,7 +52,7 @@ def schedule_status(match_date: str, *, today: date | None = None) -> str:
 
 def _display_team_html(name: str) -> str:
     if is_known_team(name):
-        return team_label_html(name)
+        return team_label_html(name, width=24)
     return f"⚪ {name}"
 
 

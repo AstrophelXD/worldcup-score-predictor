@@ -8,6 +8,7 @@ import httpx
 import pandas as pd
 import streamlit as st
 
+from worldcup.dashboard.backtest_view import render_postmatch_backtest_tab
 from worldcup.dashboard.flags import team_label_plain
 from worldcup.dashboard.prediction_view import render_full_prediction_panel, render_heatmap
 from worldcup.dashboard.schedule_view import render_schedule_tab, schedule_meta
@@ -235,16 +236,28 @@ def main() -> None:
             st.json(features)
 
     with tabs[4]:
-        if "/backtest/runs" not in openapi_paths:
-            st.warning("当前 API 未提供 `/backtest/runs`，请重启 serve。")
-        else:
-            with httpx.Client(base_url=api_url) as client:
-                backtests = fetch_json(client, "/backtest/runs")
-            rows = backtests.get("items", [])
-            if not rows:
-                st.warning("暂无回测报告。请运行 `python -m scripts.backtest` 生成报告。")
+        with httpx.Client(base_url=api_url) as client:
+            render_postmatch_backtest_tab(
+                matches,
+                predict_fn=lambda mid: post_json(client, "/predict", {"match_id": mid}),
+                match_detail_fn=lambda mid: load_match_detail(
+                    client,
+                    mid,
+                    matches,
+                    openapi_paths,
+                ),
+            )
+            st.divider()
+            if "/backtest/runs" not in openapi_paths:
+                st.warning("当前 API 未提供 `/backtest/runs`，请重启 serve。")
             else:
-                st.dataframe(pd.DataFrame(rows), use_container_width=True)
+                st.subheader("历史回测报告")
+                backtests = fetch_json(client, "/backtest/runs")
+                rows = backtests.get("items", [])
+                if not rows:
+                    st.warning("暂无回测报告。请运行 `python -m scripts.backtest` 生成报告。")
+                else:
+                    st.dataframe(pd.DataFrame(rows), use_container_width=True)
 
     with tabs[5]:
         st.subheader("数据 Freshness")

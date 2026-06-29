@@ -111,3 +111,7 @@ ehthumbs.db
 
 # Local test artifacts
 tests/tmp/
+
+# Runtime logs (start_local / restart scripts)
+_logs/
+*.log
