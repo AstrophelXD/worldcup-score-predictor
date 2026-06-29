@@ -5,6 +5,10 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
+from worldcup.data_ingestion.sources.world_cup_2026_results import (
+    apply_results_to_row,
+    load_wc2026_results,
+)
 from worldcup.dashboard.flags import is_known_team
 from worldcup.dashboard.world_cup_2026_schedule import (
     WORLD_CUP_2026_SCHEDULE,
@@ -40,9 +44,13 @@ def is_predictable_schedule_match(match: ScheduleMatch) -> bool:
     return is_known_team(match.home_team) and is_known_team(match.away_team)
 
 
-def schedule_to_match_row(match: ScheduleMatch) -> dict:
+def schedule_to_match_row(
+    match: ScheduleMatch,
+    *,
+    results: dict[str, dict[str, int | str]] | None = None,
+) -> dict:
     is_ko = match.stage_name in KNOCKOUT_STAGES
-    return {
+    row = {
         "match_id": wc2026_match_id(match),
         "competition_name": "FIFA World Cup",
         "season_name": "2026",
@@ -66,12 +74,16 @@ def schedule_to_match_row(match: ScheduleMatch) -> dict:
         "city": match.city,
         "country": "USA/Canada/Mexico",
     }
+    if results:
+        row = apply_results_to_row(row, results.get(row["match_id"]))
+    return row
 
 
 def world_cup_2026_match_rows(*, predictable_only: bool = True) -> list[dict]:
+    results = load_wc2026_results()
     rows: list[dict] = []
     for match in WORLD_CUP_2026_SCHEDULE:
         if predictable_only and not is_predictable_schedule_match(match):
             continue
-        rows.append(schedule_to_match_row(match))
+        rows.append(schedule_to_match_row(match, results=results))
     return rows

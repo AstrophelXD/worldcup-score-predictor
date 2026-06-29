@@ -9,6 +9,7 @@ import pandas as pd
 import streamlit as st
 
 from worldcup.dashboard.backtest_view import render_postmatch_backtest_tab
+from worldcup.dashboard.results_compare_view import render_wc2026_results_compare_tab
 from worldcup.dashboard.flags import team_label_plain
 from worldcup.dashboard.prediction_view import render_full_prediction_panel, render_heatmap
 from worldcup.dashboard.schedule_view import render_schedule_tab, schedule_meta
@@ -165,6 +166,7 @@ def main() -> None:
     tabs = st.tabs(
         [
             "2026 赛程",
+            "赛果对照",
             "场次预测",
             "比分矩阵",
             "特征详情",
@@ -184,7 +186,7 @@ def main() -> None:
             st.success("已选择比赛，请切换到「场次预测」查看完整结果。")
 
     if not matches:
-        with tabs[1]:
+        with tabs[2]:
             st.warning("API 未返回比赛列表，暂无法展示预测。")
         return
 
@@ -216,6 +218,21 @@ def main() -> None:
         matrix_payload = fetch_json(client, f"/score-matrix/{selected_id}")
 
     with tabs[1]:
+        with httpx.Client(base_url=api_url) as client:
+            render_wc2026_results_compare_tab(
+                matches,
+                predict_fn=predict_fn,
+                predictions_by_id=wc2026_predictions,
+                match_detail_fn=lambda mid: load_match_detail(
+                    client,
+                    mid,
+                    matches,
+                    openapi_paths,
+                ),
+                schedule_by_id=SCHEDULE_BY_ID,
+            )
+
+    with tabs[2]:
         render_full_prediction_panel(
             match_detail,
             prediction,
@@ -224,18 +241,18 @@ def main() -> None:
             schedule_meta=meta,
         )
 
-    with tabs[2]:
+    with tabs[3]:
         if matrix_payload.get("overflow_prob", 0) > 0:
             st.caption(f"overflow_prob = {matrix_payload['overflow_prob']:.4f}")
         render_heatmap(matrix_payload["matrix"], matrix_payload["grid_max_goal"])
 
-    with tabs[3]:
+    with tabs[4]:
         if features is None:
             st.warning("当前 API 未提供 `/features/{match_id}`，请重启 serve。")
         else:
             st.json(features)
 
-    with tabs[4]:
+    with tabs[5]:
         with httpx.Client(base_url=api_url) as client:
             render_postmatch_backtest_tab(
                 matches,
@@ -259,7 +276,7 @@ def main() -> None:
                 else:
                     st.dataframe(pd.DataFrame(rows), use_container_width=True)
 
-    with tabs[5]:
+    with tabs[6]:
         st.subheader("数据 Freshness")
         st.dataframe(freshness["items"], use_container_width=True)
         if freshness.get("model"):
