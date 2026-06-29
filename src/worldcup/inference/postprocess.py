@@ -23,13 +23,15 @@ KNOCKOUT_RHO = -0.20
 DEFAULT_GRID_MAX = 7
 DIVERGENCE_CAUTION_THRESHOLD = 0.15
 DIVERGENCE_WARN_THRESHOLD = 0.20
-MAX_MARKET_BLEND_WEIGHT = 0.72
+DIVERGENCE_CRITICAL_THRESHOLD = 0.25
+MAX_MARKET_BLEND_WEIGHT = 0.88
+CRITICAL_BLEND_FLOOR = 0.82
 
 
 def is_neutral_venue(row: pd.Series | dict[str, Any]) -> bool:
     if isinstance(row, pd.Series):
         row = row.to_dict()
-    return bool(row.get("is_world_cup")) and bool(row.get("is_knockout"))
+    return bool(row.get("is_world_cup"))
 
 
 def is_knockout_row(row: pd.Series | dict[str, Any]) -> bool:
@@ -112,8 +114,11 @@ def _context_rho(row: pd.Series | dict[str, Any]) -> float:
 
 def _adaptive_blend_weight(divergence: float, *, base: float = DEFAULT_MARKET_BLEND_WEIGHT) -> float:
     """Raise market weight when raw model diverges from bookmaker lines."""
-    extra = max(0.0, divergence - 0.10) * 1.25
-    return min(MAX_MARKET_BLEND_WEIGHT, base + extra)
+    extra = max(0.0, divergence - 0.10) * 1.5
+    weight = min(MAX_MARKET_BLEND_WEIGHT, base + extra)
+    if divergence >= DIVERGENCE_CRITICAL_THRESHOLD:
+        weight = max(weight, 0.78 + min(0.10, (divergence - DIVERGENCE_CRITICAL_THRESHOLD) * 0.35))
+    return min(MAX_MARKET_BLEND_WEIGHT, weight)
 
 
 def _adaptive_ou_blend_weight(divergence: float) -> float:
@@ -139,8 +144,17 @@ def _fit_lambdas_to_targets(
 ) -> tuple[float, float]:
     best_loss = float("inf")
     best_pair = (1.2, 1.0)
-    for lambda_home in np.linspace(0.30, 2.4, 28):
-        for lambda_away in np.linspace(0.30, 2.4, 28):
+    if away_win_t > home_win_t + 0.15:
+        home_range = np.linspace(0.25, 1.25, 20)
+        away_range = np.linspace(0.80, 3.50, 28)
+    elif home_win_t > away_win_t + 0.15:
+        home_range = np.linspace(0.80, 3.50, 28)
+        away_range = np.linspace(0.25, 1.25, 20)
+    else:
+        home_range = np.linspace(0.30, 2.4, 28)
+        away_range = np.linspace(0.30, 2.4, 28)
+    for lambda_home in home_range:
+        for lambda_away in away_range:
             matrix, overflow = _rebuild_matrix(
                 float(lambda_home),
                 float(lambda_away),
@@ -174,9 +188,36 @@ def _blend_probs(
     return normalize_probs(blended)
 
 
+def _detect_alerts(
+    raw_result: dict[str, float],
+    market_result: dict[str, float] | None,
+    row: dict[str, Any],
+) -> list[str]:
+    alerts: list[str] = []
+    if market_result:
+        if market_result.get("away_win", 0) > 0.70 and raw_result.get("away_win", 0) < 0.30:
+            alerts.append("likely_team_mapping_bug")
+        if market_result.get("home_win", 0) > 0.70 and raw_result.get("home_win", 0) < 0.30:
+            alerts.append("likely_team_mapping_bug")
+    hr = row.get("home_avg_player_rating")
+    ar = row.get("away_avg_player_rating")
+    if hr is not None and ar is not None:
+        if abs(float(hr) - float(ar)) < 1.0 and 70.0 <= float(hr) <= 74.0:
+            alerts.append("generic_player_data_suspected")
+        if float(ar) >= 82.0 and raw_result.get("away_win", 0) < 0.35:
+            if market_result and market_result.get("away_win", 0) > 0.65:
+                alerts.append("star_player_signal_missing")
+        if float(hr) >= 82.0 and raw_result.get("home_win", 0) < 0.35:
+            if market_result and market_result.get("home_win", 0) > 0.65:
+                alerts.append("star_player_signal_missing")
+    return alerts
+
+
 def _divergence_level(divergence: float | None) -> str:
     if divergence is None:
         return "none"
+    if divergence >= DIVERGENCE_CRITICAL_THRESHOLD:
+        return "critical"
     if divergence >= DIVERGENCE_WARN_THRESHOLD:
         return "warning"
     if divergence >= DIVERGENCE_CAUTION_THRESHOLD:
@@ -224,6 +265,8 @@ def apply_prediction_adjustments(
         "max_result_divergence": None,
         "market_caution": False,
         "market_warning": False,
+        "market_critical": False,
+        "alerts": [],
         "divergence_level": "none",
         "market_blend_weight": 0.0,
         "ou_blend_weight": 0.0,
@@ -233,6 +276,9 @@ def apply_prediction_adjustments(
     if market_payload:
         raw_div = max_result_divergence(raw_result_probs, market_payload["result_probs"])
         level = _divergence_level(raw_div)
+        alerts = _detect_alerts(raw_result_probs, market_payload["result_probs"], row)
+        if raw_div >= DIVERGENCE_CRITICAL_THRESHOLD:
+            alerts.append("critical_market_divergence")
         blend_weight = (
             market_blend_weight
             if market_blend_weight is not None
@@ -246,11 +292,17 @@ def apply_prediction_adjustments(
                 "market_source": market_payload.get("source", "market"),
                 "market_result_probs": dict(market_payload["result_probs"]),
                 "max_result_divergence": raw_div,
-                "market_caution": level in {"caution", "warning"},
-                "market_warning": level == "warning",
+                "market_caution": level in {"caution", "warning", "critical"},
+                "market_warning": level in {"warning", "critical"},
+                "market_critical": level == "critical",
                 "divergence_level": level,
+                "alerts": alerts,
             }
         )
+        if "likely_team_mapping_bug" in alerts:
+            blend_weight = min(MAX_MARKET_BLEND_WEIGHT, max(blend_weight, CRITICAL_BLEND_FLOOR))
+        if "star_player_signal_missing" in alerts:
+            blend_weight = min(MAX_MARKET_BLEND_WEIGHT, max(blend_weight, 0.80))
 
         blended_result = _blend_probs(
             output.result_probs,
@@ -305,6 +357,8 @@ def divergence_summary(comparison: dict[str, Any]) -> str | None:
         return None
     level = comparison.get("divergence_level", "ok")
     pct = 100.0 * float(div)
+    if level == "critical":
+        return f"模型与市场 1X2 最大偏差 {pct:.1f}%（≥25% 严重偏离，模型不可用于实战判断）"
     if level == "warning":
         return f"模型与市场 1X2 最大偏差 {pct:.1f}%（≥20% 标红，模型观点较激进）"
     if level == "caution":

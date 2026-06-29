@@ -111,9 +111,12 @@ def render_market_sanity(prediction: dict, features: dict | None) -> None:
     source = comparison.get("market_source") or "market"
     div = comparison.get("max_result_divergence")
     level = comparison.get("divergence_level", "ok")
+    alerts = comparison.get("alerts") or []
 
     title = f"赛前市场对比（{source}）"
-    if level == "warning":
+    if level == "critical" or "likely_team_mapping_bug" in alerts:
+        st.error(f"{title} · 最大 1X2 偏差 {format_pct(float(div))} · 严重偏离/疑似映射错误")
+    elif level == "warning":
         st.error(f"{title} · 最大 1X2 偏差 {format_pct(float(div))} · 模型观点较激进")
     elif level == "caution":
         st.warning(f"{title} · 最大 1X2 偏差 {format_pct(float(div))} · 模型观点较激进")
@@ -131,6 +134,8 @@ def render_market_sanity(prediction: dict, features: dict | None) -> None:
             f"平 {format_pct(raw_model['draw'])} · "
             f"客 {format_pct(raw_model['away_win'])}"
         )
+    if alerts:
+        st.caption("告警：" + " · ".join(alerts))
     blend_w = comparison.get("market_blend_weight")
     ou_w = comparison.get("ou_blend_weight")
     if blend_w:
@@ -141,6 +146,56 @@ def render_market_sanity(prediction: dict, features: dict | None) -> None:
     applied = comparison.get("adjustments_applied") or []
     if applied:
         st.caption("已应用：" + " · ".join(applied))
+
+
+def render_player_signal_debug(features: dict | None) -> None:
+    if not features:
+        return
+    players = features.get("player_summary") or {}
+    strength = features.get("team_strength") or {}
+    hr = players.get("home_avg_player_rating")
+    ar = players.get("away_avg_player_rating")
+    if hr is None and ar is None:
+        return
+    with st.expander("球员层信号（debug）", expanded=False):
+        c1, c2 = st.columns(2)
+        with c1:
+            st.markdown("**主队球员**")
+            st.write(
+                f"均分 {hr if hr is not None else '—'} · "
+                f"首发 {players.get('home_starter_count', '—')} · "
+                f"预计首发占比 {players.get('home_lineup_projected_share', '—')}"
+            )
+        with c2:
+            st.markdown("**客队球员**")
+            st.write(
+                f"均分 {ar if ar is not None else '—'} · "
+                f"首发 {players.get('away_starter_count', '—')} · "
+                f"预计首发占比 {players.get('away_lineup_projected_share', '—')}"
+            )
+        for side, label in (("home_top_players", "主队关键球员"), ("away_top_players", "客队关键球员")):
+            stars = players.get(side) or []
+            if not stars:
+                continue
+            st.markdown(f"**{label}**")
+            for p in stars:
+                st.write(
+                    f"{p.get('name', '—')} ({p.get('position', '')}): "
+                    f"available={p.get('available')} · start_prob={p.get('start_prob')} · "
+                    f"rating={p.get('rating')} · minutes={p.get('minutes_last5')} · "
+                    f"contribution={p.get('contribution')}"
+                )
+        st.write(
+            f"Elo {strength.get('home_elo', '—')} vs {strength.get('away_elo', '—')} · "
+            f"FIFA #{strength.get('home_fifa_rank', '—')} vs #{strength.get('away_fifa_rank', '—')}"
+        )
+        if (
+            hr is not None
+            and ar is not None
+            and abs(float(hr) - float(ar)) < 1.0
+            and 70.0 <= float(hr) <= 74.0
+        ):
+            st.warning("两队球员均分接近 generic 72，可能未加载真实球星数据。")
 
 
 def render_outcome_bar(
@@ -394,6 +449,7 @@ def render_full_prediction_panel(
 
     render_match_meta(match_detail, schedule_meta=schedule_meta, prediction=prediction)
     render_market_sanity(prediction, features)
+    render_player_signal_debug(features)
     render_outcome_bar(str(home), str(away), prediction)
 
     render_market_probabilities(prediction)

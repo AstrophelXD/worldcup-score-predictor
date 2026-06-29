@@ -19,6 +19,7 @@ from worldcup.data_ingestion.sources.world_cup_squads import (
     WORLD_CUP_SQUADS,
     squad_for,
 )
+from worldcup.data_ingestion.sources.world_cup_2026_strength import strength_for
 from worldcup.utils.paths import project_root
 
 SCORING_POSITIONS = {"ST", "LW", "RW", "CAM"}
@@ -151,10 +152,23 @@ def export_elo_fifa(matches: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     ]
     for rating_date, ratings, fifa_date in snapshots:
         for name in teams:
+            if rating_date.startswith("2026"):
+                s = strength_for(
+                    name,
+                    default_elo=ratings.get(name, 1500),
+                    default_rank=5 + (hash(name + rating_date) % 60),
+                )
+                elo_val = float(s["elo"])
+                rank_val = int(s["fifa_rank"])
+                points_val = float(s["fifa_points"])
+            else:
+                elo_val = round(ratings[name], 1)
+                rank_val = 5 + (hash(name + rating_date) % 60)
+                points_val = round(1100 + ratings[name] / 3, 2)
             elo_rows.append(
                 {
                     "team_name": name,
-                    "rating": round(ratings[name], 1),
+                    "rating": round(elo_val, 1),
                     "rating_date": rating_date,
                     "rating_system": "elo",
                     "rank": None,
@@ -164,8 +178,8 @@ def export_elo_fifa(matches: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
                 {
                     "team_name": name,
                     "ranking_date": fifa_date,
-                    "rank": 5 + (hash(name + rating_date) % 60),
-                    "points": round(1100 + ratings[name] / 3, 2),
+                    "rank": rank_val,
+                    "points": round(points_val, 2),
                 }
             )
     return pd.DataFrame(elo_rows), pd.DataFrame(fifa_rows)

@@ -79,7 +79,7 @@ def build_match_feature_mart(
             "stage_name": match.get("stage_name"),
             "is_world_cup": bool(match["is_world_cup"]),
             "is_knockout": bool(match["is_knockout"]),
-            "neutral_site_flag": bool(match["is_world_cup"]) and bool(match["is_knockout"]),
+            "neutral_site_flag": bool(match["is_world_cup"]),
             "must_win_flag": bool(match["is_knockout"]),
             "draw_acceptable_flag": not bool(match["is_knockout"]),
             "home_team_id": home_id,

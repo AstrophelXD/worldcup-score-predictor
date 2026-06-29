@@ -8,6 +8,7 @@ from worldcup.features.player_state import (
     build_team_player_tensors,
     lineup_entries_for_match,
     player_availability,
+    rolling_player_form,
 )
 
 PLAYER_SUMMARY_COLUMNS = [
@@ -82,6 +83,58 @@ def _team_player_summary(
         "avg_form_goals": avg_form_goals,
         "lineup_projected_share": projected_share,
     }
+
+
+def lineup_star_debug(
+    *,
+    match_id: str,
+    team_id: str,
+    as_of_time: pd.Timestamp,
+    players: pd.DataFrame,
+    lineups: pd.DataFrame,
+    stats: pd.DataFrame,
+    injuries: pd.DataFrame,
+    top_n: int = 4,
+) -> list[dict[str, float | str | bool]]:
+    """Top projected starters for dashboard/API debug (attackers first)."""
+    entries = lineup_entries_for_match(lineups, match_id, team_id, as_of_time)
+    if entries.empty or players.empty:
+        return []
+
+    merged = entries.merge(
+        players[["player_id", "full_name", "player_rating", "primary_position"]],
+        on="player_id",
+        how="left",
+    )
+    merged["rating"] = pd.to_numeric(merged["player_rating"], errors="coerce").fillna(0.0)
+    merged["start_prob"] = pd.to_numeric(merged.get("projection_prob"), errors="coerce").fillna(0.0)
+    attack_positions = {"ST", "LW", "RW", "CAM", "CF"}
+    merged["attack_sort"] = merged["position_code"].astype(str).isin(attack_positions).astype(int)
+    merged = merged.sort_values(
+        ["attack_sort", "rating", "start_prob"],
+        ascending=[False, False, False],
+    ).head(top_n)
+
+    debug_rows: list[dict[str, float | str | bool]] = []
+    for _, entry in merged.iterrows():
+        player_id = str(entry["player_id"])
+        availability = player_availability(injuries, player_id, team_id, as_of_time)
+        form = rolling_player_form(stats, player_id, as_of_time)
+        rating = float(entry["rating"])
+        start_prob = float(entry["start_prob"])
+        contribution = (rating / 100.0) * start_prob * max(availability, 0.0)
+        debug_rows.append(
+            {
+                "name": str(entry.get("full_name") or player_id),
+                "position": str(entry.get("position_code") or entry.get("primary_position") or ""),
+                "available": availability > 0.0,
+                "start_prob": round(start_prob, 3),
+                "rating": round(rating, 1),
+                "minutes_last5": round(float(form.minutes_last5), 1),
+                "contribution": round(contribution, 3),
+            }
+        )
+    return debug_rows
 
 
 def build_player_summary_row(

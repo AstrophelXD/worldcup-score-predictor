@@ -15,6 +15,8 @@ from worldcup.inference.factory import (
     default_model_name,
     load_predictor,
 )
+from worldcup.features.scoregen import load_player_context
+from worldcup.features.player_match_features import lineup_star_debug
 from worldcup.inference.postprocess import apply_prediction_adjustments, divergence_summary
 from worldcup.models.registry import latest_checkpoint
 from worldcup.utils.paths import project_root
@@ -115,6 +117,33 @@ def get_features(match_id: str) -> dict[str, Any]:
     if rows.empty:
         raise HTTPException(status_code=404, detail=f"match not found: {match_id}")
     row = rows.iloc[0]
+    player_debug: dict[str, list[dict[str, float | str | bool]]] = {}
+    try:
+        player_ctx = load_player_context(project_root() / "data" / "curated")
+        as_of = pd.to_datetime(row["as_of_time"], utc=True)
+        player_debug = {
+            "home_top_players": lineup_star_debug(
+                match_id=match_id,
+                team_id=str(row["home_team_id"]),
+                as_of_time=as_of,
+                players=player_ctx.players,
+                lineups=player_ctx.lineups,
+                stats=player_ctx.stats,
+                injuries=player_ctx.injuries,
+            ),
+            "away_top_players": lineup_star_debug(
+                match_id=match_id,
+                team_id=str(row["away_team_id"]),
+                as_of_time=as_of,
+                players=player_ctx.players,
+                lineups=player_ctx.lineups,
+                stats=player_ctx.stats,
+                injuries=player_ctx.injuries,
+            ),
+        }
+    except Exception:
+        player_debug = {}
+
     return {
         "match_id": match_id,
         "as_of_time": str(row["as_of_time"]),
@@ -147,6 +176,7 @@ def get_features(match_id: str) -> dict[str, Any]:
             "away_injured_out_count": _json_value(row.get("away_injured_out_count")),
             "home_lineup_projected_share": _json_value(row.get("home_lineup_projected_share")),
             "away_lineup_projected_share": _json_value(row.get("away_lineup_projected_share")),
+            **player_debug,
         },
         "market_odds": {
             "home_implied": _json_value(row.get("market_home_implied")),
