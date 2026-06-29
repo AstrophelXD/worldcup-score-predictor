@@ -100,7 +100,24 @@ _DASHBOARD_CSS = """
 .wc-outcome-card.wc-schedule .wc-bar { height: 26px; }
 .wc-outcome-card.wc-schedule .wc-label strong { font-size: 1.05rem; }
 .wc-outcome-card.wc-schedule.wc-flags-only .wc-team span { display: none; }
-.wc-outcome-card.wc-schedule.wc-flags-only .wc-teams-row { margin-bottom: 0.55rem; }
+.wc-outcome-card.wc-schedule.wc-flags-only .wc-teams-row {
+  margin-bottom: 0.55rem;
+  justify-content: space-between;
+}
+.wc-outcome-card.wc-schedule.wc-flags-only .wc-team {
+  flex: 0 0 auto;
+  max-width: none;
+  min-width: 0;
+}
+.wc-outcome-card.wc-schedule.wc-flags-only .wc-team.home {
+  flex-direction: row;
+  justify-content: flex-start;
+}
+.wc-outcome-card.wc-schedule.wc-flags-only .wc-team.away {
+  flex-direction: row;
+  justify-content: flex-end;
+  margin-left: auto;
+}
 .wc-top-scores {
   margin: 0.65rem 0 0.85rem;
   display: flex;

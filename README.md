@@ -26,6 +26,55 @@
 
 ---
 
+## 🧠 模型架构与原理
+
+系统采用 **「统一比分联合分布」** 设计：无论哪条模型线，最终都输出 `0–7 × 0–7` 的比分概率矩阵；胜平负、O/U 2.5、BTTS、Top-3 比分等全部从该矩阵聚合，避免多头模型口径不一致。
+
+特征在 **point-in-time（PIT）** 约束下构造——只使用开球时刻之前可见的数据（Elo、FIFA 排名、近期赛果、预计首发、伤停等），回测与 serving 共用同一套特征视图。
+
+### 三层模型
+
+| 层级 | 配置名 | 原理 | 典型用途 |
+|------|--------|------|----------|
+| **Baseline** | `baseline_dixon_coles` | 经典 **Dixon-Coles** 泊松比分模型：MLE 学习每队 attack/defense + 主场优势；低比分用 `ρ` 修正；独立泊松生成矩阵后做 DC 调整 | 默认一键启动、快速回测、无 GPU 可跑 |
+| **Mid-level** | `midlevel_tabular` | **MLP** 直接编码 tabular 特征 → `64` 维 logits → softmax 为 `8×8` 矩阵；辅以辅助损失对齐 1X2 | 更强 tabular 表达，训练成本低 |
+| **ScoreGen** | `scoregen_football` | **多模态 Transformer**：tabular + 近期赛果序列 + 球员图（队内 attention + 对位边）+ 赔率 → Match Context Transformer → **Dixon-Coles 混合双变量分布头**（非 flat 64 类分类） | 当前主力高级模型，融合球员/伤停/赔率 |
+
+### Baseline：Dixon-Coles
+
+对主队期望进球 λ_home、客队 λ_away：
+
+```text
+log λ_home = home_advantage + attack_home − defense_away
+log λ_away = attack_away − defense_home
+```
+
+在 `(home_goals, away_goals)` 上建立独立泊松，并对 `0-0 / 1-0 / 0-1 / 1-1` 施加 Dixon-Coles 低比分修正因子 τ。训练用 **scipy L-BFGS-B** 极大似然（CPU），checkpoint 为 JSON（球队攻防参数字典）。
+
+### ScoreGen-Football：多模态 → 混合分布头
+
+```text
+Tabular 特征 ──┐
+主/客队近期序列 ──┼──► Match Context Transformer (CLS) ──► 混合 DC 分布头 ──► 8×8 矩阵
+球员图 + 对位边 ──┤                                      (K 个分量 × λ_h, λ_a, ρ)
+市场赔率 ────────┘
+```
+
+- **序列编码器**：各队最近 N 场 embedding，Transformer 聚合为球队 token  
+- **球员图编码器**：预计首发/伤停球员特征 → 队内 self-attention → 跨队对位 message passing  
+- **分布头**：输出 K 个 Dixon-Coles 分量及混合权重，矩阵由分量解析生成（保持比分结构先验，而非无约束 64-way 分类）  
+- **辅助头**：1X2 / 事件类辅助损失仅用于训练，serving 仍以矩阵为唯一概率源  
+
+Serving 默认模型由环境变量 `WORLDCUP_MODEL` 控制（见 `.env.example`）；一键启动脚本缺 checkpoint 时会训练 **Baseline**。
+
+### 校准
+
+`scripts.calibrate` 在验证集上拟合 **temperature / lambda 缩放**，降低概率校准误差；缩放后仍从同一矩阵解码，不改变「矩阵为唯一输出源」的约束。
+
+更完整的设计说明见 [`docs/system-design.md`](docs/system-design.md) 与 [`docs/constraints.md`](docs/constraints.md)。
+
+---
+
 ## 🚀 快速开始
 
 ### 1️⃣ 安装
