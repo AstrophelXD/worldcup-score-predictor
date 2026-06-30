@@ -77,7 +77,11 @@ if not exist "artifacts\checkpoints\baseline_dixon_coles_v1.json" (
     )
 )
 
-echo [4/6] Export 2026 model odds and refresh feature mart ...
+echo [4/6] Sync 2026 results, export samples, model odds, feature mart ...
+python -m scripts.seed_wc2026_results --cutoff 2026-06-30
+if errorlevel 1 goto FAIL
+python -m scripts.export_sample_data
+if errorlevel 1 goto FAIL
 python -m scripts.export_model_odds
 if errorlevel 1 goto FAIL
 python -m scripts.ingest

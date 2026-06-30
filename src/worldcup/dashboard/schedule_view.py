@@ -19,6 +19,11 @@ from worldcup.dashboard.prediction_view import (
     render_top_scorelines_compact,
 )
 from worldcup.data_ingestion.sources.world_cup_2026_catalog import wc2026_match_id
+from worldcup.data_ingestion.sources.world_cup_2026_knockout import (
+    is_resolved_predictable_match,
+    resolve_match_teams,
+    resolve_schedule_match,
+)
 from worldcup.dashboard.world_cup_2026_schedule import (
     STAGE_ORDER,
     TOURNAMENT_END,
@@ -60,15 +65,21 @@ def _display_team_html(name: str) -> str:
     return f"⚪ {name}"
 
 
+def _resolved(match: ScheduleMatch) -> ScheduleMatch:
+    return resolve_schedule_match(match)
+
+
 def _display_matchup_html(match: ScheduleMatch) -> str:
-    home = _display_team_html(match.home_team)
-    away = _display_team_html(match.away_team)
+    resolved = _resolved(match)
+    home = _display_team_html(resolved.home_team)
+    away = _display_team_html(resolved.away_team)
     return f"{home} vs {away}"
 
 
 def _display_matchup_plain(match: ScheduleMatch) -> str:
-    home = team_label_plain(match.home_team)
-    away = team_label_plain(match.away_team)
+    resolved = _resolved(match)
+    home = team_label_plain(resolved.home_team)
+    away = team_label_plain(resolved.away_team)
     return f"{home} vs {away}"
 
 
@@ -119,10 +130,11 @@ def find_api_match_id(
     stable_id = wc2026_match_id(match)
     if api_by_id and stable_id in api_by_id:
         return stable_id
-    if not is_known_team(match.home_team) or not is_known_team(match.away_team):
+    home_team, away_team = resolve_match_teams(match)
+    if not is_known_team(home_team) or not is_known_team(away_team):
         return None
-    home = normalize_team_name(match.home_team)
-    away = normalize_team_name(match.away_team)
+    home = normalize_team_name(home_team)
+    away = normalize_team_name(away_team)
     return api_index.get((match.match_date, home, away))
 
 
@@ -146,8 +158,7 @@ def _current_tournament_matches(
     active = [
         m
         for m in WORLD_CUP_2026_SCHEDULE
-        if is_known_team(m.home_team)
-        and is_known_team(m.away_team)
+        if is_resolved_predictable_match(m)
         and m.match_date >= ref
     ]
     active.sort(key=lambda m: (m.match_date, m.kickoff_et, m.match_number))

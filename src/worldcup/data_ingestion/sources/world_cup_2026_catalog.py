@@ -9,7 +9,10 @@ from worldcup.data_ingestion.sources.world_cup_2026_results import (
     apply_results_to_row,
     load_wc2026_results,
 )
-from worldcup.dashboard.flags import is_known_team
+from worldcup.data_ingestion.sources.world_cup_2026_knockout import (
+    is_resolved_predictable_match,
+    resolve_match_teams,
+)
 from worldcup.dashboard.world_cup_2026_schedule import (
     WORLD_CUP_2026_SCHEDULE,
     ScheduleMatch,
@@ -41,7 +44,7 @@ def et_to_utc_iso(match_date: str, kickoff_et: str) -> str:
 
 
 def is_predictable_schedule_match(match: ScheduleMatch) -> bool:
-    return is_known_team(match.home_team) and is_known_team(match.away_team)
+    return is_resolved_predictable_match(match)
 
 
 def schedule_to_match_row(
@@ -49,6 +52,7 @@ def schedule_to_match_row(
     *,
     results: dict[str, dict[str, int | str]] | None = None,
 ) -> dict:
+    home_team, away_team = resolve_match_teams(match)
     is_ko = match.stage_name in KNOCKOUT_STAGES
     row = {
         "match_id": wc2026_match_id(match),
@@ -57,8 +61,8 @@ def schedule_to_match_row(
         "stage_name": match.stage_name,
         "match_date": match.match_date,
         "kickoff_ts": et_to_utc_iso(match.match_date, match.kickoff_et),
-        "home_team_name": match.home_team,
-        "away_team_name": match.away_team,
+        "home_team_name": home_team,
+        "away_team_name": away_team,
         "home_score_ft": "",
         "away_score_ft": "",
         "home_score_ht": "",

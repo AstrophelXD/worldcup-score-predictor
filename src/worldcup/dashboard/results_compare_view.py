@@ -154,6 +154,10 @@ def _build_display_row(
         "expected_goals": pred.get("expected_goals", {}),
         "comparison_html": _comparison_bar_html(probs, actual),
         "top1_agrees_1x2": branch.get("top1_agrees_1x2"),
+        "hit_ou": (home_score + away_score >= 3)
+        == (pred.get("ou25_probs", {}).get("over_2_5", 0.5) >= 0.5),
+        "hit_btts": (home_score >= 1 and away_score >= 1)
+        == (pred.get("btts_probs", {}).get("yes", 0.5) >= 0.5),
     }
 
 

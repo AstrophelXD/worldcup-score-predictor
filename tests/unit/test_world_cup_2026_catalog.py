@@ -9,7 +9,7 @@ from worldcup.data_ingestion.sources.world_cup_2026_catalog import (
 def test_world_cup_2026_export_rows():
     rows = world_cup_2026_match_rows()
     assert len(rows) >= 72
-    assert all(row["status"] == "scheduled" for row in rows)
+    assert all(row["status"] in {"scheduled", "finished"} for row in rows)
     assert all(row["is_world_cup"] for row in rows)
     assert rows[0]["match_id"] == "wc2026_m001"
 
